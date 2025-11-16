@@ -1,0 +1,60 @@
+/* Launcher window */
+.launcher-window {
+  background: transparent;
+  border: none;
+}
+
+.launcher-overlay {
+  all: unset;
+  background: none;
+}
+
+.launcher {
+  background: $bg-1;
+  border: 1px solid $ui-1;
+  border-radius: 12px;
+  min-width: 30rem;
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
+/* Search box */
+.launcher-search-box {
+  color: $tx-1;
+  padding: 12px 16px;
+  background: $bg-2;
+  border-radius: 12px;
+}
+
+.launcher-entry {
+  all: unset;
+  color: $tx-1;
+  font-size: 1.1rem;
+}
+
+/* Results */
+.launcher-results {
+}
+
+.app-item {
+  all: unset;
+  background: $bg-2;
+  border: 1px solid $ui-1;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 8px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.app-item:hover,
+.app-item:focus {
+  background: $ui-2;
+  border-color: $cyan;
+}
+
+.app-name {
+  font-size: 1rem;
+  color: $tx-2;
+  margin-left: 12px;
+}
+

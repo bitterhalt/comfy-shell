@@ -1,0 +1,82 @@
+/* BAR */
+.bar {
+  background-color: $bg-1;
+  color: $tx-1;
+  padding: 2px 8px; /* smaller bar height */
+  font-family: "Cascadia Code", "Symbols Nerd Font Mono";
+  font-size: 11pt;
+}
+
+/* WORKSPACES */
+.workspaces {
+}
+
+.ws-btn {
+  padding: 1px 6px; /* smaller height */
+  margin: 1px 2px;
+  border-radius: 6px;
+  background: transparent;
+  color: $tx-1;
+}
+
+.ws-btn.active {
+  background: $ui-3;
+  color: $tx-2;
+}
+
+.ws-btn:hover {
+  background: $hover-bg;
+  color: $tx-2;
+}
+
+/* WINDOW TITLE */
+.window-title {
+  padding: 0 6px;
+}
+
+/* RIGHT MODULES */
+.clock,
+.speaker-volume,
+.power-menu {
+  padding: 1px 6px; /* smaller */
+  border-radius: 6px;
+}
+
+.clock:hover,
+.speaker-volume:hover,
+.power-menu:hover {
+  background: $hover-bg;
+  color: $tx-2;
+}
+
+/* GTK CSS, not SCSS */
+
+.recording-icon {
+  color: $tx-1;
+  background: $red;
+  padding: 1px 6px; /* smaller height */
+  margin: 1px 2px;
+  border-radius: 6px;
+}
+
+/* RIGHT MODULES */
+
+// Base styling for all clickable icons/buttons in the right section
+.timer-button,
+.clock-button, // For the clickable clock/calendar popover (future)
+.speaker-volume, // The class you used for the volume button
+.power-menu,    // The class you used for the power button
+.network-box { // The class used for the network widget's EventBox wrapper
+  all: unset; /* Remove default button/eventbox styling */
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+
+// Hover effect for all clickable icons/buttons
+.clock-button:hover,
+.speaker-volume:hover,
+.power-menu:hover,
+.network-box:hover {
+  background: $hover-bg;
+  color: $tx-2;
+}

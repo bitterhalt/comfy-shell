@@ -1,0 +1,118 @@
+/* Notification Center Window */
+.notif-center-window {
+  background: transparent;
+  border: none;
+}
+
+.notif-center {
+  background: $bg-1;
+  border: 1px solid $ui-1;
+  border-radius: 12px;
+  min-width: 28rem;
+  margin: 8px;
+}
+
+/* Header with DND */
+.notif-center-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid $ui-1;
+  border-radius: 12px 12px 0 0;
+}
+
+.notif-center-title {
+  font-size: 1rem;
+  color: $tx-2;
+}
+
+/* Clear all button - full width like GNOME */
+.notif-clear-all {
+  all: unset;
+  color: $tx-3;
+  border-radius: 8px;
+  padding: 10px;
+  margin: 10px;
+  transition: background 0.2s;
+}
+
+.notif-clear-all:hover {
+  background: $ui-1;
+}
+
+/* Notification List */
+.notif-center-list {
+  padding: 8px;
+}
+
+.notif-history-item {
+  background: $bg-2;
+  border: 1px solid $ui-1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  transition: background 0.2s;
+}
+
+.notif-history-item:hover {
+  background: $ui-2;
+}
+
+.notif-history-title {
+  font-size: 1rem;
+  font-weight: bold;
+  color: $tx-2;
+}
+
+.notif-history-body {
+  font-size: 0.9rem;
+  color: $tx-3;
+  margin-top: 4px;
+}
+
+.notif-history-close {
+  all: unset;
+  background: transparent;
+  border-radius: 4px;
+  padding: 4px;
+  min-width: 24px;
+  min-height: 24px;
+  transition: background 0.2s;
+}
+
+.notif-history-close:hover {
+  background: $ui-3;
+}
+
+/* Empty state */
+.notif-center-empty {
+  color: $tx-3;
+  font-size: 1rem;
+  padding: 40px;
+}
+
+/* Power menu at bottom - GNOME style */
+.notif-power-menu {
+  padding: 12px;
+  border-radius: 0 0 12px 12px;
+  background: $bg-1;
+}
+
+.power-button {
+  all: unset;
+  color: $tx-1;
+  background: $ui-2;
+  border-radius: 8px;
+  padding: 10px;
+  margin: 5px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.power-button:hover {
+  background: $ui-3;
+  border-color: $cyan;
+}
+
+/* Clickable overlay background */
+.notif-center-overlay {
+  all: unset;
+  background: transparent;
+}

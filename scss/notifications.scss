@@ -1,0 +1,99 @@
+/* Window container (transparent) */
+.notification-window {
+  background: transparent;
+  border: none;
+}
+
+/* Main bubble - default */
+.notif-box {
+  background: $bg-1;
+  border: 1px solid $ui-1;
+  border-radius: 8px;
+  padding: 15px;
+  color: $tx-1;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+  min-width: 25rem;
+  margin: 0.5rem;
+}
+
+/* Low urgency - slightly transparent */
+.notif-low {
+  background: $bg-1;
+  border: 1px solid $ui-1;
+  border-radius: 8px;
+  padding: 15px;
+  color: $tx-1;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+  min-width: 25rem;
+  margin: 0.5rem;
+  opacity: 0.8;
+}
+
+/* Critical urgency - red border and glow */
+.notif-critical {
+  background: $bg-1;
+  border: 2px solid $red;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 4px 12px rgba(175, 48, 41, 0.5);
+  min-width: 25rem;
+  margin: 0.5rem;
+}
+
+/* Notification title */
+.notif-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: $tx-2;
+}
+
+.notif-title-critical {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: $red;
+}
+
+/* Notification body */
+.notif-body {
+  font-size: 0.95rem;
+  color: $tx-3;
+  margin-top: 4px;
+}
+
+.notif-body-critical {
+  font-size: 0.95rem;
+  color: $yellow;
+  margin-top: 4px;
+}
+
+/* Close button */
+.notif-close {
+  all: unset;
+  background: transparent;
+  border-radius: 8px;
+  padding: 0.25rem;
+  transition: background 0.2s;
+}
+
+.notif-close:hover {
+  background: $ui-2;
+}
+
+/* Action buttons */
+.notif-action {
+  all: unset;
+  background: $ui-3;
+  color: $tx-1;
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  transition: background 0.2s;
+}
+
+.notif-action:hover {
+  background: $ui-2;
+  color: $tx-2;
+}
+
+.notif-action:active {
+  background: $ui-1;
+}

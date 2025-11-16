@@ -1,0 +1,30 @@
+/* Notification button in bar */
+.notification-button {
+  all: unset;
+  padding: 1px 6px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.notification-button:hover {
+  background: $hover-bg;
+  color: $tx-2;
+}
+
+/* DND active state */
+.notification-button.dnd-active {
+  color: $magenta;
+}
+
+/* Count badge */
+.notif-count-badge {
+  background: $red;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  padding: 2px 5px;
+  border-radius: 10px;
+  min-width: 16px;
+  margin-top: -4px;
+  margin-right: -4px;
+}

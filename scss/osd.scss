@@ -1,0 +1,39 @@
+.osd-window {
+  margin-top: 40px;
+}
+
+.osd-container {
+  background: rgba(0,0,0,0.85);
+  padding: 14px 20px;
+  border-radius: 16px;
+  min-width: 260px;
+}
+
+.osd-icon {
+  color: $tx-2;
+}
+
+/* Volume track (background) */
+.osd-track trough {
+  background: $ui-2;
+  border-radius: 6px;
+  min-height: 12px;
+  min-width: 200px;
+}
+
+/* Volume fill (foreground) */
+.osd-track trough highlight {
+  background: $tx-2;
+  border-radius: 6px;
+  min-height: 12px;
+}
+
+/* Hide the slider handle for OSD */
+.osd-track slider {
+  all: unset;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
