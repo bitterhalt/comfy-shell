@@ -1,10 +1,10 @@
 from ignis import utils, widgets
 from modules.bar.widgets.audio_combined import audio_widgets
-from modules.notifications.notification_button import notification_button
 
 from .widgets.battery import battery_widget
 from .widgets.clock import clock
 from .widgets.network import network_widget
+from .widgets.notification import notification_button
 from .widgets.recorder import recording_indicator
 from .widgets.title import window_title
 from .widgets.workspaces import workspaces
