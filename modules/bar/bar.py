@@ -5,9 +5,7 @@ from modules.notifications.notification_button import notification_button
 from .widgets.battery import battery_widget
 from .widgets.clock import clock
 from .widgets.network import network_widget
-from .widgets.power import power_menu
 from .widgets.recorder import recording_indicator
-from .widgets.timer import timer_widget
 from .widgets.title import window_title
 from .widgets.workspaces import workspaces
 
@@ -34,13 +32,11 @@ def right_section():
     return widgets.Box(
         spacing=12,
         child=[
+            recording_indicator(),
             notification_button(),
-            timer_widget(),
             network_widget(),
             audio_widgets(),
             battery_widget(),
-            recording_indicator(),
-            power_menu(),
         ],
     )
 

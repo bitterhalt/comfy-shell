@@ -18,6 +18,9 @@ from modules.notifications import notification_center  # noqa: F401
 # Import notification popup initialization
 from modules.notifications.popup import init_notifications
 
+# # Import task menu
+from modules.tasks.task_menu import toggle_task_menu
+
 css = CssManager.get_default()
 
 
@@ -48,3 +51,4 @@ for i in range(utils.get_n_monitors()):
 # Register launcher command
 command_manager = CommandManager.get_default()
 command_manager.add_command("launcher-toggle", toggle_launcher)
+command_manager.add_command("task-menu-toggle", toggle_task_menu)  # <-- A
