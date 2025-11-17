@@ -16,7 +16,7 @@ from .widgets.workspaces import workspaces
 
 def left_section(monitor_name: str):
     return widgets.Box(
-        spacing=8,
+        spacing=12,
         child=[
             workspaces(monitor_name),
             window_title(monitor_name),

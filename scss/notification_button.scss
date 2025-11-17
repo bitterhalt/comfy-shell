@@ -1,7 +1,8 @@
 /* Notification button in bar */
 .notification-button {
   all: unset;
-  padding: 1px 6px;
+  padding: 2px 6px;
+  margin: 2px 0px;
   border-radius: 6px;
   transition: background 0.2s;
 }
@@ -25,6 +26,6 @@
   padding: 2px 5px;
   border-radius: 10px;
   min-width: 16px;
-  margin-top: -4px;
+  margin-top: -2px;
   margin-right: -4px;
 }
