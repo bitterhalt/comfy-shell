@@ -1,11 +1,10 @@
 import json
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from ignis import widgets
 
-# Configuration (matching your fuzzel_task.py)
 QUEUE_FILE = Path("~/.local/share/timers/queue.json").expanduser()
 
 
@@ -50,16 +49,17 @@ def format_time_until(fire_at):
 class TaskItem(widgets.Box):
     """Individual task in the list"""
 
-    def __init__(self, task, on_delete, on_complete):
+    def __init__(self, task, on_delete, on_complete, on_edit, on_snooze):
         self._task = task
         self._on_delete = on_delete
         self._on_complete = on_complete
+        self._on_edit = on_edit
+        self._on_snooze = on_snooze
 
         fire_dt = datetime.fromtimestamp(task["fire_at"])
         time_str = fire_dt.strftime("%H:%M")
         date_str = fire_dt.strftime("%d.%m")
 
-        # Task info
         task_info = widgets.Box(
             vertical=True,
             hexpand=True,
@@ -79,80 +79,97 @@ class TaskItem(widgets.Box):
             ],
         )
 
-        # Action buttons
-        complete_btn = widgets.Button(
-            child=widgets.Icon(image="emblem-ok-symbolic", pixel_size=18),
-            css_classes=["task-action-btn", "task-complete"],
-            tooltip_text="Complete",
-            on_click=lambda x: self._on_complete(task),
+        actions_row = widgets.Box(
+            halign="end",
+            spacing=6,
+            css_classes=["task-actions-row"],
+            child=[
+                widgets.Button(
+                    child=widgets.Icon(
+                        image="media-playback-pause-symbolic", pixel_size=18
+                    ),
+                    css_classes=["task-action-btn", "task-snooze"],
+                    tooltip_text="Snooze 5 minutes",
+                    on_click=lambda x: self._on_snooze(task, 5),
+                ),
+                widgets.Button(
+                    child=widgets.Icon(image="document-edit-symbolic", pixel_size=18),
+                    css_classes=["task-action-btn", "task-edit"],
+                    tooltip_text="Edit",
+                    on_click=lambda x: self._on_edit(task),
+                ),
+                widgets.Button(
+                    child=widgets.Icon(image="emblem-ok-symbolic", pixel_size=18),
+                    css_classes=["task-action-btn", "task-complete"],
+                    tooltip_text="Complete",
+                    on_click=lambda x: self._on_complete(task),
+                ),
+                widgets.Button(
+                    child=widgets.Icon(image="user-trash-symbolic", pixel_size=18),
+                    css_classes=["task-action-btn", "task-delete"],
+                    tooltip_text="Delete",
+                    on_click=lambda x: self._on_delete(task),
+                ),
+            ],
         )
 
-        delete_btn = widgets.Button(
-            child=widgets.Icon(image="user-trash-symbolic", pixel_size=18),
-            css_classes=["task-action-btn", "task-delete"],
-            tooltip_text="Delete",
-            on_click=lambda x: self._on_delete(task),
+        main_col = widgets.Box(
+            vertical=True,
+            hexpand=True,
+            spacing=4,
+            child=[task_info, actions_row],
         )
 
         super().__init__(
             css_classes=["task-item"],
-            child=[
-                widgets.Icon(image="alarm-symbolic", pixel_size=24),
-                task_info,
-                complete_btn,
-                delete_btn,
-            ],
             spacing=12,
+            child=[widgets.Icon(image="alarm-symbolic", pixel_size=24), main_col],
         )
 
 
 class AddTaskDialog(widgets.Box):
-    """Dialog to add a new task"""
+    """Dialog to add a new task (with manual date support)"""
 
     def __init__(self, on_add, on_cancel):
         self._on_add = on_add
         self._on_cancel = on_cancel
+        self._date_offset = 0
 
-        # Task message input
         self._message_entry = widgets.Entry(
             placeholder_text="Task description...",
             css_classes=["task-input"],
             hexpand=True,
         )
 
-        # Time input (HH:MM format)
         self._time_entry = widgets.Entry(
             placeholder_text="HH:MM",
             css_classes=["task-input"],
             width_request=80,
         )
 
-        # Date offset buttons
+        self._date_entry = widgets.Entry(
+            placeholder_text="DD-MM or DD-MM-YYYY",
+            css_classes=["task-input"],
+            width_request=140,
+        )
+        self._date_entry.text = datetime.now().strftime("%d-%m")
+
         today_btn = widgets.Button(
             child=widgets.Label(label="Today"),
             css_classes=["date-btn"],
             on_click=lambda x: self._set_date(0),
         )
-
         tomorrow_btn = widgets.Button(
             child=widgets.Label(label="Tomorrow"),
             css_classes=["date-btn"],
             on_click=lambda x: self._set_date(1),
         )
 
-        self._date_offset = 0
-        self._selected_date_label = widgets.Label(
-            label="Today",
-            css_classes=["selected-date"],
-        )
-
-        # Action buttons
         cancel_btn = widgets.Button(
             child=widgets.Label(label="Cancel"),
             css_classes=["dialog-btn", "cancel-btn"],
             on_click=lambda x: on_cancel(),
         )
-
         add_btn = widgets.Button(
             child=widgets.Label(label="Add Task"),
             css_classes=["dialog-btn", "add-btn"],
@@ -162,6 +179,7 @@ class AddTaskDialog(widgets.Box):
         super().__init__(
             vertical=True,
             css_classes=["add-task-dialog"],
+            spacing=12,
             child=[
                 widgets.Label(
                     label="Add New Task",
@@ -170,107 +188,198 @@ class AddTaskDialog(widgets.Box):
                 ),
                 self._message_entry,
                 widgets.Box(
+                    spacing=8,
                     child=[
                         widgets.Label(label="Time:", css_classes=["input-label"]),
                         self._time_entry,
                     ],
-                    spacing=8,
                 ),
                 widgets.Box(
+                    spacing=8,
                     child=[
                         widgets.Label(label="Date:", css_classes=["input-label"]),
+                        self._date_entry,
                         today_btn,
                         tomorrow_btn,
-                        self._selected_date_label,
                     ],
-                    spacing=8,
                 ),
                 widgets.Box(
+                    css_classes=["dialog-footer"],
+                    hexpand=True,
                     child=[cancel_btn, add_btn],
-                    spacing=8,
-                    halign="end",
                 ),
             ],
-            spacing=12,
         )
 
     def _set_date(self, offset):
-        """Set date offset (0=today, 1=tomorrow)"""
+        """Set date offset (0=today, 1=tomorrow) and update date entry"""
         self._date_offset = offset
-        if offset == 0:
-            self._selected_date_label.label = "Today"
-        else:
-            self._selected_date_label.label = "Tomorrow"
+        base = datetime.now() + timedelta(days=offset)
+        self._date_entry.text = base.strftime("%d-%m")
 
     def _add_task(self):
-        """Parse and add the task"""
+        """Parse and add the task (supports manual date)"""
         message = self._message_entry.text.strip()
         time_str = self._time_entry.text.strip()
+        date_str = self._date_entry.text.strip()
 
         if not message or not time_str:
             return
 
         try:
-            # Parse time (HH:MM)
             hour, minute = map(int, time_str.split(":"))
-
-            # Calculate fire time
             now = datetime.now()
-            fire_dt = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
 
-            # Add date offset
-            if self._date_offset == 1:
-                from datetime import timedelta
+            if date_str:
+                parts = date_str.split("-")
+                if len(parts) == 2:
+                    day, month = map(int, parts)
+                    year = now.year
+                elif len(parts) == 3:
+                    day, month, year = map(int, parts)
+                else:
+                    return
 
-                fire_dt += timedelta(days=1)
+                fire_dt = datetime(year, month, day, hour, minute)
+                if fire_dt <= now:
+                    return
+            else:
+                base = now.date() + timedelta(days=self._date_offset)
+                fire_dt = datetime(base.year, base.month, base.day, hour, minute)
+                if fire_dt <= now:
+                    fire_dt += timedelta(days=1)
 
-            # If time is in the past for today, move to tomorrow
-            if self._date_offset == 0 and fire_dt < now:
-                from datetime import timedelta
+            self._on_add({"message": message, "fire_at": int(fire_dt.timestamp())})
+        except Exception:
+            return
 
-                fire_dt += timedelta(days=1)
 
-            task = {
-                "message": message,
-                "fire_at": int(fire_dt.timestamp()),
-            }
+class EditTaskDialog(widgets.Box):
+    """Dialog to edit an existing task"""
 
-            self._on_add(task)
-        except ValueError:
-            # Invalid time format
-            pass
+    def __init__(self, task, on_save, on_cancel):
+        self._task = task
+        self._on_save = on_save
+        self._on_cancel = on_cancel
+
+        fire_dt = datetime.fromtimestamp(task["fire_at"])
+
+        self._message_entry = widgets.Entry(
+            placeholder_text="Task description...",
+            css_classes=["task-input"],
+            hexpand=True,
+        )
+        self._message_entry.text = task.get("message", "")
+
+        self._time_entry = widgets.Entry(
+            placeholder_text="HH:MM",
+            css_classes=["task-input"],
+            width_request=80,
+        )
+        self._time_entry.text = fire_dt.strftime("%H:%M")
+
+        self._date_entry = widgets.Entry(
+            placeholder_text="DD-MM-YYYY",
+            css_classes=["task-input"],
+            width_request=140,
+        )
+        self._date_entry.text = fire_dt.strftime("%d-%m-%Y")
+
+        cancel_btn = widgets.Button(
+            child=widgets.Label(label="Cancel"),
+            css_classes=["dialog-btn", "cancel-btn"],
+            on_click=lambda x: on_cancel(),
+        )
+        save_btn = widgets.Button(
+            child=widgets.Label(label="Save"),
+            css_classes=["dialog-btn", "add-btn"],
+            on_click=lambda x: self._save_task(),
+        )
+
+        super().__init__(
+            vertical=True,
+            css_classes=["add-task-dialog", "edit-task-dialog"],
+            spacing=12,
+            child=[
+                widgets.Label(
+                    label="Edit Task",
+                    css_classes=["dialog-title"],
+                    halign="start",
+                ),
+                self._message_entry,
+                widgets.Box(
+                    spacing=8,
+                    child=[
+                        widgets.Label(label="Time:", css_classes=["input-label"]),
+                        self._time_entry,
+                    ],
+                ),
+                widgets.Box(
+                    spacing=8,
+                    child=[
+                        widgets.Label(label="Date:", css_classes=["input-label"]),
+                        self._date_entry,
+                    ],
+                ),
+                widgets.Box(
+                    css_classes=["dialog-footer"],
+                    hexpand=True,
+                    child=[cancel_btn, save_btn],
+                ),
+            ],
+        )
+
+    def _save_task(self):
+        """Validate and send updated task back to menu"""
+        message = self._message_entry.text.strip()
+        time_str = self._time_entry.text.strip()
+        date_str = self._date_entry.text.strip()
+
+        if not message or not time_str or not date_str:
+            return
+
+        try:
+            hour, minute = map(int, time_str.split(":"))
+            day, month, year = map(int, date_str.split("-"))
+            now = datetime.now()
+            fire_dt = datetime(year, month, day, hour, minute)
+
+            if fire_dt <= now:
+                return
+
+            new_task = dict(self._task)
+            new_task["message"] = message
+            new_task["fire_at"] = int(fire_dt.timestamp())
+
+            self._on_save(new_task)
+        except Exception:
+            return
 
 
 class TaskMenu(widgets.Window):
     """Graphical task manager"""
 
     def __init__(self):
-        # Task list
-        self._task_list = widgets.Box(
-            vertical=True,
-            css_classes=["task-list"],
-        )
-
-        # Scrollable task list
+        self._task_list = widgets.Box(vertical=True, css_classes=["task-list"])
+        # 👇 SCROLLBAR DISABLED HERE
         self._task_scroll = widgets.Scroll(
             vexpand=True,
             child=self._task_list,
             css_classes=["task-scroll"],
+            vscrollbar_policy="never",  # Added this to disable vertical scrollbar
         )
 
-        # Add task button
         self._add_btn = widgets.Button(
             child=widgets.Box(
                 child=[
                     widgets.Icon(image="list-add-symbolic", pixel_size=20),
                     widgets.Label(label="Add Task", style="margin-left: 8px;"),
-                ],
+                ]
             ),
             css_classes=["add-task-btn"],
             on_click=lambda x: self._show_add_dialog(),
         )
 
-        # Header
         self._header = widgets.Box(
             css_classes=["task-header"],
             child=[
@@ -284,19 +393,17 @@ class TaskMenu(widgets.Window):
             ],
         )
 
-        # Main content container
         self._main_content = widgets.Box(
             vertical=True,
             css_classes=["task-menu"],
             child=[self._header, self._task_scroll],
         )
 
-        # Overlay
         overlay = widgets.Button(
             vexpand=True,
             hexpand=True,
-            can_focus=False,
             css_classes=["task-overlay"],
+            can_focus=False,
             on_click=lambda x: self._close(),
         )
 
@@ -322,22 +429,17 @@ class TaskMenu(widgets.Window):
         )
 
     def _on_open(self, *args):
-        """Reload tasks when opened"""
         if self.visible:
             self._show_task_list()
 
     def _show_task_list(self):
-        """Show main task list view"""
-        # Restore header with Add button
         self._main_content.child = [self._header, self._task_scroll]
         self._reload_tasks()
 
     def _reload_tasks(self):
-        """Reload and display tasks"""
         tasks = load_tasks()
-
-        # Filter active tasks (not past)
         now_ts = int(time.time())
+
         active_tasks = sorted(
             [t for t in tasks if t.get("fire_at", 0) > now_ts],
             key=lambda t: t["fire_at"],
@@ -345,60 +447,89 @@ class TaskMenu(widgets.Window):
 
         if not active_tasks:
             self._task_list.child = [
-                widgets.Label(
-                    label="No active tasks",
-                    css_classes=["task-empty"],
-                )
+                widgets.Label(label="No active tasks", css_classes=["task-empty"])
             ]
         else:
             self._task_list.child = [
-                TaskItem(task, self._delete_task, self._complete_task)
+                TaskItem(
+                    task,
+                    self._delete_task,
+                    self._complete_task,
+                    self._open_edit_dialog,
+                    self._snooze_task,
+                )
                 for task in active_tasks
             ]
 
     def _show_add_dialog(self):
-        """Show add task dialog"""
-        dialog = AddTaskDialog(
-            on_add=self._add_task,
-            on_cancel=self._cancel_add,
-        )
-        # Replace entire content with dialog
-        self._main_content.child = [dialog]
+        self._main_content.child = [
+            AddTaskDialog(on_add=self._add_task, on_cancel=self._cancel_add)
+        ]
+
+    def _open_edit_dialog(self, task):
+        self._main_content.child = [
+            EditTaskDialog(
+                task,
+                on_save=lambda new: self._update_task(task, new),
+                on_cancel=self._cancel_add,
+            )
+        ]
 
     def _cancel_add(self):
-        """Cancel adding task and return to list"""
         self._show_task_list()
 
     def _add_task(self, task):
-        """Add a new task"""
         tasks = load_tasks()
         tasks.append(task)
         save_tasks(tasks)
-        # Return to task list after adding
+        self._show_task_list()
+
+    def _update_task(self, old_task, new_task):
+        tasks = load_tasks()
+        updated = []
+        used = False
+        for t in tasks:
+            if not used and t == old_task:
+                updated.append(new_task)
+                used = True
+            else:
+                updated.append(t)
+        save_tasks(updated)
         self._show_task_list()
 
     def _delete_task(self, task):
-        """Delete a task"""
         tasks = load_tasks()
         tasks = [t for t in tasks if t != task]
         save_tasks(tasks)
         self._reload_tasks()
 
     def _complete_task(self, task):
-        """Mark task as complete (delete it)"""
         self._delete_task(task)
 
+    def _snooze_task(self, task, minutes=5):
+        now = int(time.time())
+        new_tasks = []
+        used = False
+
+        for t in load_tasks():
+            if not used and t == task:
+                nt = dict(t)
+                nt["fire_at"] = now + minutes * 60
+                new_tasks.append(nt)
+                used = True
+            else:
+                new_tasks.append(t)
+
+        save_tasks(new_tasks)
+        self._reload_tasks()
+
     def _close(self):
-        """Close the menu"""
         self.visible = False
-        # Make sure we're showing task list when reopened
         self._show_task_list()
 
 
-# Create the task menu window
 task_menu = TaskMenu()
 
 
 def toggle_task_menu():
-    """Toggle task menu visibility"""
     task_menu.visible = not task_menu.visible

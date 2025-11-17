@@ -1,4 +1,6 @@
-/* Task Menu Window */
+/* ───────────────────────────────────────────────────────────────
+   TASK MENU WINDOW
+   ─────────────────────────────────────────────────────────────── */
 .task-menu-window {
   background: transparent;
   border: none;
@@ -6,28 +8,34 @@
 
 .task-overlay {
   all: unset;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.35);
 }
 
+/* ───────────────────────────────────────────────────────────────
+   MAIN PANEL
+   ─────────────────────────────────────────────────────────────── */
 .task-menu {
   background: $bg-1;
   border: 1px solid $ui-1;
-  border-radius: 12px;
-  min-width: 32rem;
-  min-height: 25rem;
+  border-radius: 14px;
+  min-width: 30rem;
+  min-height: 23rem;
+  padding-bottom: 0;
 }
 
-/* Header */
+/* ───────────────────────────────────────────────────────────────
+   HEADER
+   ─────────────────────────────────────────────────────────────── */
 .task-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid $ui-1;
-  border-radius: 12px 12px 0 0;
+  padding: 12px 14px;
   background: $bg-2;
+  border-bottom: 1px solid $ui-1;
+  border-radius: 14px 14px 0 0;
 }
 
 .task-menu-title {
-  font-size: 1.2rem;
-  font-weight: bold;
+  font-size: 1.1rem;
+  font-weight: 600;
   color: $tx-2;
 }
 
@@ -38,77 +46,97 @@
   padding: 8px 16px;
   border-radius: 8px;
   transition: background 0.2s;
+
+  &:hover {
+    background: lighten($cyan, 10%);
+  }
 }
 
-.add-task-btn:hover {
-  background: lighten($cyan, 10%);
+/* ───────────────────────────────────────────────────────────────
+   TASK LIST
+   ─────────────────────────────────────────────────────────────── */
+.task-scroll {
+  padding: 10px;
 }
-
 
 .task-list {
-  padding: 12px;
+  padding: 6px;
 }
 
+.task-empty {
+  padding: 40px;
+  font-size: 1rem;
+  color: $tx-3;
+}
+
+/* ───────────────────────────────────────────────────────────────
+   TASK ITEM CARD
+   ─────────────────────────────────────────────────────────────── */
 .task-item {
   background: $bg-2;
   border: 1px solid $ui-1;
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-bottom: 8px;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
   transition: background 0.2s;
-}
 
-.task-item:hover {
-  background: $ui-2;
+  &:hover {
+    background: $ui-2;
+  }
 }
 
 .task-title {
   font-size: 1rem;
-  font-weight: bold;
+  font-weight: 600;
   color: $tx-2;
 }
 
 .task-time {
   font-size: 0.85rem;
+  margin-top: 3px;
   color: $tx-3;
-  margin-top: 4px;
 }
 
+/* BOTTOM ACTION ROW */
+.task-actions-row {
+  padding-top: 8px;
+  margin-top: 8px;
+  border-top: 1px solid rgba($ui-1, 0.4);
+}
+
+/* Action buttons */
 .task-action-btn {
   all: unset;
-  padding: 8px;
+  padding: 6px;
   border-radius: 6px;
-  transition: background 0.2s;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: $ui-2;
+  }
 }
 
-.task-complete:hover {
-  background: $cyan;
-  color: $bg-1;
-}
+.task-edit:hover { background: $yellow; color: $bg-1; }
+.task-snooze:hover { background: $magenta; color: $bg-1; }
+.task-complete:hover { background: $cyan; color: $bg-1; }
+.task-delete:hover { background: $red; color: $bg-1; }
 
-.task-delete:hover {
-  background: $red;
-  color: $tx-2;
-}
-
-.task-empty {
-  color: $tx-3;
-  font-size: 1rem;
-  padding: 40px;
-}
-
-/* Add Task Dialog */
-.add-task-dialog {
-  padding: 20px;
+/* ───────────────────────────────────────────────────────────────
+   ADD / EDIT DIALOGS
+   ─────────────────────────────────────────────────────────────── */
+.add-task-dialog,
+.edit-task-dialog {
+  padding: 18px 18px 0 18px;
 }
 
 .dialog-title {
-  font-size: 1.3rem;
-  font-weight: bold;
+  font-size: 1.2rem;
+  font-weight: 600;
   color: $tx-2;
-  margin-bottom: 8px;
+  margin-bottom: 14px;
 }
 
+/* Inputs */
 .task-input {
   all: unset;
   background: $bg-2;
@@ -117,10 +145,10 @@
   padding: 12px;
   color: $tx-2;
   font-size: 1rem;
-}
 
-.task-input:focus {
-  border-color: $cyan;
+  &:focus {
+    border-color: $cyan;
+  }
 }
 
 .input-label {
@@ -129,48 +157,55 @@
   min-width: 50px;
 }
 
+/* Date buttons */
 .date-btn {
   all: unset;
   background: $ui-2;
   color: $tx-2;
   padding: 8px 16px;
   border-radius: 6px;
-  transition: background 0.2s;
+  transition: background 0.15s;
+
+  &:hover {
+    background: $ui-3;
+  }
 }
 
-.date-btn:hover {
-  background: $ui-3;
+/* ───────────────────────────────────────────────────────────────
+   GNOME-STYLE FOOTER BAR
+   ─────────────────────────────────────────────────────────────── */
+.dialog-footer {
+  margin-top: 20px;
+  padding: 12px 18px;
+  background: $bg-2;
+  border-top: 1px solid $ui-1;
+  border-radius: 0 0 14px 14px;
+
 }
 
-.selected-date {
-  color: $cyan;
-  font-size: 0.9rem;
-  font-weight: bold;
-  margin-left: 12px;
-}
-
+/* Footer buttons */
 .dialog-btn {
   all: unset;
-  padding: 10px 20px;
+  padding: 10px 18px;
   border-radius: 8px;
-  transition: background 0.2s;
-  margin-top: 12px;
+  font-size: 0.95rem;
+  transition: background 0.15s;
 }
 
 .cancel-btn {
   background: $ui-2;
   color: $tx-2;
-}
 
-.cancel-btn:hover {
-  background: $ui-3;
+  &:hover {
+    background: $ui-3;
+  }
 }
 
 .add-btn {
   background: $cyan;
   color: $bg-1;
-}
 
-.add-btn:hover {
-  background: lighten($cyan, 10%);
+  &:hover {
+    background: lighten($cyan, 10%);
+  }
 }
