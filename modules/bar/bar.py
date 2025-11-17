@@ -1,15 +1,14 @@
 from ignis import utils, widgets
+from modules.bar.widgets.audio_combined import audio_widgets
 from modules.notifications.notification_button import notification_button
 
 from .widgets.battery import battery_widget
 from .widgets.clock import clock
-from .widgets.mic import mic_icon
 from .widgets.network import network_widget
 from .widgets.power import power_menu
 from .widgets.recorder import recording_indicator
 from .widgets.timer import timer_widget
 from .widgets.title import window_title
-from .widgets.volume import volume_icon
 from .widgets.workspaces import workspaces
 
 # ───────────────────────────────────────────────
@@ -38,8 +37,7 @@ def right_section():
             notification_button(),
             timer_widget(),
             network_widget(),
-            volume_icon(),
-            mic_icon(),
+            audio_widgets(),
             battery_widget(),
             recording_indicator(),
             power_menu(),
