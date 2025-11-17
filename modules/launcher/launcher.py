@@ -42,7 +42,7 @@ class AppItem(widgets.Button):
             on_right_click=lambda x: self._menu.popup(),
             child=widgets.Box(
                 child=[
-                    widgets.Icon(image=app.icon, pixel_size=48),
+                    widgets.Icon(image=app.icon, pixel_size=38),
                     widgets.Label(
                         label=app.name,
                         halign="start",
