@@ -4,7 +4,6 @@ from modules.bar.widgets.audio_combined import audio_widgets
 from .widgets.battery import battery_widget
 from .widgets.clock import clock
 from .widgets.network import network_widget
-from .widgets.notification import notification_button
 from .widgets.recorder import recording_indicator
 from .widgets.title import window_title
 from .widgets.workspaces import workspaces
@@ -25,7 +24,10 @@ def left_section(monitor_name: str):
 
 
 def center_section():
-    return widgets.Box(child=[clock()])
+    return widgets.Box(
+        spacing=2,
+        child=[clock()],
+    )
 
 
 def right_section():
@@ -33,7 +35,6 @@ def right_section():
         spacing=12,
         child=[
             recording_indicator(),
-            notification_button(),
             network_widget(),
             audio_widgets(),
             battery_widget(),

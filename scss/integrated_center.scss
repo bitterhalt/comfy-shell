@@ -14,7 +14,7 @@
 
 /* Container to center the panel */
 .center-container {
-  margin-top: 60px;
+  margin-top: 6px;
 }
 
 .integrated-center {
@@ -58,44 +58,6 @@
   color: $tx-1;
   font-weight: 600;
 }
-
-/* ───────────────────────────────────────────────────────────────
-   HEADER SECTION (REMOVED: Was the redundant "Notifications" title)
-   ─────────────────────────────────────────────────────────────── */
-/*
-.center-header {
-  padding: 12px 24px;
-  border-bottom: 1px solid $ui-1;
-}
-
-.center-title {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: $tx-3;
-}
-*/
-
-/* ───────────────────────────────────────────────────────────────
-   ACTION BUTTON (REMOVED: Was the floating Clear/Add button)
-   ─────────────────────────────────────────────────────────────── */
-/*
-.action-button {
-  all: unset;
-  color: $tx-3;
-  background: transparent;
-  border-radius: 0;
-  padding: 14px 24px;
-  margin: 0;
-  border-bottom: 1px solid $ui-1;
-  transition: background 0.2s, color 0.2s;
-  font-size: 0.95rem;
-}
-
-.action-button:hover {
-  background: $ui-2;
-  color: $tx-2;
-}
-*/
 
 /* ───────────────────────────────────────────────────────────────
    BOTTOM BAR (GNOME Style)

@@ -1,30 +1,41 @@
 import datetime
 
 from ignis import utils, widgets
+from ignis.services.notifications import NotificationService
+from modules.notifications.integrated_center import toggle_integrated_center
+
+notifications = NotificationService.get_default()
 
 
 def clock():
-    # 1. Create the widget instance first
-    clock_label = widgets.Label(
-        css_classes=["clock"],
+    # Visible clock text
+    clock_label = widgets.Label(css_classes=["clock"])
+
+    # Clickable wrapper
+    clock_button = widgets.Button(
+        child=clock_label,
+        css_classes=["clock-button"],  # (style inside SCSS to remove button look)
+        on_click=lambda *_: toggle_integrated_center(),
     )
 
-    # 2. Define the function that updates properties and returns the label string
-    def get_time_and_set_tooltip(self):
+    def update(self):
         now = datetime.datetime.now()
 
-        # Side-Effect: Update the tooltip with the full date
-        # Example: "Thursday, November 13, 2025"
         date_str = now.strftime("%A, %d.%m %Y")
-        clock_label.set_tooltip_text(date_str)
+        count = len(notifications.notifications)
 
-        # The primary function returns the time string for the 'label' property binding
+        tooltip = date_str
+        if count > 0:
+            tooltip += f"\n\n{count} notification(s)"
+
+        clock_button.set_tooltip_text(tooltip)
+
         return now.strftime("%H:%M")
 
-    # 3. Bind the 'label' property to the output of the Poll object
+    # Bind clock content
     clock_label.set_property(
-        "label", utils.Poll(1000, get_time_and_set_tooltip).bind("output")
+        "label",
+        utils.Poll(60000, update).bind("output"),
     )
 
-    # 4. Return the widget instance
-    return clock_label
+    return clock_button
