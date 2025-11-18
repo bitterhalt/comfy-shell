@@ -11,16 +11,14 @@ def recording_indicator():
         child=[
             widgets.Label(label="", css_classes=["recording-icon"]),
         ],
-        on_right_click=lambda *_: (
-            recorder.stop_recording() if recorder.active else None
-        ),
+        on_click=lambda *_: (recorder.stop_recording() if recorder.active else None),
     )
 
     icon = container.child[0]
 
     def on_start(*_):
-        icon.set_label("REC")
-        icon.set_tooltip_text("Recording… Right-click to stop")
+        icon.set_label("󰻂")
+        icon.set_tooltip_text("Recording...\nClick to stop")
         container.set_visible(True)
 
     def on_stop(*_):

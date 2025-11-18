@@ -37,6 +37,7 @@ def record_screen():
         )
     )
 
+
 def stop_recording():
     if recorder.active:
         recorder.stop_recording()

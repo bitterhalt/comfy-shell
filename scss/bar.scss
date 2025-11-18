@@ -39,15 +39,6 @@
   border-radius: 6px;
 }
 
-/* GTK CSS, not SCSS */
-.recording-icon {
-  color: $tx-1;
-  background: $red;
-  padding: 2px 6px;
-  margin: 2px 0px;
-  border-radius: 6px;
-}
-
 /* NOTIFICATION BUTTON  */
 .notification-button {
   all: unset;
@@ -80,8 +71,31 @@
   margin-right: -4px;
 }
 
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.recording-icon {
+  all: unset;
+  padding: 2px 6px;
+  margin: 2px 0px;
+  border-radius: 6px;
+  color: $red;
+  animation: blink 1s linear infinite;
+}
+
+
 /* RIGHT MODULES */
-.recording-icon,
 .timer-button,
 .clock-button,
 .audio-widget,
