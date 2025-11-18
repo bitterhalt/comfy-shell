@@ -1,36 +1,33 @@
 import os
 
-# Import the script to register commands
 import scripts.recorder
+
+# Load SCSS
 from ignis import utils
 from ignis.command_manager import CommandManager
 from ignis.css_manager import CssInfoPath, CssManager
 
-# Import the main bar creation function
+# Import bar
 from modules.bar.bar import create_bar
 
 # Import launcher
 from modules.launcher.launcher import toggle_launcher
 
-# Import notification center (creates the window as side effect)
-from modules.notifications import notification_center  # noqa: F401
+# Import integrated center (replaces old notification_center)
+from modules.notifications.integrated_center import toggle_integrated_center
 
 # Import notification popup initialization
 from modules.notifications.popup import init_notifications
 
-# # Import task menu
-from modules.tasks.task_menu import toggle_task_menu
-
 css = CssManager.get_default()
 
 
-# Custom compiler function that removes @charset
 def compile_scss(path):
     compiled = utils.sass_compile(path=path)
-    # Remove @charset line that GTK doesn't support
-    lines = compiled.split("\n")
-    filtered_lines = [line for line in lines if not line.strip().startswith("@charset")]
-    return "\n".join(filtered_lines)
+    filtered = [
+        line for line in compiled.split("\n") if not line.startswith("@charset")
+    ]
+    return "\n".join(filtered)
 
 
 css.apply_css(
@@ -41,14 +38,14 @@ css.apply_css(
     )
 )
 
-# Initialize notifications (before bars)
+# Initialize notifications
 init_notifications()
 
-# Initialize the bars for all monitors
+# Initialize bar(s)
 for i in range(utils.get_n_monitors()):
     create_bar(i)
 
-# Register launcher command
+# Register commands
 command_manager = CommandManager.get_default()
 command_manager.add_command("launcher-toggle", toggle_launcher)
-command_manager.add_command("task-menu-toggle", toggle_task_menu)  # <-- A
+command_manager.add_command("center-toggle", toggle_integrated_center)

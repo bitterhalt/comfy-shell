@@ -1,11 +1,10 @@
-@import "scss/colors";   // KEEP AT TOP
+@import "scss/colors";
 
 @import "scss/bar";
 @import "scss/launcher";
-@import "scss/notification_center";
+@import "scss/integrated_center";
 @import "scss/notifications";
 @import "scss/osd";
-@import "scss/task_menu";
 
 body {
   font-family: "Cascadia Code", monospace;

@@ -1,0 +1,379 @@
+/* ═══════════════════════════════════════════════════════════════
+   INTEGRATED NOTIFICATION & TASK CENTER (GNOME-Style)
+   ═══════════════════════════════════════════════════════════════ */
+
+.center-window {
+  background: transparent;
+  border: none;
+}
+
+.center-overlay {
+  all: unset;
+  background: transparent;
+}
+
+/* Container to center the panel */
+.center-container {
+  margin-top: 60px;
+}
+
+.integrated-center {
+  background: $bg-1;
+  border: 1px solid $ui-1;
+  border-radius: 16px;
+  min-width: 28rem;
+  min-height: 32rem;
+  max-height: 38rem;
+  margin: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* ───────────────────────────────────────────────────────────────
+   TAB BAR
+   ─────────────────────────────────────────────────────────────── */
+.tab-bar {
+  background: $bg-1;
+  border-radius: 16px 16px 0 0;
+  border-bottom: 1px solid $ui-1;
+  padding: 6px;
+}
+
+.tab-button {
+  all: unset;
+  padding: 10px 16px;
+  border-radius: 10px;
+  color: $tx-3;
+  transition: background 0.2s, color 0.2s;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.tab-button:hover {
+  background: $ui-2;
+  color: $tx-2;
+}
+
+.tab-button.tab-active {
+  background: $ui-2;
+  color: $tx-1;
+  font-weight: 600;
+}
+
+/* ───────────────────────────────────────────────────────────────
+   HEADER SECTION (REMOVED: Was the redundant "Notifications" title)
+   ─────────────────────────────────────────────────────────────── */
+/*
+.center-header {
+  padding: 12px 24px;
+  border-bottom: 1px solid $ui-1;
+}
+
+.center-title {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: $tx-3;
+}
+*/
+
+/* ───────────────────────────────────────────────────────────────
+   ACTION BUTTON (REMOVED: Was the floating Clear/Add button)
+   ─────────────────────────────────────────────────────────────── */
+/*
+.action-button {
+  all: unset;
+  color: $tx-3;
+  background: transparent;
+  border-radius: 0;
+  padding: 14px 24px;
+  margin: 0;
+  border-bottom: 1px solid $ui-1;
+  transition: background 0.2s, color 0.2s;
+  font-size: 0.95rem;
+}
+
+.action-button:hover {
+  background: $ui-2;
+  color: $tx-2;
+}
+*/
+
+/* ───────────────────────────────────────────────────────────────
+   BOTTOM BAR (GNOME Style)
+   ─────────────────────────────────────────────────────────────── */
+.bottom-bar {
+  padding: 16px 20px;
+  border-top: 1px solid $ui-1;
+  border-radius: 0 0 16px 16px;
+  background: $bg-1;
+}
+
+.bottom-label {
+  color: $tx-1;
+  font-size: 0.95rem;
+  margin-right: 8px; /* Added slight space between label and switch */
+}
+
+/* FIX: Styling the Switch for DND using standard GTK structure */
+.bottom-bar switch {
+  padding: 1px;
+  min-height: 24px;
+  margin: 4px 0px;
+}
+
+.bottom-bar switch trough {
+  /* Trough (track) style */
+  background-color: $ui-2;
+  border-radius: 12px;
+  transition: background-color 0.2s;
+}
+
+.bottom-bar switch slider {
+  /* Slider (thumb) style */
+  background-color: $bg-1;
+  border-radius: 8px;
+  margin: 3px;
+  transition: transform 0.2s;
+}
+
+/* Active State (The Switch is ON) */
+.bottom-bar switch:checked {
+  background-color: $red; /* BACKGROUND COLOR WHEN ACTIVE */
+}
+
+.bottom-clear-btn {
+  all: unset;
+  background: $ui-2; /* Use a distinct color for the primary action button */
+  color: $tx-1;
+  padding: 8px 20px;
+  border-radius: 8px;
+  transition: background 0.15s;
+  font-size: 0.95rem;
+
+  &:hover {
+    background: lighten($ui-2, 10%);
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────
+   CONTENT LISTS
+   ─────────────────────────────────────────────────────────────── */
+.content-list {
+  padding: 12px;
+  max-height: 24rem;
+}
+
+/* Notification items */
+.notif-history-item {
+  background: $bg-2;
+  border: 1px solid $ui-1;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 10px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.notif-history-item:hover {
+  background: $ui-2;
+  border-color: $ui-3;
+}
+
+.notif-history-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $tx-2;
+  margin-bottom: 4px;
+}
+
+.notif-history-body {
+  font-size: 0.9rem;
+  color: $tx-3;
+  line-height: 1.4;
+}
+
+.notif-history-close {
+  all: unset;
+  background: transparent;
+  border-radius: 6px;
+  padding: 6px;
+  min-width: 28px;
+  min-height: 28px;
+  transition: background 0.2s;
+  opacity: 0.6;
+}
+
+.notif-history-close:hover {
+  background: $ui-3;
+  opacity: 1;
+}
+
+/* Task items */
+.task-item {
+  background: $bg-2;
+  border: 1px solid $ui-1;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.task-item:hover {
+  background: $ui-2;
+  border-color: $ui-3;
+}
+
+.task-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $tx-2;
+}
+
+.task-time {
+  font-size: 0.85rem;
+  color: $tx-3;
+  margin-top: 2px;
+}
+
+.task-actions-row {
+  padding-top: 8px;
+  margin-top: 6px;
+  border-top: 1px solid rgba($ui-1, 0.4);
+}
+
+.task-action-btn {
+  all: unset;
+  padding: 6px;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.task-edit:hover { background: $yellow; color: $bg-1; }
+.task-snooze:hover { background: $magenta; color: $bg-1; }
+.task-complete:hover { background: $cyan; color: $bg-1; }
+.task-delete:hover { background: $red; color: $bg-1; }
+
+/* Empty states */
+.empty-state {
+  color: $tx-3;
+  font-size: 1rem;
+  padding: 60px 20px;
+}
+.dialog-overlay {
+  background: $bg-1;
+  border-radius: 16px;
+  margin: 8px;
+  min-width: 28rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.add-task-dialog {
+  padding: 20px 20px 0 20px;
+}
+
+.dialog-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: $tx-2;
+  margin-bottom: 16px;
+}
+
+.task-input {
+  all: unset;
+  background: $bg-2;
+  border: 1px solid $ui-1;
+  border-radius: 8px;
+  padding: 12px;
+  color: $tx-2;
+  font-size: 1rem;
+
+  &:focus {
+    border-color: $cyan;
+  }
+}
+
+.input-label {
+  color: $tx-2;
+  font-size: 0.95rem;
+  min-width: 50px;
+}
+
+.date-btn {
+  all: unset;
+  background: $ui-2;
+  color: $tx-2;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: background 0.15s;
+
+  &:hover {
+    background: $ui-3;
+  }
+}
+
+.dialog-footer {
+  margin-top: 20px;
+  padding: 14px 20px;
+  background: $bg-1;
+  border-top: 1px solid $ui-1;
+  border-radius: 0 0 16px 16px;
+}
+
+.dialog-btn {
+  all: unset;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: background 0.15s;
+}
+
+.cancel-btn {
+  background: $ui-2;
+  color: $tx-2;
+
+  &:hover {
+    background: $ui-3;
+  }
+}
+
+.add-btn {
+  background: $cyan;
+  color: $bg-1;
+
+  &:hover {
+    background: lighten($cyan, 10%);
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────
+   POWER MENU
+   ─────────────────────────────────────────────────────────────── */
+.power-menu {
+  padding: 16px;
+  border-top: 1px solid $ui-1;
+  border-radius: 0 0 16px 16px;
+  background: $bg-1;
+}
+
+.power-button {
+  all: unset;
+  color: $tx-1;
+  background: $bg-2;
+  border: 1px solid $ui-1;
+  border-radius: 10px;
+  padding: 14px 12px;
+  transition: background 0.2s, border-color 0.2s, transform 0.1s;
+}
+
+.power-button:hover {
+  background: $ui-2;
+  border-color: $cyan;
+  transform: scale(1.05);
+}
+
+.power-button:active {
+  transform: scale(0.98);
+}

@@ -1,7 +1,7 @@
 from ignis import widgets
 from ignis.options import options
 from ignis.services.notifications import NotificationService
-from modules.notifications.notification_center import toggle_notification_center
+from modules.notifications.integrated_center import toggle_integrated_center
 
 notifications = NotificationService.get_default()
 
@@ -41,10 +41,10 @@ def notification_button():
                 else ["notification-button"]
             ),
         ),
-        on_click=lambda *_: toggle_notification_center(),
+        on_click=lambda *_: toggle_integrated_center(),
         on_right_click=lambda *_: options.notifications.set_dnd(
             not options.notifications.dnd
-        ),  # <-- Added right-click!
+        ),
         tooltip_text=notifications.bind(
             "notifications",
             lambda notifs: f"{len(notifs)} notification(s)"
