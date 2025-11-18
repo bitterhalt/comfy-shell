@@ -456,14 +456,6 @@ class IntegratedCenter(widgets.Window):
             child=[self._notif_tab, self._task_tab],
         )
 
-        # Header (REMOVED: Eliminates the redundant "Notifications" title)
-        # self._header_label = widgets.Label(...)
-        # header = widgets.Box(...)
-
-        # Clear/Add button (REMOVED: Consolidating action to bottom bar)
-        # self._action_button = widgets.Button(...)
-
-        # Content areas
         self._notif_list = widgets.Box(vertical=True, css_classes=["content-list"])
         self._task_list = widgets.Box(vertical=True, css_classes=["content-list"])
 

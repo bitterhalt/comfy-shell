@@ -1,3 +1,7 @@
+/* ═══════════════════════════════════════════════════════════════
+   VOL OSD
+   ═══════════════════════════════════════════════════════════════ */
+
 .osd-window {
   margin-top: 40px;
 }
@@ -36,4 +40,65 @@
   margin: 0;
   padding: 0;
   background: transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WORKSPACE OSD
+   ═══════════════════════════════════════════════════════════════ */
+
+.workspace-osd-window {
+  font-family:
+   Cascadia Code,
+   Symbols Nerd Font Mono;
+  background: transparent;
+  border: none;
+  margin-top: 20px;
+}
+
+.workspace-osd {
+  background: rgba(0, 0, 0, 0.85);
+  border: none;
+  border-radius: 12px;
+  padding: 16px 24px;
+}
+
+.workspace-osd-icon {
+  font-size: 1.5rem;
+  color: $cyan;
+}
+
+.workspace-osd-label {
+  font-weight: 600;
+  color: $tx-2;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SUBMAP OSD (FIXED)
+   ═══════════════════════════════════════════════════════════════ */
+
+.submap-osd-window {
+  font-family:
+    Cascadia Code,
+    Symbols Nerd Font Mono;
+  background: transparent;
+  border: none;
+  margin-top: 20px;
+}
+
+.submap-osd {
+  background: rgba(0, 0, 0, 0.85);
+  border-radius: 12px;
+  padding: 18px 28px;
+}
+
+.submap-osd-icon {
+  font-size: 1.8rem;
+  color: $magenta;
+}
+
+.submap-osd-label {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: $tx-2;
+  letter-spacing: 0.05em;
 }

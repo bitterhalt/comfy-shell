@@ -54,13 +54,16 @@
   }
 }
 .recording-icon {
+  all: unset;
+  padding: 2px 6px;
+  margin: 2px 0px;
+  border-radius: 6px;
   color: $red;
   animation: blink 2s infinite;
 }
 
 
 /* RIGHT MODULES */
-.recording-icon,
 .timer-button,
 .clock-button,
 .audio-widget,
@@ -73,7 +76,6 @@
 }
 
 // Hover effect for all clickable icons/buttons
-.recording-icon:hover,
 .ws-btn:hover,
 .clock:hover,
 .audio-widget:hover,
@@ -83,7 +85,6 @@
   background: $hover-bg;
   color: $tx-2;
 }
-
 
 
 // TOOLTIP
