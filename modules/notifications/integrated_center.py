@@ -55,21 +55,6 @@ def format_time_until(fire_at):
 
 
 # ═══════════════════════════════════════════════════════════════
-# POWER MENU BUTTONS
-# ═══════════════════════════════════════════════════════════════
-
-
-class PowerButton(widgets.Button):
-    def __init__(self, icon: str, tooltip: str, command: str):
-        super().__init__(
-            child=widgets.Icon(image=icon, pixel_size=24),
-            css_classes=["power-button"],
-            tooltip_text=tooltip,
-            on_click=lambda x: exec_async(command),
-        )
-
-
-# ═══════════════════════════════════════════════════════════════
 # NOTIFICATION COMPONENTS
 # ═══════════════════════════════════════════════════════════════
 
