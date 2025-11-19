@@ -7,8 +7,8 @@
 }
 
 .osd-container {
-  background: rgba(0,0,0,0.85);
-  padding: 14px 20px;
+  background: $osd-bg;
+  padding: 10px 20px;
   border-radius: 8px;
   min-width: 260px;
 }
@@ -27,7 +27,7 @@
 
 /* Volume fill (foreground) */
 .osd-track trough highlight {
-  background: $tx-2;
+  background: $cyan;
   border-radius: 8px;
   min-height: 12px;
 }
@@ -56,7 +56,7 @@
 }
 
 .workspace-osd {
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.90);
   border: none;
   border-radius: 8px;
   padding: 16px 24px;
@@ -86,10 +86,9 @@
 }
 
 .submap-osd {
-  background: $bg-1;
   border-radius: 8px;
-  border: 2px solid $cyan;
-
+  border: none;
+  background: $osd-bg;
   padding: 18px 28px;
 }
 

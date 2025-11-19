@@ -489,9 +489,7 @@ class IntegratedCenter(widgets.Window):
                 ),
             ],
         )
-        dnd_box.hexpand = (
-            True  # FIX: Pushes the next element (action button) to the right
-        )
+        dnd_box.hexpand = True
         dnd_box.halign = "start"
 
         self._bottom_action_button = widgets.Button(
@@ -509,7 +507,6 @@ class IntegratedCenter(widgets.Window):
         self._main_content = widgets.Box(
             vertical=True,
             css_classes=["integrated-center"],
-            # Removed 'header'
             child=[tab_bar, self._scroll, bottom_bar],
         )
 
@@ -546,6 +543,7 @@ class IntegratedCenter(widgets.Window):
             anchor=["top", "bottom", "left", "right"],
             namespace="ignis_INTEGRATED_CENTER",
             layer="top",
+            popup=True,
             css_classes=["center-window"],
             child=widgets.Overlay(
                 child=overlay_button,
@@ -574,13 +572,11 @@ class IntegratedCenter(widgets.Window):
         if tab == "notif":
             self._notif_tab.add_css_class("tab-active")
             self._task_tab.remove_css_class("tab-active")
-            # REMOVED: self._header_label.set_label("Notifications")
             self._scroll.child = self._notif_content
             self._bottom_action_button.child.set_label("Clear")
         else:
             self._task_tab.add_css_class("tab-active")
             self._notif_tab.remove_css_class("tab-active")
-            # REMOVED: self._header_label.set_label("Tasks & Timers")
             self._scroll.child = self._task_content
             self._bottom_action_button.child.set_label("Add Task")
             self._reload_tasks()
@@ -591,8 +587,6 @@ class IntegratedCenter(widgets.Window):
             notifications.clear_all()
         else:
             self._show_add_dialog()
-
-    # REMOVED: def _handle_action(self): as it's no longer used
 
     # ─── Notification Methods ───
     def _load_notifications(self):
@@ -704,4 +698,17 @@ integrated_center = IntegratedCenter()
 
 
 def toggle_integrated_center():
+    """Toggle integrated center visibility"""
     integrated_center.visible = not integrated_center.visible
+
+
+def open_notifications():
+    """Open integrated center and focus on notifications tab"""
+    integrated_center._switch_tab("notif")
+    integrated_center.visible = True
+
+
+def open_tasks():
+    """Open integrated center and focus on tasks tab"""
+    integrated_center._switch_tab("task")
+    integrated_center.visible = True

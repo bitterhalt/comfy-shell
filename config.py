@@ -16,10 +16,17 @@ from modules.bar.bar_toggle import register_bar, toggle_bars
 from modules.launcher.launcher import toggle_launcher
 
 # Import integrated center
-from modules.notifications.integrated_center import toggle_integrated_center
+from modules.notifications.integrated_center import (
+    open_notifications,
+    open_tasks,
+    toggle_integrated_center,
+)
 
 # Import notification popup initialization
 from modules.notifications.popup import init_notifications
+
+# Import task popup initialization
+from modules.notifications.task_popup import init_task_popup
 
 # Import submap OSD
 from modules.osd.submap_osd import init_submap_osd
@@ -50,6 +57,9 @@ css.apply_css(
 # Initialize notifications (before bars)
 init_notifications()
 
+# Initialize task popup
+init_task_popup()
+
 # Initialize workspace OSD
 init_workspace_osd()
 
@@ -66,3 +76,5 @@ command_manager = CommandManager.get_default()
 command_manager.add_command("launcher-toggle", toggle_launcher)
 command_manager.add_command("bar-toggle", toggle_bars)
 command_manager.add_command("center-toggle", toggle_integrated_center)
+command_manager.add_command("notifications-open", open_notifications)
+command_manager.add_command("tasks-open", open_tasks)
