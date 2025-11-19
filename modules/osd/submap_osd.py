@@ -4,7 +4,7 @@ Displays current submap (resize, move, etc.) with auto-dismiss
 """
 
 import asyncio
-import os  # Necessary for environment and socket path lookups
+import os
 
 from ignis import widgets
 from ignis.services.hyprland import HyprlandService
@@ -23,9 +23,10 @@ class SubmapOSD(widgets.Window):
             css_classes=["submap-osd-label"],
         )
 
-        # Icon
-        self._icon = widgets.Label(
-            label="",  # Keyboard icon
+        # Icon - CHANGED TO widgets.Icon
+        self._icon = widgets.Icon(
+            image="",
+            pixel_size=24,  # Set a size for the symbolic icon
             css_classes=["submap-osd-icon"],
         )
 
@@ -106,8 +107,9 @@ class SubmapOSD(widgets.Window):
             return
 
         # Update icon based on submap
-        icon = self._get_icon_for_submap(submap)
-        self._icon.set_label(icon)
+        icon_name = self._get_icon_for_submap(submap)
+        # CHANGED: Use set_from_icon_name for widgets.Icon
+        self._icon.set_from_icon_name(icon_name)
 
         # Update label
         self._label.set_label(submap.upper())
@@ -119,14 +121,14 @@ class SubmapOSD(widgets.Window):
         """Get appropriate icon for submap"""
         submap_lower = submap.lower()
 
-        # Common submap icons (Using FontAwesome examples)
+        # Common submap icons (Using standard symbolic icons)
         icons = {
-            "resize": "",
-            "move": "",
-            "gaps": "",
-            "float": "",
-            "special": "",
-            "window": "",
+            "resize": "window-resize-symbolic",
+            "move": "window-move-symbolic",
+            "gaps": "view-grid-symbolic",  # Layout/tiling representation
+            "float": "window-restore-symbolic",
+            "special": "view-grid-symbolic",
+            "window": "window-new-symbolic",
         }
 
         # Check if submap contains any keyword
@@ -135,7 +137,7 @@ class SubmapOSD(widgets.Window):
                 return icon
 
         # Default keyboard icon
-        return ""
+        return "input-keyboard-symbolic"
 
 
 def init_submap_osd():
@@ -152,7 +154,8 @@ def show_submap_osd(message: str):
     """
     if _osd_window:
         _osd_window._label.set_label(message.upper())
-        _osd_window._icon.set_label("")  # Use default icon
+        # CHANGED: Use set_from_icon_name for widgets.Icon
+        _osd_window._icon.set_from_icon_name("input-keyboard-symbolic")
         _osd_window.visible = True
 
 

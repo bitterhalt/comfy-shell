@@ -24,9 +24,10 @@ class WorkspaceOSD(widgets.Window):
             css_classes=["workspace-osd-label"],
         )
 
-        # Icon
-        icon = widgets.Label(
-            label="",  # Nerd Font workspace icon
+        # Icon - CHANGED TO widgets.Icon
+        icon = widgets.Icon(
+            image="workspaces-symbolic",  # Using a standard symbolic icon
+            pixel_size=24,  # Set a size for the symbolic icon
             css_classes=["workspace-osd-icon"],
         )
 

@@ -2,6 +2,7 @@ import asyncio
 import re
 
 from gi.repository import Gio
+
 from ignis import utils, widgets
 from ignis.menu_model import IgnisMenuItem, IgnisMenuModel, IgnisMenuSeparator
 from ignis.services.applications import (

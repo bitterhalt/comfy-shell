@@ -9,7 +9,7 @@
 .osd-container {
   background: rgba(0,0,0,0.85);
   padding: 14px 20px;
-  border-radius: 16px;
+  border-radius: 8px;
   min-width: 260px;
 }
 
@@ -20,7 +20,7 @@
 /* Volume track (background) */
 .osd-track trough {
   background: $ui-2;
-  border-radius: 6px;
+  border-radius: 8px;
   min-height: 12px;
   min-width: 200px;
 }
@@ -28,7 +28,7 @@
 /* Volume fill (foreground) */
 .osd-track trough highlight {
   background: $tx-2;
-  border-radius: 6px;
+  border-radius: 8px;
   min-height: 12px;
 }
 
@@ -58,7 +58,7 @@
 .workspace-osd {
   background: rgba(0, 0, 0, 0.85);
   border: none;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 16px 24px;
 }
 
@@ -87,18 +87,20 @@
 
 .submap-osd {
   background: $bg-1;
-  border-radius: 12px;
+  border-radius: 8px;
+  border: 2px solid $cyan;
+
   padding: 18px 28px;
 }
 
 .submap-osd-icon {
   font-size: 1.8rem;
-  color: $magenta;
+  color: $cyan;
 }
 
 .submap-osd-label {
   font-size: 1.2rem;
   font-weight: 700;
-  color: $tx-2;
+  color: $tx-1;
   letter-spacing: 0.05em;
 }
