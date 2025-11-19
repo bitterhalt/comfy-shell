@@ -1,6 +1,5 @@
 """
-Submap OSD - Shows Hyprland submap changes
-Displays current submap (resize, move, etc.) with auto-dismiss
+Submap OSD - Pure asyncio Hyprland event listener using .socket2.sock
 """
 
 import asyncio
@@ -10,27 +9,27 @@ from ignis import widgets
 from ignis.services.hyprland import HyprlandService
 
 hypr = HyprlandService.get_default()
-
 _osd_window = None
+
+EVENT_SOCKET_NAME = ".socket2.sock"
 
 
 class SubmapOSD(widgets.Window):
-    """Minimal submap indicator OSD"""
+    """Minimal submap indicator OSD using Hyprland event IPC"""
 
     def __init__(self):
-        # Submap label
-        self._label = widgets.Label(
-            css_classes=["submap-osd-label"],
-        )
+        self._reader = None
+        self._writer = None
+        self._listen_task = None
 
-        # Icon - CHANGED TO widgets.Icon
+        # UI
+        self._label = widgets.Label(css_classes=["submap-osd-label"])
         self._icon = widgets.Icon(
-            image="",
-            pixel_size=24,  # Set a size for the symbolic icon
+            image="input-keyboard-symbolic",
+            pixel_size=24,
             css_classes=["submap-osd-icon"],
         )
 
-        # Container
         content = widgets.Box(
             css_classes=["submap-osd"],
             spacing=12,
@@ -46,120 +45,96 @@ class SubmapOSD(widgets.Window):
             child=content,
         )
 
-        # Start listening to Hyprland events
         if hypr.is_available:
-            self._start_listener()
+            self._start_async_listener()
 
-    def _start_listener(self):
-        """Start listening to Hyprland socket for submap events"""
+    def _start_async_listener(self):
+        if self._listen_task is None:
+            self._listen_task = asyncio.create_task(self._event_loop())
 
-        async def listen():
+    async def _connect_socket(self):
+        """Connect to Hyprland .socket2.sock using pure asyncio."""
+        try:
+            runtime = os.getenv("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
+            instance = os.getenv("HYPRLAND_INSTANCE_SIGNATURE")
+
+            if not instance:
+                print("Submap OSD: HYPRLAND_INSTANCE_SIGNATURE not found")
+                return False
+
+            socket_path = f"{runtime}/hypr/{instance}/{EVENT_SOCKET_NAME}"
+
+            if not os.path.exists(socket_path):
+                print(f"Submap OSD: Event socket missing at {socket_path}")
+                return False
+
+            self._reader, self._writer = await asyncio.open_unix_connection(socket_path)
+            print("Submap OSD: Connected to Hyprland (.socket2.sock)")
+            return True
+
+        except Exception as e:
+            print(f"Submap OSD: Connection error: {e}")
+            return False
+
+    async def _event_loop(self):
+        """Main loop: connect → read → reconnect on failure."""
+        while True:
+            connected = await self._connect_socket()
+            if not connected:
+                await asyncio.sleep(1)
+                continue
+
             try:
-                # Get Hyprland socket path from environment
-                runtime_dir = os.getenv("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
-                hypr_instance = os.getenv("HYPRLAND_INSTANCE_SIGNATURE")
-
-                if not hypr_instance:
-                    print("Submap OSD: HYPRLAND_INSTANCE_SIGNATURE not found")
-                    return
-
-                # Using the command socket (.socket2.sock) for asynchronous events
-                socket_path = f"{runtime_dir}/hypr/{hypr_instance}/.socket2.sock"
-
-                # Check if socket exists
-                if not os.path.exists(socket_path):
-                    print(f"Submap OSD: Socket not found at {socket_path}")
-                    return
-
-                # Listen for events using socat
-                proc = await asyncio.create_subprocess_exec(
-                    "socat",
-                    "-U",
-                    "-",
-                    f"UNIX-CONNECT:{socket_path}",
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
-                )
-
                 while True:
-                    line = await proc.stdout.readline()
+                    line = await self._reader.readline()
                     if not line:
-                        break
+                        raise ConnectionError("EOF on socket")
 
                     line = line.decode().strip()
 
-                    # Check for submap event
                     if line.startswith("submap>>"):
-                        submap = line.split(">>", 1)[1] if ">>" in line else ""
+                        submap = line.split(">>", 1)[1]
                         self._on_submap_change(submap)
 
             except Exception as e:
-                print(f"Submap listener error: {e}")
+                print(f"Submap OSD: Event loop error: {e}")
 
-        # Start listener task
-        asyncio.create_task(listen())
+            await self._cleanup_socket()
+            await asyncio.sleep(1)
+
+    async def _cleanup_socket(self):
+        try:
+            if self._writer:
+                self._writer.close()
+                await self._writer.wait_closed()
+        except Exception:
+            pass
+        self._reader = None
+        self._writer = None
 
     def _on_submap_change(self, submap: str):
-        """Handle submap change"""
-        # Hide if default or empty
         if not submap or submap == "default":
             self.visible = False
             return
 
-        # Update icon based on submap
-        icon_name = self._get_icon_for_submap(submap)
-        # CHANGED: Use set_from_icon_name for widgets.Icon
-        self._icon.set_from_icon_name(icon_name)
-
-        # Update label
+        self._icon.set_from_icon_name("input-keyboard-symbolic")
         self._label.set_label(submap.upper())
-
-        # Show OSD (stays visible until submap exits)
         self.visible = True
-
-    def _get_icon_for_submap(self, submap: str) -> str:
-        """Get appropriate icon for submap"""
-        submap_lower = submap.lower()
-
-        # Common submap icons (Using standard symbolic icons)
-        icons = {
-            "resize": "window-resize-symbolic",
-            "move": "window-move-symbolic",
-            "gaps": "view-grid-symbolic",  # Layout/tiling representation
-            "float": "window-restore-symbolic",
-            "special": "view-grid-symbolic",
-            "window": "window-new-symbolic",
-        }
-
-        # Check if submap contains any keyword
-        for keyword, icon in icons.items():
-            if keyword in submap_lower:
-                return icon
-
-        # Default keyboard icon
-        return "input-keyboard-symbolic"
 
 
 def init_submap_osd():
-    """Initialize submap OSD (call once at startup)"""
     global _osd_window
     if _osd_window is None and hypr.is_available:
         _osd_window = SubmapOSD()
 
 
 def show_submap_osd(message: str):
-    """
-    Manually show submap OSD with custom message
-    Useful for testing or custom submaps
-    """
     if _osd_window:
         _osd_window._label.set_label(message.upper())
-        # CHANGED: Use set_from_icon_name for widgets.Icon
         _osd_window._icon.set_from_icon_name("input-keyboard-symbolic")
         _osd_window.visible = True
 
 
 def hide_submap_osd():
-    """Manually hide submap OSD"""
     if _osd_window:
         _osd_window.visible = False

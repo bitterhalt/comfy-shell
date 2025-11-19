@@ -29,7 +29,7 @@ class NotificationWidget(widgets.Box):
             ),
             pixel_size=48,
             halign="start",
-            valign="start",
+            valign="center",
         )
 
         # Summary and body labels with urgency-specific classes

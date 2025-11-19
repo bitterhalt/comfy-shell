@@ -19,14 +19,12 @@
 /* Low urgency */
 .notif-low {
   background: $bg-1;
-  border: 1px solid $ui-1;
   border-radius: 8px;
   padding: 15px;
   color: $tx-1;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
   min-width: 25rem;
   margin: 0.5rem;
-  opacity: 0.8;
 }
 
 /* Critical urgency  */
@@ -55,13 +53,11 @@
 
 /* Notification body */
 .notif-body {
-  font-size: 0.95rem;
   color: $tx-3;
   margin-top: 4px;
 }
 
 .notif-body-critical {
-  font-size: 0.95rem;
   color: $yellow;
   margin-top: 4px;
 }
