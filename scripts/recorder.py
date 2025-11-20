@@ -119,14 +119,33 @@ async def _monitor_region_recording(process):
     global _region_recording_process, _region_recording_file
 
     try:
-        await process.wait()
-        print(f"Region recording stopped. Saved to: {_region_recording_file}")
+        returncode = await process.wait()
+        if returncode == 0:
+            print(f"Region recording saved: {_region_recording_file}")
+        elif returncode < 0:
+            print(f"Region recording stopped (signal {-returncode})")
+        else:
+            print(f"Region recording failed with code {returncode}")
+    except asyncio.CancelledError:
+        # Clean shutdown requested
+        print("Region recording monitoring cancelled")
+        try:
+            if process.returncode is None:
+                process.kill()
+                await process.wait()
+        except Exception:
+            pass
     except Exception as e:
         print(f"Region recording monitoring error: {e}")
+        # Try to kill process if it's still running
+        try:
+            if process.returncode is None:
+                process.kill()
+        except Exception:
+            pass
     finally:
         _region_recording_process = None
         _region_recording_file = None
-        # Emit recording stopped signal to update UI
         recorder.emit("recording_stopped")
 
 

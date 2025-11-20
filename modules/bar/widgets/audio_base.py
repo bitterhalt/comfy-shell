@@ -1,3 +1,5 @@
+import time
+
 from ignis import widgets
 from ignis.services.audio import AudioService
 
@@ -33,7 +35,7 @@ class AudioWidgetBase:
         self.hide_when_muted = hide_when_muted
         self.pixel_size = pixel_size
 
-        self._first_event_seen = False
+        self._startup_time = time.time()  # Track startup time
         self._build_widget()
         self._connect_signals()
         self._update_icon_and_tooltip()
@@ -77,9 +79,8 @@ class AudioWidgetBase:
         raw = self.device.volume or 0
         percent = int(max(0, min(raw, 100)))
 
-        # Ignore first startup sync event
-        if not self._first_event_seen:
-            self._first_event_seen = True
+        # Ignore events within first 500ms of startup
+        if time.time() - self._startup_time < 0.5:
             self._update_icon_and_tooltip()
             return
 

@@ -12,13 +12,18 @@ def exec_async(cmd: str):
 
 # --- NEW GLOBAL STATE ---
 _is_startup_done = False
+_startup_task = None
 
 
 async def _set_startup_done():
     """Wait briefly (500ms) then enable OSD updates."""
     global _is_startup_done
-    await asyncio.sleep(0.5)
-    _is_startup_done = True
+    try:
+        await asyncio.sleep(0.5)
+        _is_startup_done = True
+    except asyncio.CancelledError:
+        # Clean shutdown
+        pass
 
 
 def _show_volume_osd_safe(percent):
@@ -32,8 +37,11 @@ def _show_volume_osd_safe(percent):
 
 
 def volume_widget():
+    global _startup_task
+
     # Start the non-blocking timer as soon as the widget is created
-    asyncio.create_task(_set_startup_done())
+    if _startup_task is None:
+        _startup_task = asyncio.create_task(_set_startup_done())
 
     return AudioWidgetBase(
         device_getter=lambda audio: audio.speaker,

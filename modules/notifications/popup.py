@@ -29,7 +29,7 @@ class NotificationWidget(widgets.Box):
             ),
             pixel_size=48,
             halign="start",
-            valign="center",
+            valign="start",
         )
 
         # Summary and body labels with urgency-specific classes
@@ -142,10 +142,12 @@ class NotificationPopup(widgets.Window):
 
     def _on_new_popup(self, service, notification):
         """Add new notification popup"""
-        self.visible = True
-
         popup = Popup(notification)
         self._notif_box.prepend(popup)
+
+        # Show window only if we have actual content
+        if not self.visible:
+            self.visible = True
 
         # Reveal after adding to DOM
         utils.Timeout(10, popup.set_reveal_child, True)
@@ -156,10 +158,18 @@ class NotificationPopup(widgets.Window):
 
     def _check_if_empty(self):
         """Hide window if no popups remain"""
-        utils.Timeout(350, lambda: self._do_check())
+        # Use longer delay to account for animation + any stragglers
+        utils.Timeout(400, self._do_check)
 
     def _do_check(self):
-        if len(self._notif_box.child) == 0:
+        """Actually check and hide window if empty"""
+        # Count children that are actually visible and mapped
+        visible_children = [
+            c for c in self._notif_box.child if c.get_visible() and c.get_mapped()
+        ]
+
+        # Only hide if truly empty
+        if len(visible_children) == 0:
             self.visible = False
 
 

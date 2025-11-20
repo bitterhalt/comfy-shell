@@ -24,10 +24,10 @@ class WorkspaceOSD(widgets.Window):
             css_classes=["workspace-osd-label"],
         )
 
-        # Icon - CHANGED TO widgets.Icon
+        # Icon - Using standard icon that exists everywhere
         icon = widgets.Icon(
-            image="workspaces-symbolic",  # Using a standard symbolic icon
-            pixel_size=24,  # Set a size for the symbolic icon
+            image="view-grid-symbolic",  # Changed from "workspaces-symbolic"
+            pixel_size=30,
             css_classes=["workspace-osd-icon"],
         )
 

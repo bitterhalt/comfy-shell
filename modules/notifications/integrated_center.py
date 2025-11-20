@@ -1,7 +1,9 @@
 # modules/notifications/integrated_center.py
 
+import fcntl
 import json
 import time
+from contextlib import contextmanager
 from pathlib import Path
 
 from ignis import utils, widgets
@@ -20,24 +22,45 @@ MAX_NOTIFICATIONS = 10
 
 
 # ═══════════════════════════════════════════════════════════════
-# TASK STORAGE
+# TASK STORAGE WITH FILE LOCKING
 # ═══════════════════════════════════════════════════════════════
 
 
+@contextmanager
+def _locked_queue_file(mode="r"):
+    """Thread-safe file locking for queue operations"""
+    QUEUE_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+    # Ensure file exists
+    if not QUEUE_FILE.exists():
+        QUEUE_FILE.write_text("[]")
+
+    with open(QUEUE_FILE, mode) as f:
+        try:
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+            yield f
+        finally:
+            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+
+
 def load_tasks():
+    """Load tasks with file locking"""
     try:
-        if not QUEUE_FILE.exists():
-            return []
-        with QUEUE_FILE.open("r", encoding="utf-8") as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
+        with _locked_queue_file("r") as f:
+            content = f.read()
+            return json.loads(content) if content.strip() else []
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Error loading tasks: {e}")
         return []
 
 
 def save_tasks(tasks):
-    QUEUE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with QUEUE_FILE.open("w", encoding="utf-8") as f:
-        json.dump(tasks, f, indent=2)
+    """Save tasks with file locking"""
+    try:
+        with _locked_queue_file("w") as f:
+            json.dump(tasks, f, indent=2)
+    except Exception as e:
+        print(f"Error saving tasks: {e}")
 
 
 # ═══════════════════════════════════════════════════════════════

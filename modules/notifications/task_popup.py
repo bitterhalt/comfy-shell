@@ -3,30 +3,16 @@ Task Notification Popup - Shows when a task/timer fires
 Appears in top-right corner with snooze and complete actions
 """
 
-import json
 import time
 from datetime import datetime
 from pathlib import Path
 
-from ignis import utils, widgets
+from ignis import widgets
+
+# Import locking functions from integrated_center
+from modules.notifications.integrated_center import load_tasks, save_tasks
 
 QUEUE_FILE = Path("~/.local/share/timers/queue.json").expanduser()
-
-
-def load_tasks():
-    try:
-        if not QUEUE_FILE.exists():
-            return []
-        with QUEUE_FILE.open("r", encoding="utf-8") as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
-
-
-def save_tasks(tasks):
-    QUEUE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with QUEUE_FILE.open("w", encoding="utf-8") as f:
-        json.dump(tasks, f, indent=2)
 
 
 class TaskPopup(widgets.Revealer):
@@ -143,7 +129,7 @@ class TaskPopup(widgets.Revealer):
         now = int(time.time())
         new_fire_at = now + (minutes * 60)
 
-        # Update task in queue
+        # Update task in queue (now uses file locking)
         tasks = load_tasks()
         updated = False
         for i, t in enumerate(tasks):
@@ -159,7 +145,7 @@ class TaskPopup(widgets.Revealer):
         self._dismiss()
 
     def _complete(self):
-        """Mark task as complete and remove it"""
+        """Mark task as complete and remove it (now uses file locking)"""
         tasks = load_tasks()
         tasks = [t for t in tasks if t != self._task]
         save_tasks(tasks)
@@ -169,6 +155,8 @@ class TaskPopup(widgets.Revealer):
     def _dismiss(self):
         """Dismiss the popup"""
         self.reveal_child = False
+        from ignis import utils
+
         utils.Timeout(self.transition_duration, self._cleanup)
 
     def _cleanup(self):
@@ -199,6 +187,8 @@ class TaskPopupWindow(widgets.Window):
 
         # Start checking for due tasks
         self._check_tasks()
+        from ignis import utils
+
         utils.Poll(30000, self._check_tasks)  # Check every 30 seconds
 
     def _check_tasks(self, *args):
@@ -231,10 +221,14 @@ class TaskPopupWindow(widgets.Window):
         self._popup_box.prepend(popup)
 
         # Reveal after adding to DOM
+        from ignis import utils
+
         utils.Timeout(10, popup.set_reveal_child, True)
 
     def _check_if_empty(self):
         """Hide window if no popups remain"""
+        from ignis import utils
+
         utils.Timeout(350, self._do_check)
 
     def _do_check(self):
@@ -249,7 +243,6 @@ _task_popup_window = None
 def init_task_popup():
     """Initialize task popup window (call once at startup)"""
     global _task_popup_window
-    from ignis import utils
 
     if _task_popup_window is None:
         # Create for primary monitor (monitor 0)
