@@ -131,7 +131,7 @@ class NotificationPopup(widgets.Window):
             anchor=["right", "top"],
             monitor=monitor,
             namespace=f"ignis_NOTIFICATION_POPUP_{monitor}",
-            layer="top",
+            layer="overlay",
             child=self._notif_box,
             visible=False,
             css_classes=["notification-window"],
