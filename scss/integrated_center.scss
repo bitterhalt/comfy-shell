@@ -23,8 +23,8 @@
   border-radius: 16px;
   min-width: 28rem;
   min-height: 32rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
   margin: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 /* ───────────────────────────────────────────────────────────────
@@ -71,7 +71,7 @@
 .bottom-label {
   color: $tx-1;
   font-size: 0.95rem;
-  margin-right: 8px; /* Added slight space between label and switch */
+  margin-right: 8px;
 }
 
 /* FIX: Styling the Switch for DND using standard GTK structure */
@@ -103,7 +103,7 @@
 
 .bottom-clear-btn {
   all: unset;
-  background: $ui-2; /* Use a distinct color for the primary action button */
+  background: $ui-2;
   color: $tx-1;
   padding: 8px 20px;
   border-radius: 8px;
@@ -222,6 +222,10 @@
   font-size: 1rem;
   padding: 60px 20px;
 }
+
+/* ───────────────────────────────────────────────────────────────
+   DIALOGS
+   ─────────────────────────────────────────────────────────────── */
 .dialog-overlay {
   background: $bg-1;
   border-radius: 16px;
