@@ -227,7 +227,6 @@
   border-radius: 16px;
   margin: 8px;
   min-width: 28rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 .add-task-dialog {
@@ -292,6 +291,7 @@
 
 .cancel-btn {
   background: $ui-2;
+  margin: 0px 4px;
   color: $tx-2;
 
   &:hover {
@@ -301,6 +301,7 @@
 
 .add-btn {
   background: $cyan;
+  margin: 0px 4px;
   color: $bg-1;
 
   &:hover {
