@@ -100,4 +100,16 @@
   color: $tx-1;
 }
 
+/* ───────────────────────────────────────────────
+   MOON ICON (Top-Right Accent)
+   ─────────────────────────────────────────────── */
+
+.weather-moon-icon {
+  opacity: 0.8;
+  margin-left: 12px;
+  margin-right: 4px;
+
+  /* keep sharp edges in dark themes */
+  filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
+}
 

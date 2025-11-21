@@ -1,6 +1,5 @@
 import os
 
-# Import the script to register commands
 from ignis import utils
 from ignis.command_manager import CommandManager
 from ignis.css_manager import CssInfoPath, CssManager
