@@ -8,7 +8,10 @@ from typing import Any, Dict, List, Optional
 
 from ignis import utils, widgets
 
+# ───────────────────────────────────────────────
 # CONFIG
+# ───────────────────────────────────────────────
+
 DEFAULT_CITY_ID = "643492"
 API_KEY_ENV = "OPEN_WEATHER_APIKEY"
 
@@ -17,6 +20,9 @@ CACHE_TTL = 600  # seconds
 
 # Time format: default 24h, enable 12h via env
 USE_12H = os.getenv("IGNIS_WEATHER_12H", "").lower() in ("1", "true", "yes", "on")
+
+# Base path for your custom SVG icons
+ICON_BASE = os.path.expanduser("~/.config/ignis/assets/icons/weather")
 
 
 # ───────────────────────────────────────────────
@@ -52,41 +58,75 @@ def _save_cache(data: Dict[str, Any]) -> None:
 def _format_hour(dt: datetime) -> str:
     if USE_12H:
         return dt.strftime("%-I %p").lstrip("0")  # 12h
-    return dt.strftime("%H")  # force 24h
+    return dt.strftime("%H")  # 24h hour
 
 
 def _format_time_hm(dt: datetime) -> str:
     if USE_12H:
         return dt.strftime("%-I:%M %p").lstrip("0")
-    return dt.strftime("%H:%M")  # force 24h
+    return dt.strftime("%H:%M")  # 24h time
 
 
 # ───────────────────────────────────────────────
-# WEATHER ICON MAPPING
+# ICON HELPERS (custom SVGs)
 # ───────────────────────────────────────────────
+
+
+def _icon_path(name: str) -> str:
+    """Return absolute path to a custom SVG icon."""
+    return os.path.join(ICON_BASE, f"{name}.svg")
 
 
 def _map_icon(code: str) -> str:
-    """Map OpenWeather icon → GTK symbolic icon name."""
+    """
+    Map OpenWeather icon code → your custom SVG path.
+
+    Example OpenWeather codes:
+      01d, 01n = clear sky
+      02d, 02n = few clouds
+      03d, 03n, 04d, 04n = clouds
+      09x, 10x = rain/drizzle
+      11x = thunderstorm
+      13x = snow
+      50x = mist/fog
+    """
     if not code:
-        return "weather-clouds-symbolic"
+        return _icon_path("not-available")
 
     base = code[:2]
+    is_day = code.endswith("d")
+
     if base == "01":
-        return "weather-clear-symbolic"
+        # clear sky (day/night)
+        return _icon_path("clear-day" if is_day else "clear-night")
     if base == "02":
-        return "weather-few-clouds-symbolic"
+        # few / scattered clouds
+        return _icon_path("partly-cloudy-day" if is_day else "partly-cloudy-night")
     if base in ("03", "04"):
-        return "weather-clouds-symbolic"
-    if base in ("09", "10"):
-        return "weather-showers-symbolic"
+        # broken / overcast clouds
+        return _icon_path("cloudy")
+    if base == "09":
+        # shower rain
+        return _icon_path("drizzle")
+    if base == "10":
+        # rain
+        return _icon_path("rain")
     if base == "11":
-        return "weather-storm-symbolic"
+        # thunderstorm
+        return _icon_path("thunderstorms")
     if base == "13":
-        return "weather-snow-symbolic"
+        # snow
+        return _icon_path("snow")
     if base == "50":
-        return "weather-fog-symbolic"
-    return "weather-clouds-symbolic"
+        # mist / fog / haze
+        return _icon_path("fog")
+
+    return _icon_path("not-available")
+
+
+# ───────────────────────────────────────────────
+# OPENWEATHER FETCH
+# ───────────────────────────────────────────────
 
 
 def _build_url(endpoint: str) -> Optional[str]:
@@ -113,48 +153,32 @@ async def _curl_json_async(url: str) -> Optional[Dict[str, Any]]:
         return None
 
 
-# ───────────────────────────────────────────────
-# WARNING HEURISTICS
-# ───────────────────────────────────────────────
-
-
-def _build_warning(
-    temp: int, wind_speed: float, weather_icon_code: str
-) -> Optional[Dict[str, str]]:
-    """Return a simple weather warning or None."""
-    if temp <= -20:
-        return {
-            "icon": "weather-snow-symbolic",
-            "text": "Severe cold – dress warmly.",
-        }
-    if temp >= 30:
-        return {
-            "icon": "weather-clear-symbolic",
-            "text": "High temperature – stay hydrated.",
-        }
-    if wind_speed >= 15:
-        return {
-            "icon": "weather-storm-symbolic",
-            "text": "Strong winds – caution advised.",
-        }
-    if weather_icon_code.startswith("11"):
-        return {
-            "icon": "weather-storm-symbolic",
-            "text": "Thunderstorms nearby.",
-        }
-    return None
-
-
-# ───────────────────────────────────────────────
-# FETCH + CACHE
-# ───────────────────────────────────────────────
-
-
 async def fetch_weather_async() -> Optional[Dict[str, Any]]:
-    """Fetch current + forecast weather, with cache and warnings."""
+    """
+    Fetch current + forecast weather, with cache.
+
+    Returns dict:
+      {
+        "city": str,
+        "temp": int,
+        "desc": str,
+        "feels_like": int,
+        "humidity": int,
+        "wind": float,
+        "sunrise": int,
+        "sunset": int,
+        "icon": str,        # custom SVG path
+        "icon_code": str,   # raw OpenWeather icon code
+        "forecast": [
+          {"time": "17:00", "temp": 6, "icon": str},
+          ...
+        ]
+      }
+    """
     cached = _load_cache()
     now_ts = int(time.time())
 
+    # Use fresh cache if valid
     if cached and now_ts - cached.get("timestamp", 0) < CACHE_TTL:
         return cached.get("data")
 
@@ -187,16 +211,16 @@ async def fetch_weather_async() -> Optional[Dict[str, Any]]:
         icon_code = weather0.get("icon", "")
         icon = _map_icon(icon_code)
 
+        # Next ~4 forecast entries (3h steps)
         forecast_list = forecast_json.get("list", [])[:4]
         forecast: List[Dict[str, Any]] = []
         for item in forecast_list:
             dt = datetime.fromtimestamp(int(item["dt"]))
-            t_label = _format_time_hm(dt)  # Now shows HH:MM
+            t_label = _format_time_hm(dt)
             f_temp = round(item["main"]["temp"])
-            f_icon = _map_icon((item.get("weather") or [{}])[0].get("icon", ""))
+            fw = (item.get("weather") or [{}])[0]
+            f_icon = _map_icon(fw.get("icon", ""))
             forecast.append({"time": t_label, "temp": f_temp, "icon": f_icon})
-
-        warning = _build_warning(temp, wind_speed, icon_code)
 
         data: Dict[str, Any] = {
             "city": city,
@@ -207,9 +231,9 @@ async def fetch_weather_async() -> Optional[Dict[str, Any]]:
             "wind": wind_speed,
             "sunrise": sunrise,
             "sunset": sunset,
-            "icon": icon,
+            "icon": icon,  # custom SVG path
+            "icon_code": icon_code,
             "forecast": forecast,
-            "warning": warning,
         }
 
         _save_cache({"timestamp": now_ts, "data": data})
@@ -224,12 +248,12 @@ async def fetch_weather_async() -> Optional[Dict[str, Any]]:
 
 
 class WeatherPopup(widgets.Window):
-    """GNOME-style centered popup."""
+    """GNOME-style centered popup with custom SVG icons."""
 
     def __init__(self):
-        # Top info
+        # Top info: big icon + city + temp
         self._icon_label = widgets.Icon(
-            image="weather-clouds-symbolic",
+            image=_icon_path("cloudy"),  # fallback icon before data loads
             pixel_size=56,
             css_classes=["weather-main-icon"],
         )
@@ -238,23 +262,6 @@ class WeatherPopup(widgets.Window):
         self._desc_label = widgets.Label(label="—", css_classes=["weather-desc"])
         self._extra_label = widgets.Label(label="—", css_classes=["weather-extra"])
 
-        # Warning row
-        self._warning_icon = widgets.Icon(
-            image="dialog-warning-symbolic",
-            pixel_size=18,
-            css_classes=["weather-warning-icon"],
-        )
-        self._warning_label = widgets.Label(
-            label="",
-            css_classes=["weather-warning-label"],
-        )
-        self._warning_box = widgets.Box(
-            spacing=6,
-            css_classes=["weather-warning-box"],
-            child=[self._warning_icon, self._warning_label],
-        )
-        self._warning_box.visible = False
-
         # Forecast row (centered)
         self._forecast_box = widgets.Box(
             spacing=16,
@@ -262,10 +269,12 @@ class WeatherPopup(widgets.Window):
             css_classes=["weather-forecast-row"],
         )
 
+        # --- layout: big icon row (left) + text block (centered) ---
+
         header_top = widgets.Box(
             spacing=12,
-            halign="Start",  # <-- this is the fix
-            hexpand=True,  # <-- and this
+            halign="start",
+            hexpand=True,
             child=[self._icon_label, self._city_label, self._temp_label],
         )
 
@@ -298,6 +307,7 @@ class WeatherPopup(widgets.Window):
             child=[header, self._forecast_box],
         )
 
+        # Slide-down revealer animation
         self._revealer = widgets.Revealer(
             child=popup_box,
             reveal_child=False,
@@ -312,6 +322,7 @@ class WeatherPopup(widgets.Window):
             child=[self._revealer],
         )
 
+        # Fullscreen click-to-close overlay
         overlay_btn = widgets.Button(
             vexpand=True,
             hexpand=True,
@@ -340,6 +351,8 @@ class WeatherPopup(widgets.Window):
         utils.Poll(CACHE_TTL * 1000, lambda *_: self._update_weather())
 
     # ───────────────────────────────────────────
+    # Public
+    # ───────────────────────────────────────────
 
     def toggle(self):
         if not self.visible:
@@ -356,6 +369,8 @@ class WeatherPopup(widgets.Window):
     def get_last_data(self) -> Optional[Dict[str, Any]]:
         return self._last_data
 
+    # ───────────────────────────────────────────
+    # Internal update plumbing
     # ───────────────────────────────────────────
 
     def _update_weather(self):
@@ -384,14 +399,6 @@ class WeatherPopup(widgets.Window):
             f"Wind {data['wind']:.1f} m/s"
         )
 
-        warning = data.get("warning")
-        if warning:
-            self._warning_icon.image = warning["icon"]
-            self._warning_label.label = warning["text"]
-            self._warning_box.visible = True
-        else:
-            self._warning_box.visible = False
-
         items: List[widgets.Widget] = []
 
         # Forecast items
@@ -408,7 +415,7 @@ class WeatherPopup(widgets.Window):
                             css_classes=["weather-forecast-time"],
                         ),
                         widgets.Icon(
-                            image=item["icon"],
+                            image=item["icon"],  # custom SVG path
                             pixel_size=40,
                             css_classes=["weather-forecast-icon"],
                         ),
@@ -433,7 +440,7 @@ class WeatherPopup(widgets.Window):
                         css_classes=["weather-forecast-time"],
                     ),
                     widgets.Icon(
-                        image="weather-clear-symbolic",
+                        image=_icon_path("sunrise"),
                         pixel_size=40,
                         css_classes=["weather-forecast-icon"],
                     ),
@@ -458,7 +465,7 @@ class WeatherPopup(widgets.Window):
                         css_classes=["weather-forecast-time"],
                     ),
                     widgets.Icon(
-                        image="weather-clear-night-symbolic",
+                        image=_icon_path("sunset"),
                         pixel_size=40,
                         css_classes=["weather-forecast-icon"],
                     ),
