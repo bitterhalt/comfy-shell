@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   INTEGRATED NOTIFICATION & TASK CENTER (GNOME-Style)
+   INTEGRATED NOTIFICATION & TASK CENTER
    ═══════════════════════════════════════════════════════════════ */
 
 .center-window {
@@ -74,7 +74,6 @@
   margin-right: 8px;
 }
 
-/* FIX: Styling the Switch for DND using standard GTK structure */
 .bottom-bar switch {
   padding: 1px;
   min-height: 24px;
@@ -89,16 +88,14 @@
 }
 
 .bottom-bar switch slider {
-  /* Slider (thumb) style */
   background-color: $bg-1;
   border-radius: 8px;
   margin: 3px;
   transition: transform 0.2s;
 }
 
-/* Active State (The Switch is ON) */
 .bottom-bar switch:checked {
-  background-color: $red; /* BACKGROUND COLOR WHEN ACTIVE */
+  background-color: $red;
 }
 
 .bottom-clear-btn {

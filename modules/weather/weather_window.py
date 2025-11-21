@@ -379,8 +379,8 @@ class WeatherPopup(widgets.Window):
         self._desc_label.label = data["desc"]
         self._icon_label.image = data["icon"]
         self._extra_label.label = (
-            f"Feels like {data['feels_like']}°C • "
-            f"Humidity {data['humidity']}% • "
+            f"Feels like {data['feels_like']}°C  •  "
+            f"Humidity {data['humidity']}%  •  "
             f"Wind {data['wind']:.1f} m/s"
         )
 
