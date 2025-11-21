@@ -1,7 +1,6 @@
 import os
 
 # Import the script to register commands
-import scripts.recorder
 from ignis import utils
 from ignis.command_manager import CommandManager
 from ignis.css_manager import CssInfoPath, CssManager
@@ -33,6 +32,9 @@ from modules.osd.submap_osd import init_submap_osd
 
 # Import workspace OSD
 from modules.osd.workspace_osd import init_workspace_osd
+
+# Import recorder
+from modules.recorder.recorder import recorder
 
 css = CssManager.get_default()
 

@@ -1,0 +1,103 @@
+/* ═══════════════════════════════════════════════════════════════
+   WEATHER POPUP (GNOME-style, matches Integrated Center)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Window/overlay */
+
+.weather-window {
+  background: transparent;
+  border: none;
+}
+
+.weather-overlay {
+  background: transparent;
+  border: none;
+}
+
+/* Container to center panel (same offset as .center-container) */
+
+.weather-container {
+  margin-top: 6px;
+}
+
+/* Main popup panel – copy of .integrated-center, but height relaxed */
+
+.weather-popup {
+  background: $bg-1;
+  border: 1px solid $ui-1;
+  border-radius: 16px;
+  min-width: 28rem;
+  margin: 8px;
+  padding: 18px 24px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+}
+
+/* ───────────────────────────────────────────────────────────────
+   HEADER
+   ─────────────────────────────────────────────────────────────── */
+
+.weather-header {
+  padding-bottom: 10px;
+}
+
+.weather-main-icon {
+  padding-right: 6px;
+}
+
+.weather-city {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: $tx-1;
+}
+
+.weather-temp {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: $tx-1;
+  margin-left: 8px;
+}
+
+.weather-desc {
+  padding-top: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: $tx-1;
+}
+
+.weather-extra {
+  margin-top: 2px;
+  font-size: 0.9rem;
+  color: $tx-3;
+}
+
+
+/* ───────────────────────────────────────────────────────────────
+   FORECAST ROW
+   ─────────────────────────────────────────────────────────────── */
+
+.weather-forecast-row {
+  padding-top: 4px;
+}
+
+.weather-forecast-item {
+  margin: 0 10px;
+}
+
+.weather-forecast-time {
+  font-size: 0.85rem;
+  color: $tx-3;
+  padding-bottom: 2px;
+}
+
+.weather-forecast-icon {
+  margin: 4px 0;
+  opacity: 0.95;
+}
+
+.weather-forecast-temp {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: $tx-1;
+}
+
+
