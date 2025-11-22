@@ -1,7 +1,8 @@
 import asyncio
 import re
+from pathlib import Path
 
-from gi.repository import Gio
+from gi.repository import Gdk, Gio
 
 from ignis import utils, widgets
 from ignis.menu_model import IgnisMenuItem, IgnisMenuModel, IgnisMenuSeparator
@@ -13,6 +14,7 @@ from ignis.services.applications import (
 
 applications = ApplicationsService.get_default()
 TERMINAL_FORMAT = "foot %command%"
+EMOJI_FILE = Path("~/.local/share/emoji/emoji").expanduser()
 
 
 def is_url(url: str) -> bool:
@@ -27,6 +29,80 @@ def is_url(url: str) -> bool:
         re.IGNORECASE,
     )
     return re.match(regex, url) is not None
+
+
+def load_emojis():
+    """Load emoji database from file"""
+    emojis = []
+    try:
+        if not EMOJI_FILE.exists():
+            return emojis
+
+        with EMOJI_FILE.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+
+                # Parse "😀 grinning face"
+                parts = line.split(maxsplit=1)
+                if len(parts) == 2:
+                    emoji_char, name = parts
+                    emojis.append((emoji_char, name))
+    except Exception as e:
+        print(f"Error loading emojis: {e}")
+
+    return emojis
+
+
+def search_emojis(query: str, emojis: list, limit: int = 10):
+    """Search emojis by name"""
+    query_lower = query.lower()
+    matches = []
+
+    for emoji_char, name in emojis:
+        if query_lower in name.lower():
+            matches.append((emoji_char, name))
+            if len(matches) >= limit:
+                break
+
+    return matches
+
+
+class EmojiItem(widgets.Button):
+    """Individual emoji result"""
+
+    def __init__(self, emoji_char: str, name: str):
+        self._emoji = emoji_char
+        self._name = name
+
+        super().__init__(
+            css_classes=["emoji-item"],
+            on_click=lambda x: self._copy(),
+            child=widgets.Box(
+                child=[
+                    widgets.Label(
+                        label=emoji_char,
+                        css_classes=["emoji-char"],
+                    ),
+                    widgets.Label(
+                        label=name,
+                        halign="start",
+                        hexpand=True,
+                        ellipsize="end",
+                        max_width_chars=30,
+                        css_classes=["emoji-name"],
+                    ),
+                ]
+            ),
+        )
+
+    def _copy(self):
+        """Copy emoji to clipboard"""
+        display = Gdk.Display.get_default()
+        clipboard = display.get_clipboard()
+        clipboard.set(self._emoji)
+        launcher.visible = False
 
 
 class AppItem(widgets.Button):
@@ -134,12 +210,15 @@ class SearchWebButton(widgets.Button):
 
 
 class AppLauncher(widgets.Window):
-    """Simple app launcher"""
+    """Simple app launcher with emoji search"""
 
     def __init__(self):
+        # Load emojis once at startup
+        self._emojis = load_emojis()
+
         # Search entry
         self._entry = widgets.Entry(
-            placeholder_text="Search",
+            placeholder_text="Search or bang !e emoji",
             css_classes=["launcher-entry"],
             hexpand=True,
             on_change=lambda x: self._search(),
@@ -218,7 +297,7 @@ class AppLauncher(widgets.Window):
             self._results_container.visible = False
 
     def _search(self):
-        """Search for apps"""
+        """Search for apps or emojis"""
         query = self._entry.text
 
         if not query:
@@ -226,7 +305,22 @@ class AppLauncher(widgets.Window):
             self._results_container.visible = False
             return
 
-        # Search apps
+        # Check for emoji bang command: !e <query>
+        if query.startswith("!e "):
+            emoji_query = query[3:].strip()
+            if emoji_query:
+                self._search_emojis(emoji_query)
+            else:
+                self._results.child = []
+                self._results_container.visible = False
+            return
+
+        # Check for calculator: ends with = or contains math operators
+        if query.endswith("=") or self._looks_like_math(query):
+            self._calculate(query.rstrip("="))
+            return
+
+        # Regular app search
         apps = applications.search(applications.apps, query)
 
         if not apps:
@@ -238,11 +332,121 @@ class AppLauncher(widgets.Window):
 
         self._results_container.visible = True
 
+    def _looks_like_math(self, query: str) -> bool:
+        """Check if query looks like a math expression"""
+        # Contains math operators and mostly numbers/operators
+        has_operators = any(
+            op in query for op in ["+", "-", "*", "/", "^", "(", ")", "."]
+        )
+        has_numbers = any(c.isdigit() for c in query)
+        return has_operators and has_numbers
+
+    def _calculate(self, expression: str):
+        """Evaluate math expression and show result"""
+        try:
+            # Replace ^ with ** for exponentiation
+            expression = expression.replace("^", "**")
+
+            # Safely evaluate the expression
+            # Only allow basic math operations
+            allowed_chars = set("0123456789+-*/().** ")
+            if not all(c in allowed_chars for c in expression):
+                raise ValueError("Invalid characters in expression")
+
+            # Evaluate
+            result = eval(expression, {"__builtins__": {}}, {})
+
+            # Format result
+            if isinstance(result, float):
+                # Remove trailing zeros
+                result_str = f"{result:.10f}".rstrip("0").rstrip(".")
+            else:
+                result_str = str(result)
+
+            # Create result button
+            result_button = widgets.Button(
+                css_classes=["calc-result"],
+                on_click=lambda x: self._copy_result(result_str),
+                child=widgets.Box(
+                    child=[
+                        widgets.Label(
+                            label="🔢",
+                            css_classes=["calc-icon"],
+                        ),
+                        widgets.Box(
+                            vertical=True,
+                            halign="start",
+                            hexpand=True,
+                            child=[
+                                widgets.Label(
+                                    label=expression,
+                                    halign="start",
+                                    css_classes=["calc-expression"],
+                                ),
+                                widgets.Label(
+                                    label=f"= {result_str}",
+                                    halign="start",
+                                    css_classes=["calc-answer"],
+                                ),
+                            ],
+                        ),
+                    ]
+                ),
+            )
+
+            self._results.child = [result_button]
+            self._results_container.visible = True
+
+        except Exception as e:
+            # Show error
+            error_label = widgets.Label(
+                label=f"Invalid expression: {str(e)}",
+                css_classes=["calc-error"],
+            )
+            self._results.child = [error_label]
+            self._results_container.visible = True
+
+    def _copy_result(self, result: str):
+        """Copy calculation result to clipboard"""
+        display = Gdk.Display.get_default()
+        clipboard = display.get_clipboard()
+        clipboard.set(result)
+        launcher.visible = False
+
+    def _search_emojis(self, query: str):
+        """Search and display emojis"""
+        matches = search_emojis(query, self._emojis, limit=10)
+
+        if matches:
+            self._results.child = [
+                EmojiItem(emoji_char, name) for emoji_char, name in matches
+            ]
+        else:
+            self._results.child = [
+                widgets.Label(
+                    label=f"No emojis found for '{query}'",
+                    css_classes=["no-results"],
+                )
+            ]
+
+        self._results_container.visible = True
+
     def _launch_first(self):
-        """Launch first result on Enter"""
+        """Launch/copy first result on Enter"""
         if len(self._results.child) > 0:
             first_item = self._results.child[0]
-            first_item._launch()
+            if isinstance(first_item, (AppItem, SearchWebButton)):
+                first_item._launch()
+            elif isinstance(first_item, EmojiItem):
+                first_item._copy()
+            elif (
+                hasattr(first_item, "get_css_classes")
+                and "calc-result" in first_item.get_css_classes()
+            ):
+                # Copy calculation result
+                result_label = first_item.child.child[1].child[1]
+                result_text = result_label.label.replace("= ", "")
+                self._copy_result(result_text)
 
     def _close(self):
         """Close launcher"""
