@@ -26,8 +26,8 @@ from modules.notifications.popup import init_notifications
 # Import task popup initialization
 from modules.notifications.task_popup import init_task_popup
 
-# Import submap OSD
-from modules.osd.submap_osd import init_submap_osd
+# Import submap OSD (display only - controlled by bash watcher)
+from modules.osd.submap_osd import hide_submap_osd, init_submap_osd, show_submap_osd
 
 # Import workspace OSD
 from modules.osd.workspace_osd import init_workspace_osd
@@ -64,7 +64,7 @@ init_task_popup()
 # Initialize workspace OSD
 init_workspace_osd()
 
-# Initialize submap OSD
+# Initialize submap OSD (display only)
 init_submap_osd()
 
 # Initialize the bars for all monitors
@@ -79,3 +79,7 @@ command_manager.add_command("bar-toggle", toggle_bars)
 command_manager.add_command("center-toggle", toggle_integrated_center)
 command_manager.add_command("notifications-open", open_notifications)
 command_manager.add_command("tasks-open", open_tasks)
+
+# Register submap OSD commands (for bash watcher)
+command_manager.add_command("submap-show", show_submap_osd)
+command_manager.add_command("submap-hide", hide_submap_osd)

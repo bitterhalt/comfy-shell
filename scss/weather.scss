@@ -101,15 +101,15 @@
 }
 
 /* ───────────────────────────────────────────────
-   MOON ICON (Top-Right Accent)
+   MOON EMOJI (Top-Right Accent)
    ─────────────────────────────────────────────── */
 
-.weather-moon-icon {
-  opacity: 0.8;
+.weather-moon-emoji {
+  font-size: 2.5rem;  /* Large emoji */
   margin-left: 12px;
   margin-right: 4px;
+  opacity: 0.9;
 
-  /* keep sharp edges in dark themes */
-  filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
+  /* Prevent emoji from being too dim in dark themes */
+  filter: brightness(1.1);
 }
-

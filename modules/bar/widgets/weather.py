@@ -34,11 +34,13 @@ class WeatherBarWidget(widgets.Button):
             on_click=lambda *_: toggle_weather_popup(),
         )
 
+        self._update_task = None  # ← ADDED: Track the update task
         self._update()
         utils.Poll(600000, lambda *_: self._update())
 
     def _update(self):
-        asyncio.create_task(self._update_async())
+        # FIXED: Store task reference to prevent garbage collection
+        self._update_task = asyncio.create_task(self._update_async())
         return True
 
     async def _update_async(self):

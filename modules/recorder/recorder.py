@@ -13,6 +13,7 @@ command_manager = CommandManager.get_default()
 # Track region recording process
 _region_recording_process = None
 _region_recording_file = None
+_monitoring_task = None  # ← ADDED: Track the monitoring task
 
 
 async def _start_recording_task(source: str, file_path: str, **kwargs):
@@ -47,7 +48,7 @@ def record_screen():
 
 async def _record_region_async():
     """Helper function to record a selected region"""
-    global _region_recording_process, _region_recording_file
+    global _region_recording_process, _region_recording_file, _monitoring_task
 
     # Check if gpu-screen-recorder is available
     gsr_check = await utils.exec_sh_async("which gpu-screen-recorder")
@@ -105,8 +106,8 @@ async def _record_region_async():
         # Emit recording started signal to update UI
         recorder.emit("recording_started")
 
-        # Wait for process to complete in background
-        asyncio.create_task(_monitor_region_recording(process))
+        # FIXED: Track the monitoring task
+        _monitoring_task = asyncio.create_task(_monitor_region_recording(process))
 
     except Exception as e:
         print(f"Region recording error: {e}")
@@ -156,7 +157,7 @@ def record_region():
 
 def stop_recording():
     """Stop any active recording"""
-    global _region_recording_process, _region_recording_file
+    global _region_recording_process, _region_recording_file, _monitoring_task
 
     # Stop RecorderService recording
     if recorder.active:
@@ -173,6 +174,11 @@ def stop_recording():
             recorder.emit("recording_stopped")
         except Exception as e:
             print(f"Error stopping region recording: {e}")
+
+    # ADDED: Cancel monitoring task if running
+    if _monitoring_task is not None and not _monitoring_task.done():
+        _monitoring_task.cancel()
+        _monitoring_task = None
 
 
 def is_recording():

@@ -26,11 +26,10 @@ class WeatherPopup(widgets.Window):
         self._desc_label = widgets.Label(label="—", css_classes=["weather-desc"])
         self._extra_label = widgets.Label(label="—", css_classes=["weather-extra"])
 
-        # Small moon icon (top-right)
-        self._moon_icon = widgets.Icon(
-            image=icon_path("moon-full"),  # initial fallback, real icon from data
-            pixel_size=42,
-            css_classes=["weather-moon-icon"],
+        # Moon emoji (top-right) - CHANGED: Label instead of Icon for emoji
+        self._moon_label = widgets.Label(
+            label="🌕",  # fallback emoji
+            css_classes=["weather-moon-emoji"],
         )
 
         # Forecast row (bottom)
@@ -50,12 +49,12 @@ class WeatherPopup(widgets.Window):
             child=[self._icon_label, self._city_label, self._temp_label],
         )
 
-        # Top header row: left block + moon icon on the right
+        # Top header row: left block + moon emoji on the right
         header_top = widgets.Box(
             spacing=12,
             halign="fill",
             hexpand=True,
-            child=[left_row, self._moon_icon],
+            child=[left_row, self._moon_label],
         )
 
         # Middle text (centered): description + extra line
@@ -123,6 +122,7 @@ class WeatherPopup(widgets.Window):
         )
 
         self._last_data: Optional[dict] = None
+        self._update_task = None  # ← ADDED: Track the update task
         utils.Poll(CACHE_TTL * 1000, lambda *_: self._update_weather())
 
     # ── Public API (used by bar widget) ─────────────────────────────
@@ -145,7 +145,8 @@ class WeatherPopup(widgets.Window):
     # ── Internal plumbing ──────────────────────────────────────────
 
     def _update_weather(self):
-        asyncio.create_task(self._update_weather_async())
+        # FIXED: Store task reference to prevent garbage collection
+        self._update_task = asyncio.create_task(self._update_weather_async())
         return True
 
     async def _update_weather_async(self):
@@ -166,10 +167,13 @@ class WeatherPopup(widgets.Window):
             f"Wind {data['wind']:.1f} m/s"
         )
 
-        # Moon icon, if present in data
-        moon_icon = data.get("moon_icon")
-        if moon_icon:
-            self._moon_icon.image = moon_icon
+        # FIXED: Moon emoji with tooltip
+        moon_emoji = data.get("moon_icon")
+        moon_tip = data.get("moon_tooltip")
+        if moon_emoji:
+            self._moon_label.label = moon_emoji
+        if moon_tip:
+            self._moon_label.set_tooltip_text(moon_tip)
 
         # Sunrise / sunset strings
         sunrise_str = format_time_hm(datetime.fromtimestamp(data["sunrise"]))

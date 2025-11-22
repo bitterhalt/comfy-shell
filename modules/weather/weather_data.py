@@ -15,11 +15,11 @@ import os
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from ignis import utils
 
-from .moon import moon_icon_for
+from .moon import moon_icon_for, moon_tooltip
 
 # ───────────────────────────────────────────────
 # CONFIG
@@ -193,6 +193,9 @@ async def fetch_weather_async() -> Optional[Dict[str, Any]]:
                 }
             )
 
+        # Get current date for moon calculation
+        current_date = datetime.now()
+
         data = {
             "city": now_json["name"],
             "temp": temp,
@@ -205,7 +208,8 @@ async def fetch_weather_async() -> Optional[Dict[str, Any]]:
             "icon": _map_icon(icon_code),
             "icon_code": icon_code,
             "forecast": forecast,
-            "moon_icon": moon_icon_for(datetime.now()),
+            "moon_icon": moon_icon_for(current_date),
+            "moon_tooltip": moon_tooltip(current_date),  # ← ADDED: Moon tooltip
         }
 
         _save_cache({"timestamp": int(time.time()), "data": data})
