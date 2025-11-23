@@ -1,8 +1,3 @@
-"""
-Submap OSD - Display only (controlled by bash watcher)
-No async tasks = No zombies!
-"""
-
 from ignis import widgets
 from ignis.services.hyprland import HyprlandService
 
