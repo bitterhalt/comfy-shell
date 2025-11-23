@@ -137,16 +137,16 @@ font-weight: 400;
 
 tooltip,
 .tooltip {
-background: rgba(16, 15, 15, 1);
+background: $bg-2;
 border-radius: 8px;
 margin:  4px;
 padding: 15px;
-border: transparent;
+border: solid 1px $ui-1;
 }
 
 tooltip label,
 .tooltip label {
-  color: $tx-1;         // your existing text color
+  color: $tx-1;
   font-size: 0.95rem;
   font-weight: 400;
 }
