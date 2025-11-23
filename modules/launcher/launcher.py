@@ -3,7 +3,6 @@ import re
 from pathlib import Path
 
 from gi.repository import Gdk, Gio
-
 from ignis import utils, widgets
 from ignis.menu_model import IgnisMenuItem, IgnisMenuModel, IgnisMenuSeparator
 from ignis.services.applications import (
@@ -397,14 +396,10 @@ class AppLauncher(widgets.Window):
             self._results.child = [result_button]
             self._results_container.visible = True
 
-        except Exception as e:
-            # Show error
-            error_label = widgets.Label(
-                label=f"Invalid expression: {str(e)}",
-                css_classes=["calc-error"],
-            )
-            self._results.child = [error_label]
-            self._results_container.visible = True
+        except Exception:
+            # Don't show error, just hide results
+            self._results.child = []
+            self._results_container.visible = False
 
     def _copy_result(self, result: str):
         """Copy calculation result to clipboard"""
