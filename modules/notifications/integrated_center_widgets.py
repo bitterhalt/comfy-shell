@@ -46,12 +46,17 @@ class NotificationHistoryItem(widgets.Box):
             valign="start",
         )
 
+        # Determine title CSS class based on urgency
+        title_css_classes = ["notif-history-title"]
+        if notification.urgency == 2:  # Critical
+            title_css_classes.append("critical")
+
         summary = widgets.Label(
             label=notification.summary,
             halign="start",
             ellipsize="end",
             max_width_chars=35,
-            css_classes=["notif-history-title"],
+            css_classes=title_css_classes,
             wrap=True,
         )
 

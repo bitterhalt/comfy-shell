@@ -11,31 +11,71 @@ def clock():
     # Visible clock text
     clock_label = widgets.Label(css_classes=["clock"])
 
+    # Notification dot indicator
+    notif_dot = widgets.Label(
+        label="●",
+        css_classes=["clock-notif-dot"],
+        visible=False,
+    )
+
+    # Clock + dot container
+    clock_content = widgets.Box(
+        spacing=6,
+        child=[clock_label, notif_dot],
+    )
+
     # Clickable wrapper
     clock_button = widgets.Button(
-        child=clock_label,
-        css_classes=["clock-button"],  # (style inside SCSS to remove button look)
+        child=clock_content,
+        css_classes=["clock-button"],
         on_click=lambda *_: toggle_integrated_center(),
     )
 
-    def update(self):
-        now = datetime.datetime.now()
+    def update_time():
+        """Update time display (called every minute)"""
+        return datetime.datetime.now().strftime("%H:%M")
 
+    def update_notifications(*args):
+        """Update notification indicator and tooltip (live updates)"""
+        now = datetime.datetime.now()
         date_str = now.strftime("%A, %d.%m %Y")
         count = len(notifications.notifications)
 
+        # Check if any critical notifications exist
+        has_critical = any(n.urgency == 2 for n in notifications.notifications)
+
+        # Update tooltip
         tooltip = date_str
         if count > 0:
             tooltip += f"\n\n{count} notification(s)"
 
         clock_button.set_tooltip_text(tooltip)
 
-        return now.strftime("%H:%M")
+        # Update dot visibility and color
+        if count > 0:
+            notif_dot.visible = True
+            if has_critical:
+                notif_dot.remove_css_class("normal")
+                notif_dot.add_css_class("critical")
+            else:
+                notif_dot.remove_css_class("critical")
+                notif_dot.add_css_class("normal")
+        else:
+            notif_dot.visible = False
 
-    # Bind clock content
+    # Bind clock content to poll
     clock_label.set_property(
         "label",
-        utils.Poll(60000, update).bind("output"),
+        utils.Poll(60000, lambda *_: update_time()).bind("output"),
     )
+
+    # Connect to notified for instant updates on new notifications
+    notifications.connect("notified", update_notifications)
+
+    # Connect to the notifications list property change for instant updates on dismissals
+    notifications.connect("notify::notifications", update_notifications)
+
+    # Initial update
+    update_notifications()
 
     return clock_button

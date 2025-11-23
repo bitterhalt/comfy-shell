@@ -141,7 +141,11 @@
   margin-bottom: 4px;
 }
 
-.notif-history-body {
+.notif-history-title.critical {
+  color: $red;
+}
+
+.notif-history-body.critical {
   font-size: 0.9rem;
   color: $tx-3;
   line-height: 1.4;
