@@ -14,11 +14,7 @@ from modules.bar.bar_toggle import register_bar, toggle_bars
 from modules.launcher.launcher import toggle_launcher
 
 # Import integrated center
-from modules.notifications.integrated_center import (
-    open_notifications,
-    open_tasks,
-    toggle_integrated_center,
-)
+from modules.notifications.integrated_center import open_notifications, open_tasks
 
 # Import notification popup initialization
 from modules.notifications.popup import init_notifications
@@ -76,7 +72,6 @@ for i in range(utils.get_n_monitors()):
 command_manager = CommandManager.get_default()
 command_manager.add_command("launcher-toggle", toggle_launcher)
 command_manager.add_command("bar-toggle", toggle_bars)
-command_manager.add_command("center-toggle", toggle_integrated_center)
 command_manager.add_command("notifications-open", open_notifications)
 command_manager.add_command("tasks-open", open_tasks)
 
