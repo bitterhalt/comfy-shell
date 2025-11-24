@@ -29,7 +29,6 @@ from modules.osd.submap_osd import hide_submap_osd, init_submap_osd, show_submap
 from modules.osd.workspace_osd import init_workspace_osd
 
 # Import recorder
-from modules.recorder.recorder import recorder
 
 css = CssManager.get_default()
 
