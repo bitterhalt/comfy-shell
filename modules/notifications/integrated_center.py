@@ -78,6 +78,19 @@ class IntegratedCenter(widgets.Window):
     - ESC closes (popup=True + kb_mode)
     """
 
+    def _on_visible_change(self, *args):
+        if self.visible:
+            # Show panel with slide-down
+            utils.Timeout(
+                10,
+                lambda: setattr(self._revealer, "reveal_child", True),
+            )
+        else:
+            # Hide panel first, then (optionally) we could delay,
+            # but since the window is already invisible when called
+            # from CLI, just close the revealer immediately.
+            self._revealer.reveal_child = False
+
     def __init__(self):
         # ── Tabs ────────────────────────────────────────────────
         self._notif_tab = widgets.Button(
@@ -205,6 +218,7 @@ class IntegratedCenter(widgets.Window):
             child=root_overlay,
             kb_mode="on_demand",
         )
+        self.connect("notify::visible", self._on_visible_change)
 
         # Internal state
         self._current_tab = "notif"
@@ -371,21 +385,12 @@ integrated_center = IntegratedCenter()
 
 
 def toggle_integrated_center():
-    """Toggle the integrated center popup with slide animation."""
-    if not integrated_center.visible:
-        # Open: show window then reveal panel
-        integrated_center.visible = True
-        utils.Timeout(
-            10,
-            lambda: setattr(integrated_center._revealer, "reveal_child", True),
-        )
-    else:
-        # Close: hide panel, then hide window after animation
-        integrated_center._revealer.reveal_child = False
-        utils.Timeout(
-            integrated_center._revealer.transition_duration,
-            lambda: setattr(integrated_center, "visible", False),
-        )
+    """Toggle the integrated center.
+
+    The actual animation is handled by _on_visible_change so that
+    CLI `toggle-window` and this function behave identically.
+    """
+    integrated_center.visible = not integrated_center.visible
 
 
 def open_notifications():
