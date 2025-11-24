@@ -8,13 +8,10 @@ from ignis.css_manager import CssInfoPath, CssManager
 from modules.bar.bar import create_bar
 
 # Import bar toggle
-from modules.bar.bar_toggle import register_bar, toggle_bars
+from modules.bar.bar_toggle import register_bar
 
 # Import launcher
 from modules.launcher.launcher import toggle_launcher
-
-# Import integrated center
-from modules.notifications.integrated_center import open_notifications, open_tasks
 
 # Import notification popup initialization
 from modules.notifications.popup import init_notifications
@@ -26,7 +23,7 @@ from modules.notifications.task_popup import init_task_popup
 from modules.osd.submap_osd import hide_submap_osd, init_submap_osd, show_submap_osd
 
 # Import workspace OSD
-from modules.osd.workspace_osd import init_workspace_osd
+from modules.osd.workspace_osd import init_workspace_osd, set_bar_visibility
 
 # Import recorder
 
@@ -50,7 +47,7 @@ css.apply_css(
     )
 )
 
-# Initialize notifications (before bars)
+# Initialize notifications (ADD ALWAYS BEFORE BARS)
 init_notifications()
 
 # Initialize task popup
@@ -59,21 +56,35 @@ init_task_popup()
 # Initialize workspace OSD
 init_workspace_osd()
 
-# Initialize submap OSD (display only)
+# Initialize submap OSD
 init_submap_osd()
 
-# Initialize the bars for all monitors
+
+# For bar and barless mod (pure cli)
+def _attach_bar_visibility_listener(bar_window):
+    # called whenever Ignis sets bar.visible = True/False
+    def _on_visible_changed(window, *_):
+        set_bar_visibility(window.visible)
+
+        #  Shows workspace OSD when the bar hides
+        from modules.osd.workspace_osd import _osd_window
+
+        if not window.visible and _osd_window:
+            _osd_window.show_osd()
+
+    bar_window.connect("notify::visible", _on_visible_changed)
+
+
 for i in range(utils.get_n_monitors()):
     bar = create_bar(i)
-    register_bar(bar)  # Register for toggling
+    register_bar(bar)
+    _attach_bar_visibility_listener(bar)
+
 
 # Register commands
 command_manager = CommandManager.get_default()
 command_manager.add_command("launcher-toggle", toggle_launcher)
-command_manager.add_command("bar-toggle", toggle_bars)
-command_manager.add_command("notifications-open", open_notifications)
-command_manager.add_command("tasks-open", open_tasks)
 
-# Register submap OSD commands (for bash watcher)
+# Register submap OSD commands (for bash watcher) TODO: add these to cli
 command_manager.add_command("submap-show", show_submap_osd)
 command_manager.add_command("submap-hide", hide_submap_osd)
