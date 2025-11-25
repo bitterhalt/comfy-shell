@@ -94,16 +94,24 @@ def init_workspace_osd():
 
 def set_bar_visibility(visible: bool):
     """
-    Update bar visibility state
-    Call this when toggling the bar
-
-    Args:
-        visible: True if bar is visible, False if hidden
+    Update bar visibility state.
+    Called whenever bar is toggled.
     """
     global _bar_visible
     _bar_visible = visible
 
+    # When bar becomes hidden, show current workspace immediately
+    if not visible and _osd_window:
+        # Determine current workspace name manually
+        if hypr.is_available:
+            ws_name = hypr.active_workspace.name
+            if ws_name.startswith("special:"):
+                ws_name = ws_name.split(":")[-1].capitalize()
+        elif niri.is_available:
+            ws_name = str(niri.active_workspace.idx)
+        else:
+            return
 
-def get_bar_visibility() -> bool:
-    """Get current bar visibility state"""
-    return _bar_visible
+        # Update label right away
+        _osd_window._label.set_label(f"Workspace: {ws_name}")
+        _osd_window.show_osd()
