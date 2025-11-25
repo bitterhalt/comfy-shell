@@ -180,21 +180,21 @@ class AddTaskDialog(widgets.Box):
 
         now = datetime.now()
 
-        # Message
+        # Message - FIXED: Initialize text properly
         self._message = widgets.Entry(
             placeholder_text="Task description...",
             css_classes=["task-input"],
             hexpand=True,
         )
-        self._message.text = ""  # ← REQUIRED
+        self._message.text = ""
 
-        # Time
+        # Time - FIXED: Initialize text properly
         self._time = widgets.Entry(
             placeholder_text="HH:MM",
             css_classes=["task-input"],
             width_request=100,
         )
-        self._message.text = ""  # ← REQUIRED
+        self._time.text = ""  # Empty initially, user will fill
 
         # Date
         self._date = widgets.Entry(
@@ -286,7 +286,7 @@ class AddTaskDialog(widgets.Box):
 
 
 # ═══════════════════════════════════════════════════════════════
-# EDIT TASK DIALOG  (unchanged)
+# EDIT TASK DIALOG
 # ═══════════════════════════════════════════════════════════════
 
 

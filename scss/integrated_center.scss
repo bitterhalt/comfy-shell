@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   INTEGRATED NOTIFICATION & TASK CENTER (GNOME Style - 2 Columns)
+   INTEGRATED NOTIFICATION & TASK CENTER
    ═══════════════════════════════════════════════════════════════ */
 
 .center-window {
@@ -70,9 +70,8 @@
    CALENDAR (top of right column)
    ─────────────────────────────────────────────────────────────── */
 
-
 .center-calendar {
-  unset:all;
+  all: unset;
   background-color: $bg-2;
   border: 1px solid $ui-1;
   border-radius: 12px;
@@ -115,7 +114,6 @@
 .dnd-box {
   margin: 0 12px 0px 12px;
   border-top: none;
-  margin-top: auto;
 }
 
 .dnd-label {
@@ -150,11 +148,18 @@
    ─────────────────────────────────────────────────────────────── */
 
 .weather-compact {
+  all: unset;
   padding: 8px 16px;
   margin: 0 12px 8px 12px;
   background-color: $bg-2;
   border: 1px solid $ui-1;
   border-radius: 8px;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.weather-compact:hover {
+  background-color: $ui-2;
+  border-color: $ui-2;
 }
 
 .weather-temp-compact {

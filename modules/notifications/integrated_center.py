@@ -153,10 +153,14 @@ class IntegratedCenter(widgets.Window):
             max_width_chars=20,
         )
 
-        weather_compact = widgets.Box(
-            spacing=10,
+        # Make weather clickable
+        weather_compact = widgets.Button(
             css_classes=["weather-compact"],
-            child=[self._weather_icon, self._weather_temp, self._weather_desc],
+            on_click=lambda *_: self._open_weather_popup(),
+            child=widgets.Box(
+                spacing=10,
+                child=[self._weather_icon, self._weather_temp, self._weather_desc],
+            ),
         )
 
         # Calendar directly under weather
@@ -254,6 +258,20 @@ class IntegratedCenter(widgets.Window):
         notifications.connect("notified", self._on_notified)
         utils.Poll(30000, lambda *_: self._reload_tasks())
         utils.Poll(600000, lambda *_: self._update_weather())
+
+    # ───────────────────────────────────────────────────────────
+    # weather popup opening
+    # ───────────────────────────────────────────────────────────
+
+    def _open_weather_popup(self):
+        """Open the weather popup window"""
+        from modules.weather.weather_window import toggle_weather_popup
+
+        # Close the integrated center
+        toggle_integrated_center()
+
+        # Open weather popup after a small delay
+        utils.Timeout(200, toggle_weather_popup)
 
     # ───────────────────────────────────────────────────────────
     # notifications
@@ -366,7 +384,8 @@ class IntegratedCenter(widgets.Window):
         tooltip = f"{data['city']}\n"
         tooltip += f"Feels like {data['feels_like']}°C\n"
         tooltip += f"Humidity: {data['humidity']}%\n"
-        tooltip += f"Wind: {data['wind']:.1f} m/s"
+        tooltip += f"Wind: {data['wind']:.1f} m/s\n"
+        tooltip += "\nClick to open weather details"
         self._weather_icon.set_tooltip_text(tooltip)
 
     # ───────────────────────────────────────────────────────────

@@ -2,7 +2,7 @@ import asyncio
 import re
 from pathlib import Path
 
-from gi.repository import Gdk, Gio
+from gi.repository import Gdk, GioUnix
 from ignis import utils, widgets
 from ignis.menu_model import IgnisMenuItem, IgnisMenuModel, IgnisMenuSeparator
 from ignis.services.applications import (
@@ -170,7 +170,7 @@ class SearchWebButton(widgets.Button):
             "xdg-settings get default-web-browser"
         ).stdout.replace("\n", "")
 
-        app_info = Gio.DesktopAppInfo.new(desktop_id=browser_desktop_file)
+        app_info = GioUnix.DesktopAppInfo.new(desktop_id=browser_desktop_file)
         icon_name = "applications-internet-symbolic"
         if app_info:
             icon_string = app_info.get_string("Icon")
