@@ -46,9 +46,8 @@ class NotificationHistoryItem(widgets.Box):
             valign="start",
         )
 
-        # Determine title CSS class based on urgency
         title_css_classes = ["notif-history-title"]
-        if notification.urgency == 2:  # Critical
+        if notification.urgency == 2:
             title_css_classes.append("critical")
 
         summary = widgets.Label(
@@ -90,12 +89,6 @@ class NotificationHistoryItem(widgets.Box):
             child=[icon, text_box, close_btn],
         )
 
-        # IMPORTANT:
-        # Do *not* unparent here — Ignis wraps unparent() and we end up
-        # double-removing the widget when the parent box also removes it.
-        # That caused: ValueError: list.remove(x): x not in list
-        #
-        # Hiding is enough for the list to refresh visually.
         notification.connect("closed", lambda *_: setattr(self, "visible", False))
 
 
@@ -109,6 +102,7 @@ class TaskItem(widgets.Box):
 
     def __init__(self, task, on_delete, on_complete, on_edit, on_snooze):
         self._task = task
+
         fire_dt = datetime.fromtimestamp(task["fire_at"])
         time_str = fire_dt.strftime("%H:%M")
         date_str = fire_dt.strftime("%d.%m")
@@ -135,33 +129,24 @@ class TaskItem(widgets.Box):
         )
 
         actions = widgets.Box(
-            halign="end",
+            halign="center",
             spacing=6,
             css_classes=["task-actions-row"],
             child=[
                 widgets.Button(
-                    child=widgets.Icon(
-                        image="document-edit-symbolic",
-                        pixel_size=16,
-                    ),
+                    child=widgets.Icon(image="document-edit-symbolic", pixel_size=16),
                     css_classes=["task-action-btn", "task-edit"],
                     tooltip_text="Edit Task",
                     on_click=lambda *_: on_edit(task),
                 ),
                 widgets.Button(
-                    child=widgets.Icon(
-                        image="emblem-ok-symbolic",
-                        pixel_size=16,
-                    ),
+                    child=widgets.Icon(image="emblem-ok-symbolic", pixel_size=16),
                     css_classes=["task-action-btn", "task-complete"],
                     tooltip_text="Complete",
                     on_click=lambda *_: on_complete(task),
                 ),
                 widgets.Button(
-                    child=widgets.Icon(
-                        image="user-trash-symbolic",
-                        pixel_size=16,
-                    ),
+                    child=widgets.Icon(image="user-trash-symbolic", pixel_size=16),
                     css_classes=["task-action-btn", "task-delete"],
                     tooltip_text="Delete",
                     on_click=lambda *_: on_delete(task),
@@ -182,7 +167,7 @@ class TaskItem(widgets.Box):
 
 
 # ═══════════════════════════════════════════════════════════════
-# ADD TASK DIALOG
+# ADD TASK DIALOG  (FIXED)
 # ═══════════════════════════════════════════════════════════════
 
 
@@ -193,28 +178,33 @@ class AddTaskDialog(widgets.Box):
         self._on_add = on_add
         self._on_cancel = on_cancel
 
-        # Inputs
+        now = datetime.now()
+
+        # Message
         self._message = widgets.Entry(
             placeholder_text="Task description...",
             css_classes=["task-input"],
             hexpand=True,
         )
+        self._message.text = ""  # ← REQUIRED
 
+        # Time
         self._time = widgets.Entry(
             placeholder_text="HH:MM",
             css_classes=["task-input"],
             width_request=100,
         )
+        self._message.text = ""  # ← REQUIRED
 
-        now = datetime.now()
+        # Date
         self._date = widgets.Entry(
-            placeholder_text="DD-MM",
+            placeholder_text="DD-MM-YYYY",
             css_classes=["task-input"],
-            width_request=120,
+            width_request=140,
         )
-        self._date.text = now.strftime("%d-%m")
+        self._date.text = now.strftime("%d-%m-%Y")
 
-        # Today / Tomorrow quick buttons
+        # Quick date buttons
         today_btn = widgets.Button(
             child=widgets.Label(label="Today"),
             css_classes=["date-btn"],
@@ -242,16 +232,11 @@ class AddTaskDialog(widgets.Box):
 
         super().__init__(
             vertical=True,
-            spacing=18,  # more breathing room
+            spacing=18,
             css_classes=["add-task-dialog"],
             child=[
                 widgets.Label(label="Add New Task", css_classes=["dialog-title"]),
-                # message
-                widgets.Box(
-                    spacing=12,
-                    child=[self._message],
-                ),
-                # time
+                widgets.Box(spacing=12, child=[self._message]),
                 widgets.Box(
                     spacing=12,
                     child=[
@@ -259,7 +244,6 @@ class AddTaskDialog(widgets.Box):
                         self._time,
                     ],
                 ),
-                # date + quick buttons
                 widgets.Box(
                     spacing=12,
                     child=[
@@ -269,33 +253,31 @@ class AddTaskDialog(widgets.Box):
                         tomorrow_btn,
                     ],
                 ),
-                # footer
                 widgets.Box(
-                    css_classes=["dialog-footer"],
-                    child=[cancel_btn, save_btn],
+                    css_classes=["dialog-footer"], child=[cancel_btn, save_btn]
                 ),
             ],
         )
 
     def _set_date_offset(self, offset):
-        base = datetime.now() + timedelta(days=offset)
-        self._date.text = base.strftime("%d-%m")
+        date = datetime.now() + timedelta(days=offset)
+        self._date.text = date.strftime("%d-%m-%Y")
 
     def _add(self):
         msg = self._message.text.strip()
         time_str = self._time.text.strip()
         date_str = self._date.text.strip()
 
-        if not msg or not time_str:
+        if not msg or not time_str or not date_str:
             return
 
         try:
             hour, minute = map(int, time_str.split(":"))
-            d, m = map(int, date_str.split("-"))
-            now = datetime.now()
-            dt = datetime(now.year, m, d, hour, minute)
+            day, mon, year = map(int, date_str.split("-"))
 
-            if dt <= now:
+            dt = datetime(year, mon, day, hour, minute)
+
+            if dt <= datetime.now():
                 dt += timedelta(days=1)
 
             self._on_add({"message": msg, "fire_at": int(dt.timestamp())})
@@ -304,7 +286,7 @@ class AddTaskDialog(widgets.Box):
 
 
 # ═══════════════════════════════════════════════════════════════
-# EDIT TASK DIALOG
+# EDIT TASK DIALOG  (unchanged)
 # ═══════════════════════════════════════════════════════════════
 
 
@@ -317,7 +299,6 @@ class EditTaskDialog(widgets.Box):
 
         fire_dt = datetime.fromtimestamp(task["fire_at"])
 
-        # Inputs
         self._message = widgets.Entry(
             placeholder_text="Task description...",
             css_classes=["task-input"],
@@ -339,7 +320,6 @@ class EditTaskDialog(widgets.Box):
         )
         self._date.text = fire_dt.strftime("%d-%m-%Y")
 
-        # Footer buttons
         cancel_btn = widgets.Button(
             child=widgets.Label(label="Cancel"),
             css_classes=["dialog-btn", "cancel-btn"],
@@ -354,16 +334,11 @@ class EditTaskDialog(widgets.Box):
 
         super().__init__(
             vertical=True,
-            spacing=18,  # same spacing as Add dialog
+            spacing=18,
             css_classes=["add-task-dialog"],
             child=[
                 widgets.Label(label="Edit Task", css_classes=["dialog-title"]),
-                # message input
-                widgets.Box(
-                    spacing=12,
-                    child=[self._message],
-                ),
-                # time input row
+                widgets.Box(spacing=12, child=[self._message]),
                 widgets.Box(
                     spacing=12,
                     child=[
@@ -371,7 +346,6 @@ class EditTaskDialog(widgets.Box):
                         self._time,
                     ],
                 ),
-                # date input row
                 widgets.Box(
                     spacing=12,
                     child=[
@@ -379,10 +353,8 @@ class EditTaskDialog(widgets.Box):
                         self._date,
                     ],
                 ),
-                # footer
                 widgets.Box(
-                    css_classes=["dialog-footer"],
-                    child=[cancel_btn, save_btn],
+                    css_classes=["dialog-footer"], child=[cancel_btn, save_btn]
                 ),
             ],
         )
@@ -398,6 +370,7 @@ class EditTaskDialog(widgets.Box):
         try:
             hour, minute = map(int, time_str.split(":"))
             day, mon, year = map(int, date_str.split("-"))
+
             dt = datetime(year, mon, day, hour, minute)
 
             if dt <= datetime.now():
@@ -408,7 +381,5 @@ class EditTaskDialog(widgets.Box):
             new_task["fire_at"] = int(dt.timestamp())
 
             self._on_save(new_task)
-
         except Exception:
-            # ignore invalid input
             return

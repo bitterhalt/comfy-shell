@@ -6,7 +6,6 @@ from .widgets.clock import clock
 from .widgets.network import network_widget
 from .widgets.recorder import recording_indicator
 from .widgets.title import window_title
-from .widgets.weather import weather_widget
 from .widgets.workspaces import workspaces
 
 # ───────────────────────────────────────────────
@@ -36,7 +35,6 @@ def right_section():
         spacing=12,
         child=[
             recording_indicator(),
-            weather_widget(),
             network_widget(),
             audio_widgets(),
             battery_widget(),

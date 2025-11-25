@@ -1,5 +1,4 @@
-# modules/notifications/integrated_center.py
-
+import asyncio
 import fcntl
 import json
 import time
@@ -17,25 +16,25 @@ from modules.notifications.integrated_center_widgets import (
 )
 
 notifications = NotificationService.get_default()
-QUEUE_FILE = Path("~/.local/share/timers/queue.json").expanduser()
-MAX_NOTIFICATIONS = 10
+queue_file = Path("~/.local/share/timers/queue.json").expanduser()
+max_notifications = 10
 
 
 # ═══════════════════════════════════════════════════════════════
-# TASK STORAGE WITH FILE LOCKING
+# task storage with file locking
 # ═══════════════════════════════════════════════════════════════
 
 
 @contextmanager
-def _locked_queue_file(mode="r"):
-    """Thread-safe file locking for queue operations"""
-    QUEUE_FILE.parent.mkdir(parents=True, exist_ok=True)
+def _locked_queue_file(mode: str = "r"):
+    """Thread-safe file locking for queue operations."""
+    queue_file.parent.mkdir(parents=True, exist_ok=True)
 
-    # Ensure file exists
-    if not QUEUE_FILE.exists():
-        QUEUE_FILE.write_text("[]")
+    # ensure file exists
+    if not queue_file.exists():
+        queue_file.write_text("[]")
 
-    with open(QUEUE_FILE, mode) as f:
+    with open(queue_file, mode, encoding="utf-8") as f:
         try:
             fcntl.flock(f.fileno(), fcntl.LOCK_EX)
             yield f
@@ -44,107 +43,69 @@ def _locked_queue_file(mode="r"):
 
 
 def load_tasks():
-    """Load tasks with file locking"""
+    """Load tasks with file locking."""
     try:
         with _locked_queue_file("r") as f:
             content = f.read()
             return json.loads(content) if content.strip() else []
     except (FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"Error loading tasks: {e}")
+        print(f"[integrated_center] error loading tasks: {e}")
         return []
 
 
 def save_tasks(tasks):
-    """Save tasks with file locking"""
+    """Save tasks with file locking."""
     try:
         with _locked_queue_file("w") as f:
             json.dump(tasks, f, indent=2)
     except Exception as e:
-        print(f"Error saving tasks: {e}")
+        print(f"[integrated_center] error saving tasks: {e}")
 
 
 # ═══════════════════════════════════════════════════════════════
-# INTEGRATED CENTER WINDOW
+# integrated center window
 # ═══════════════════════════════════════════════════════════════
 
 
 class IntegratedCenter(widgets.Window):
     """
-    Top-centered popup control center:
-
-    - Same visuals as before (integrated-center SCSS)
-    - Slide-down reveal like the audio menu
-    - Click outside to close
-    - ESC closes (popup=True + kb_mode)
+    GNOME-style notification center with two columns:
+    - left: notifications + DND toggle
+    - right: weather (small), calendar, tasks, Add Task
     """
 
-    def _on_visible_change(self, *args):
+    # ── visibility animation ─────────────────────────────────────
+
+    def _on_visible_change(self, *_):
         if self.visible:
-            # Show panel with slide-down
             utils.Timeout(
                 10,
                 lambda: setattr(self._revealer, "reveal_child", True),
             )
         else:
-            # Hide panel first, then (optionally) we could delay,
-            # but since the window is already invisible when called
-            # from CLI, just close the revealer immediately.
             self._revealer.reveal_child = False
 
     def __init__(self):
-        # ── Tabs ────────────────────────────────────────────────
-        self._notif_tab = widgets.Button(
-            child=widgets.Label(label="Notifications"),
-            css_classes=["tab-button", "tab-active"],
-            on_click=lambda *_: self._switch_tab("notif"),
-        )
-
-        self._task_tab = widgets.Button(
-            child=widgets.Label(label="Tasks"),
-            css_classes=["tab-button"],
-            on_click=lambda *_: self._switch_tab("task"),
-        )
-
-        tab_bar = widgets.Box(
-            css_classes=["tab-bar"],
-            homogeneous=True,
-            child=[self._notif_tab, self._task_tab],
-        )
-
-        # ── Lists & empty states ────────────────────────────────
         self._notif_list = widgets.Box(vertical=True, css_classes=["content-list"])
-        self._task_list = widgets.Box(vertical=True, css_classes=["content-list"])
-
         self._notif_empty = widgets.Label(
-            label="No Notifications",
+            label="No notifications",
             css_classes=["empty-state"],
             vexpand=True,
             valign="center",
         )
 
-        self._task_empty = widgets.Label(
-            label="No active tasks",
-            css_classes=["empty-state"],
-            vexpand=True,
-            valign="center",
-        )
-
-        self._notif_content = widgets.Box(
+        notif_content = widgets.Box(
             vertical=True,
             child=[self._notif_list, self._notif_empty],
         )
-        self._task_content = widgets.Box(
-            vertical=True,
-            child=[self._task_list, self._task_empty],
-        )
 
-        self._scroll = widgets.Scroll(
+        notif_scroll = widgets.Scroll(
             vexpand=True,
             vscrollbar_policy="automatic",
-            child=self._notif_content,
+            child=notif_content,
         )
 
-        # ── Bottom bar (DND + Clear/Add) ────────────────────────
+        # DND toggle at bottom
         dnd_switch = widgets.Switch(
             active=options.notifications.bind("dnd"),
             on_change=lambda _, state: options.notifications.set_dnd(state),
@@ -152,41 +113,106 @@ class IntegratedCenter(widgets.Window):
 
         dnd_box = widgets.Box(
             spacing=8,
+            css_classes=["dnd-box"],
             child=[
-                widgets.Label(label="DND", css_classes=["bottom-label"]),
                 dnd_switch,
             ],
         )
-        dnd_box.hexpand = True
-        dnd_box.halign = "start"
 
-        self._bottom_btn = widgets.Button(
-            child=widgets.Label(label="Clear"),
-            css_classes=["bottom-clear-btn"],
-            on_click=lambda *_: self._handle_bottom(),
+        clear_btn = widgets.Button(
+            child=widgets.Label(label="Clear All"),
+            css_classes=["header-action-btn"],
+            on_click=lambda *_: self._clear_notifications(),
+            halign="center",
         )
 
-        bottom_bar = widgets.Box(
-            css_classes=["bottom-bar"],
-            child=[dnd_box, self._bottom_btn],
-        )
-
-        # ── Main panel (visual content) ─────────────────────────
-        main_panel = widgets.Box(
+        left_column = widgets.Box(
             vertical=True,
-            css_classes=["integrated-center"],
-            child=[tab_bar, self._scroll, bottom_bar],
+            css_classes=["left-column"],
+            child=[
+                notif_scroll,
+                clear_btn,
+                dnd_box,
+            ],
         )
 
-        # Slide-down revealer for GNOME-style appearance
+        # ── right column: weather + calendar + tasks ─────────────
+        # Compact weather at top (same API as your bar / popup)
+        self._weather_icon = widgets.Icon(
+            image="weather-clouds-symbolic",
+            pixel_size=32,
+        )
+        self._weather_temp = widgets.Label(
+            label="--°",
+            css_classes=["weather-temp-compact"],
+        )
+        self._weather_desc = widgets.Label(
+            label="…",
+            css_classes=["weather-desc-compact"],
+            ellipsize="end",
+            max_width_chars=20,
+        )
+
+        weather_compact = widgets.Box(
+            spacing=10,
+            css_classes=["weather-compact"],
+            child=[self._weather_icon, self._weather_temp, self._weather_desc],
+        )
+
+        # Calendar directly under weather
+        self._calendar = widgets.Calendar(
+            css_classes=["center-calendar"],
+            show_day_names=True,
+            show_heading=True,
+        )
+
+        # Tasks list
+        self._task_list = widgets.Box(vertical=True, css_classes=["content-list"])
+        self._task_empty = widgets.Label(
+            label="No tasks",
+            css_classes=["empty-state"],
+            valign="center",
+        )
+
+        task_content = widgets.Box(
+            vertical=True,
+            child=[self._task_list, self._task_empty],
+        )
+
+        task_scroll = widgets.Scroll(
+            vexpand=True,
+            vscrollbar_policy="automatic",
+            child=task_content,
+        )
+
+        # Add task button at bottom
+        add_task_btn = widgets.Button(
+            child=widgets.Label(label="Add Task"),
+            css_classes=["add-task-btn"],
+            on_click=lambda *_: self._open_add_dialog(),
+        )
+
+        right_column = widgets.Box(
+            vertical=True,
+            css_classes=["right-column"],
+            child=[weather_compact, self._calendar, task_scroll, add_task_btn],
+        )
+
+        # ── two-column layout in a single revealer ────────────────
+        two_columns = widgets.Box(
+            css_classes=["integrated-center"],
+            child=[left_column, right_column],
+        )
+
+        self._main_content = two_columns
+
         self._revealer = widgets.Revealer(
-            child=main_panel,
+            child=two_columns,
             reveal_child=False,
             transition_type="slide_down",
             transition_duration=180,
         )
 
-        # Container to center the panel near top
         centered = widgets.Box(
             valign="start",
             halign="center",
@@ -194,7 +220,6 @@ class IntegratedCenter(widgets.Window):
             child=[self._revealer],
         )
 
-        # Fullscreen overlay button: click outside to close
         overlay_button = widgets.Button(
             vexpand=True,
             hexpand=True,
@@ -211,64 +236,49 @@ class IntegratedCenter(widgets.Window):
         super().__init__(
             visible=False,
             anchor=["top", "bottom", "left", "right"],
-            namespace="ignis_INTEGRATED_CENTER",
+            namespace="ignis_integrated_center",
             layer="top",
             popup=True,
             css_classes=["center-window"],
             child=root_overlay,
             kb_mode="on_demand",
         )
+
         self.connect("notify::visible", self._on_visible_change)
 
-        # Internal state
-        self._current_tab = "notif"
-
-        # Initial load
+        # initial load
         self._load_notifications()
         self._reload_tasks()
+        self._update_weather()
 
         notifications.connect("notified", self._on_notified)
         utils.Poll(30000, lambda *_: self._reload_tasks())
+        utils.Poll(600000, lambda *_: self._update_weather())
 
     # ───────────────────────────────────────────────────────────
-    # Tabs
+    # notifications
     # ───────────────────────────────────────────────────────────
 
-    def _switch_tab(self, tab: str):
-        self._current_tab = tab
-
-        if tab == "notif":
-            self._notif_tab.add_css_class("tab-active")
-            self._task_tab.remove_css_class("tab-active")
-            self._scroll.child = self._notif_content
-            self._bottom_btn.child.set_label("Clear")
-        else:
-            self._task_tab.add_css_class("tab-active")
-            self._notif_tab.remove_css_class("tab-active")
-            self._scroll.child = self._task_content
-            self._bottom_btn.child.set_label("Add Task")
-            self._reload_tasks()
-
-    # ───────────────────────────────────────────────────────────
-    # Notifications
-    # ───────────────────────────────────────────────────────────
+    def _clear_notifications(self):
+        notifications.clear_all()
+        self._notif_list.child = []
+        self._notif_empty.visible = True
 
     def _load_notifications(self):
-        recent = notifications.notifications[:MAX_NOTIFICATIONS]
+        recent = notifications.notifications[:max_notifications]
         self._notif_list.child = [NotificationHistoryItem(n) for n in recent]
         self._notif_empty.visible = len(self._notif_list.child) == 0
 
     def _on_notified(self, _, nt):
         self._notif_list.prepend(NotificationHistoryItem(nt))
-        # Cap at MAX_NOTIFICATIONS
-        if len(self._notif_list.child) > MAX_NOTIFICATIONS:
+        if len(self._notif_list.child) > max_notifications:
             oldest = self._notif_list.child[-1]
             oldest.visible = False
             oldest.unparent()
         self._notif_empty.visible = len(self._notif_list.child) == 0
 
     # ───────────────────────────────────────────────────────────
-    # Tasks
+    # tasks
     # ───────────────────────────────────────────────────────────
 
     def _reload_tasks(self, *_):
@@ -335,19 +345,47 @@ class IntegratedCenter(widgets.Window):
         self._reload_tasks()
 
     # ───────────────────────────────────────────────────────────
-    # Dialog handling (Add / Edit task)
+    # weather (mini, using your async API)
+    # ───────────────────────────────────────────────────────────
+
+    def _update_weather(self, *_):
+        asyncio.create_task(self._update_weather_async())
+        return True
+
+    async def _update_weather_async(self):
+        from modules.weather.weather_data import fetch_weather_async
+
+        data = await fetch_weather_async()
+        if not data:
+            return
+
+        self._weather_icon.image = data["icon"]
+        self._weather_temp.label = f"{data['temp']}°"
+        self._weather_desc.label = data["desc"]
+
+        tooltip = f"{data['city']}\n"
+        tooltip += f"Feels like {data['feels_like']}°C\n"
+        tooltip += f"Humidity: {data['humidity']}%\n"
+        tooltip += f"Wind: {data['wind']:.1f} m/s"
+        self._weather_icon.set_tooltip_text(tooltip)
+
+    # ───────────────────────────────────────────────────────────
+    # dialog handling (no more tiny window)
     # ───────────────────────────────────────────────────────────
 
     def _show_dialog(self, dialog):
-        """Show dialog inside scroll area, replacing list."""
-        self._scroll.child = dialog
+        """
+        Show Add/Edit dialog as a centered card, full width of the center.
+        No flexbox / CSS hacks, just direct child of the revealer.
+        """
+        # Ensure dialog expands enough, actual look is handled by CSS .add-task-dialog
+        dialog.hexpand = True
+        dialog.vexpand = False
+        self._revealer.child = dialog
 
     def _hide_dialog(self):
-        """Return scroll area to current tab's list."""
-        if self._current_tab == "notif":
-            self._scroll.child = self._notif_content
-        else:
-            self._scroll.child = self._task_content
+        """Return to main two-column layout."""
+        self._revealer.child = self._main_content
 
     def _open_add_dialog(self):
         dlg = AddTaskDialog(
@@ -364,44 +402,23 @@ class IntegratedCenter(widgets.Window):
         )
         self._show_dialog(dlg)
 
-    # ───────────────────────────────────────────────────────────
-    # Bottom button
-    # ───────────────────────────────────────────────────────────
-
-    def _handle_bottom(self):
-        if self._current_tab == "notif":
-            notifications.clear_all()
-            self._notif_list.child = []
-            self._notif_empty.visible = True
-        else:
-            self._open_add_dialog()
-
 
 # ═══════════════════════════════════════════════════════════════
-# GLOBAL INSTANCE + TOGGLE FUNCTIONS
+# global instance + toggle helpers
 # ═══════════════════════════════════════════════════════════════
 
 integrated_center = IntegratedCenter()
 
 
 def toggle_integrated_center():
-    """Toggle the integrated center.
-
-    The actual animation is handled by _on_visible_change so that
-    CLI `toggle-window` and this function behave identically.
-    """
     integrated_center.visible = not integrated_center.visible
 
 
 def open_notifications():
-    """Open center focused on notifications."""
-    integrated_center._switch_tab("notif")
     if not integrated_center.visible:
         toggle_integrated_center()
 
 
 def open_tasks():
-    """Open center focused on tasks."""
-    integrated_center._switch_tab("task")
     if not integrated_center.visible:
         toggle_integrated_center()
