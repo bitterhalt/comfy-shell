@@ -25,7 +25,8 @@ from modules.osd.submap_osd import hide_submap_osd, init_submap_osd, show_submap
 # Import workspace OSD
 from modules.osd.workspace_osd import init_workspace_osd, set_bar_visibility
 
-# Import recorder
+# Import recorder module
+from modules.recorder.recorder import register_recorder_commands
 
 css = CssManager.get_default()
 
@@ -83,8 +84,13 @@ for i in range(utils.get_n_monitors()):
 
 # Register commands
 command_manager = CommandManager.get_default()
+
+# Launcher
 command_manager.add_command("launcher-toggle", toggle_launcher)
 
-# Register submap OSD commands (for bash watcher) TODO: add these to cli
+# Submap OSD commands (for bash watcher)
 command_manager.add_command("submap-show", show_submap_osd)
 command_manager.add_command("submap-hide", hide_submap_osd)
+
+# Register recorder commands
+register_recorder_commands()

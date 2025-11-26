@@ -4,16 +4,14 @@ import signal
 from datetime import datetime
 
 from ignis import utils
-from ignis.command_manager import CommandManager
 from ignis.services.recorder import RecorderConfig, RecorderService
 
 recorder = RecorderService.get_default()
-command_manager = CommandManager.get_default()
 
 # Track region recording process
 _region_recording_process = None
 _region_recording_file = None
-_monitoring_task = None  # ← ADDED: Track the monitoring task
+_monitoring_task = None
 
 
 async def _start_recording_task(source: str, file_path: str, **kwargs):
@@ -59,7 +57,7 @@ async def _record_region_async():
     # Stop any existing recording
     if recorder.active or _region_recording_process is not None:
         stop_recording()
-        await asyncio.sleep(0.5)  # Wait for cleanup
+        await asyncio.sleep(0.5)
         return
 
     try:
@@ -106,7 +104,7 @@ async def _record_region_async():
         # Emit recording started signal to update UI
         recorder.emit("recording_started")
 
-        # FIXED: Track the monitoring task
+        # Track the monitoring task
         _monitoring_task = asyncio.create_task(_monitor_region_recording(process))
 
     except Exception as e:
@@ -128,7 +126,6 @@ async def _monitor_region_recording(process):
         else:
             print(f"Region recording failed with code {returncode}")
     except asyncio.CancelledError:
-        # Clean shutdown requested
         print("Region recording monitoring cancelled")
         try:
             if process.returncode is None:
@@ -138,7 +135,6 @@ async def _monitor_region_recording(process):
             pass
     except Exception as e:
         print(f"Region recording monitoring error: {e}")
-        # Try to kill process if it's still running
         try:
             if process.returncode is None:
                 process.kill()
@@ -170,12 +166,11 @@ def stop_recording():
             _region_recording_process.send_signal(signal.SIGINT)
             _region_recording_process = None
             _region_recording_file = None
-            # Emit stopped signal
             recorder.emit("recording_stopped")
         except Exception as e:
             print(f"Error stopping region recording: {e}")
 
-    # ADDED: Cancel monitoring task if running
+    # Cancel monitoring task if running
     if _monitoring_task is not None and not _monitoring_task.done():
         _monitoring_task.cancel()
         _monitoring_task = None
@@ -186,7 +181,12 @@ def is_recording():
     return recorder.active or _region_recording_process is not None
 
 
-# Register commands
-command_manager.add_command("recorder-stop", stop_recording)
-command_manager.add_command("recorder-record-screen", record_screen)
-command_manager.add_command("recorder-record-region", record_region)
+# Function to register commands - called from config.py
+def register_recorder_commands():
+    """Register recorder commands with CommandManager"""
+    from ignis.command_manager import CommandManager
+
+    command_manager = CommandManager.get_default()
+    command_manager.add_command("recorder-stop", stop_recording)
+    command_manager.add_command("recorder-record-screen", record_screen)
+    command_manager.add_command("recorder-record-region", record_region)
