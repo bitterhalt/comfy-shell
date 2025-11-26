@@ -20,7 +20,7 @@
   background-color: $bg-1;
   border: 1px solid $ui-1;
   border-radius: 16px;
-  min-width: 832px;  /* 52rem */
+  min-width: 832px; /* 52rem */
   min-height: 672px; /* 42rem */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
   margin: 8px;
@@ -157,7 +157,9 @@
   background-color: $bg-2;
   border: 1px solid $ui-1;
   border-radius: 8px;
-  transition: background-color 0.15s, border-color 0.15s;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
 }
 
 .weather-compact:hover {
@@ -216,7 +218,9 @@
   border-radius: 10px;
   padding: 12px;
   margin-bottom: 8px;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
 }
 
 .notif-history-item:hover {
@@ -282,7 +286,9 @@
   border-radius: 10px;
   padding: 10px 12px;
   margin-bottom: 8px;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
 }
 
 .task-item:hover {
@@ -312,7 +318,9 @@
   all: unset;
   padding: 6px;
   border-radius: 10px;
-  transition: background-color 0.15s, color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
   opacity: 0.6;
 }
 

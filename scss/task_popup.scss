@@ -64,7 +64,9 @@
   border-radius: 8px;
   font-size: 0.9rem;
   font-weight: 500;
-  transition: background 0.15s, transform 0.1s;
+  transition:
+    background 0.15s,
+    transform 0.1s;
 
   &:hover {
     transform: scale(1.05);
@@ -76,11 +78,11 @@
 }
 
 .snooze-btn {
-background: $ui-2;
-color: $tx-2;
+  background: $ui-2;
+  color: $tx-2;
 
-&:hover {
-  background: $magenta;
+  &:hover {
+    background: $magenta;
     color: $bg-1;
   }
 }
