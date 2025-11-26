@@ -35,13 +35,12 @@ class NotificationHistoryItem(widgets.Box):
     """Item shown in the Integrated Center's notification list."""
 
     def __init__(self, notification: Notification):
-        icon = widgets.Icon(
-            image=(
-                notification.icon
-                if notification.icon
-                else "dialog-information-symbolic"
-            ),
-            pixel_size=40,
+        # Colored dot uses color defined on popup.py
+        dot_color = "critical" if notification.urgency == 2 else "normal"
+
+        dot = widgets.Label(
+            label="●",
+            css_classes=["notif-popup-dot", dot_color],
             halign="start",
             valign="start",
         )
@@ -86,7 +85,7 @@ class NotificationHistoryItem(widgets.Box):
         super().__init__(
             css_classes=["notif-history-item"],
             spacing=12,
-            child=[icon, text_box, close_btn],
+            child=[dot, text_box, close_btn],
         )
 
         notification.connect("closed", lambda *_: setattr(self, "visible", False))
@@ -154,13 +153,10 @@ class TaskItem(widgets.Box):
             ],
         )
 
-        icon = widgets.Icon(image="alarm-symbolic", pixel_size=32)
-
         super().__init__(
             css_classes=["task-item"],
             spacing=12,
             child=[
-                icon,
                 widgets.Box(vertical=True, spacing=6, child=[text_box, actions]),
             ],
         )

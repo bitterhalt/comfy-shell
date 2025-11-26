@@ -4,6 +4,7 @@
 .audio-menu-window {
   background: transparent;
   border: none;
+  margin: 4px;
 }
 
 .audio-menu-window-container {
@@ -13,7 +14,7 @@
 .audio-menu {
   background: $bg-1;
   border: 1px solid $ui-1;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 15px;
   min-width: 22rem;
 }
