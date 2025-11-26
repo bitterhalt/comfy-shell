@@ -3,12 +3,12 @@
    ═══════════════════════════════════════════════════════════════ */
 
 .osd-window {
-  margin-top: 40px;
+  margin-top: 8px;
 }
 
 .osd-container {
   background: $osd-bg;
-  padding: 10px 20px;
+  padding: 16px;
   border-radius: 8px;
   min-width: 260px;
 }
@@ -59,7 +59,7 @@
   background: $osd-bg;
   border: none;
   border-radius: 8px;
-  padding: 16px 24px;
+  padding: 16px;
 }
 
 .workspace-osd-icon {
@@ -81,15 +81,13 @@
     Cascadia Code,
     Symbols Nerd Font Mono;
   background: transparent;
-  border: none;
-  margin-top: 20px;
 }
 
 .submap-osd {
-  border-radius: 8px;
+  border-radius: 0 0 8px 8px;
   border: none;
-  background: $osd-bg;
-  padding: 18px 28px;
+  background: $bg-1;
+  padding: 16px;
 }
 
 .submap-osd-icon {
