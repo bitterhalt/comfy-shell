@@ -20,14 +20,12 @@ class NotificationWidget(widgets.Box):
             title_class = "notif-title-critical"
             body_class = "notif-body-critical"
 
-        # Icon
-        icon = widgets.Icon(
-            image=(
-                notification.icon
-                if notification.icon
-                else "dialog-information-symbolic"
-            ),
-            pixel_size=48,
+        # Colored dot instead of icon
+        dot_color = "critical" if notification.urgency == 2 else "normal"
+
+        dot = widgets.Label(
+            label="●",
+            css_classes=["notif-popup-dot", dot_color],
             halign="start",
             valign="start",
         )
@@ -68,7 +66,7 @@ class NotificationWidget(widgets.Box):
 
         # Main content box
         content = widgets.Box(
-            child=[icon, text_box, close_btn],
+            child=[dot, text_box, close_btn],
         )
 
         # Action buttons (if any)

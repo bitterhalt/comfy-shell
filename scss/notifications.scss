@@ -43,17 +43,32 @@
   margin: 0.5rem;
 }
 
+/* Notification popup dot indicator (replaces icon) */
+.notif-popup-dot {
+  font-size: 0.6rem;
+  line-height: 1;
+  padding: 0.25rem;
+}
+
+.notif-popup-dot.normal {
+  color: $cyan;
+}
+
+.notif-popup-dot.critical {
+  color: $red;
+}
+
 /* Notification title */
 .notif-title {
   font-size: 1.1rem;
   font-weight: bold;
-  color: $cyan;
+  color: $tx-1;
 }
 
 .notif-title-critical {
   font-size: 1.1rem;
   font-weight: bold;
-  color: $red;
+  color: $tx-2;
 }
 
 /* Notification body */

@@ -113,7 +113,8 @@
 
 .dnd-box {
   margin: 0 12px 0px 12px;
-  border-top: none;
+  padding: 10px 0px 0px 0px;
+  border-top: solid 1px $ui-1;
 }
 
 .dnd-label {
@@ -184,7 +185,7 @@
   all: unset;
   background-color: $cyan;
   color: $bg-1;
-  padding: 8px;
+  padding: 6px;
   margin: 0 12px 0px 12px;
   border-radius: 10px;
   font-size: 14px; /* 0.9rem */
@@ -223,6 +224,19 @@
   border-color: $ui-3;
 }
 
+.notif-history-dot {
+  font-size: 1.5rem;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.notif-history-dot.normal {
+  color: $cyan;
+}
+
+.notif-history-dot.critical {
+  color: $red;
+}
 .notif-history-title {
   font-size: 15px; /* 0.95rem */
   font-weight: 600;
