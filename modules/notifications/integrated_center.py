@@ -240,7 +240,7 @@ class IntegratedCenter(widgets.Window):
         super().__init__(
             visible=False,
             anchor=["top", "bottom", "left", "right"],
-            namespace="ignis_integrated_center",
+            namespace="ignis_INTEGRATED_CENTER",
             layer="top",
             popup=True,
             css_classes=["center-window"],

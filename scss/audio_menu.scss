@@ -1,7 +1,6 @@
-/* ═══════════════════════════════════════════════════════════════
-   AUDIO MENU
-   ═══════════════════════════════════════════════════════════════ */
-
+* {
+  all: unset;
+}
 .audio-menu-window {
   background: transparent;
   border: none;
@@ -35,7 +34,6 @@
   min-width: 3rem;
 }
 
-/* Slider styling */
 .audio-menu-slider {
   min-width: 180px;
 }
@@ -60,53 +58,43 @@
 }
 
 .audio-menu-mute-btn {
-  all: unset;
   border-radius: 6px;
   padding: 8px;
   transition: background 0.15s;
-
   &:hover {
-    background: $ui-3;
+    color: $tx-3;
   }
 }
 
-/* Device items */
 .audio-device-item {
-  all: unset;
   color: $tx-1;
   border: 1px solid transparent;
   border-radius: 8px;
   padding: 2px 10px;
   transition: background 0.15s, border-color 0.15s;
-
   &:hover {
     background: $ui-2;
   }
 }
 
-/* Settings button */
 .audio-menu-settings-btn {
-  all: unset;
   background: $ui-2;
   color: $tx-2;
   border-radius: 8px;
   padding: 12px 16px;
   transition: background 0.15s;
-
   &:hover {
-    color: $bg-1;
+    color: $tx-3;
   }
 }
 
 .audio-menu-expand-btn {
-    all: unset;
     background: transparent;
     border-radius: 6px;
     padding: 4px;
-}
-
-.audio-menu-expand-btn:hover {
-    background: rgba(255, 255, 255, 0.07);
+    &:hover {
+      color: $tx-3;
+    }
 }
 
 .audio-menu-arrow-icon {
@@ -116,9 +104,7 @@
 .audio-menu-arrow-icon[rotated="true"] {
 }
 
-
 .audio-menu-footer {
-    all: unset;
     padding: 4px;
     color: $tx-1;
 }
@@ -126,12 +112,11 @@
 .settings-icon-btn {
     padding: 3px;
     background: none;
+      &:hover {
+      color: $tx-3;
+    }
 }
 
-.settings-icon-btn:hover {
-    background: $hover-bg;
-}
-/* Separator */
 separator {
   background: $ui-1;
   min-height: 1px;
