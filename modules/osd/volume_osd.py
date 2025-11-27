@@ -29,12 +29,12 @@ class VolumeOSD(widgets.Window):
             ),
             sensitive=False,  # Read-only
             hexpand=True,
-            css_classes=["osd-track"],
+            css_classes=["vol-track"],
         )
 
         # Container box
         content = widgets.Box(
-            css_classes=["osd-container"],
+            css_classes=["vol-container"],
             child=[icon, slider],
         )
 
@@ -43,7 +43,7 @@ class VolumeOSD(widgets.Window):
             anchor=["top"],
             namespace="ignis_OSD",
             visible=False,
-            css_classes=["osd-window"],
+            css_classes=["vol-window"],
             child=content,
         )
 

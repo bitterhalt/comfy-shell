@@ -2,23 +2,23 @@
    VOL OSD
    ═══════════════════════════════════════════════════════════════ */
 
-.osd-window {
+.vol-window {
   margin-top: 8px;
 }
 
-.osd-container {
+.vol-container {
   background: $osd-bg;
   padding: 16px;
   border-radius: 8px;
   min-width: 260px;
 }
 
-.osd-icon {
+.vol-icon {
   color: $tx-2;
 }
 
 /* Volume track (background) */
-.osd-track trough {
+.vol-track trough {
   background: $ui-2;
   border-radius: 8px;
   min-height: 12px;
@@ -26,14 +26,14 @@
 }
 
 /* Volume fill (foreground) */
-.osd-track trough highlight {
+.vol-track trough highlight {
   background: $cyan;
   border-radius: 8px;
   min-height: 12px;
 }
 
 /* Hide the slider handle for OSD */
-.osd-track slider {
+.vol-track slider {
   all: unset;
   min-width: 0;
   min-height: 0;
