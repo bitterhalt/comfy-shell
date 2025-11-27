@@ -25,6 +25,8 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 - Power menu
 - Network & system indicators
 - Record indicator etc
+- Weather
+- Notifications
 
 ### 🔸 OSD
 
@@ -32,19 +34,32 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 - Workspaces on barless mode
 - Submaps (Hyprland)
 - Power menu
-
-### 🔸 Notifications
-
-- Popup notifications
-- Notification center
-- DND mode
+- Notifications
 
 ### 🔸 Launcher
 
 - App runner with fuzzy search
-- URL detection & browser launch
+- Calculator
+- Emoji support
+- Websearch (WIP)
 
 ### 🔸 Extra Integrations
 
 - Barless mode
-- GPU screen recording support
+
+## Some screenshots
+
+> Empty desktop
+> <img src="assets/screenshots/empty.png" width="100%" />
+>
+> Without bar workspace overlay popup
+> <img src="assets/screenshots/barles.png" width="100%" />
+
+<details>
+<summary><b>Notification Center</b></summary><br>
+<img src="assets/screenshots/center.png" width="1000%" />
+</details>
+<details>
+<summary><b>Weather</b></summary><br>
+<img src="assets/screenshots/weather.png" width="80%" />
+</details>
