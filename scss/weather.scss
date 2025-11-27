@@ -13,12 +13,13 @@
 /* Container to center panel (same offset as .center-container) */
 .weather-container {
   margin-top: 6px;
+  border: none;
 }
 
 /* Main popup panel – copy of .integrated-center, but height relaxed */
 .weather-popup {
   background: $bg-1;
-  border: 1px solid $ui-1;
+  border: none;
   border-radius: 16px;
   min-width: 28rem;
   margin: 8px;
