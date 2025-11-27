@@ -20,8 +20,8 @@
   background-color: $bg-1;
   border: none;
   border-radius: 16px;
-  min-width: 832px; /* 52rem */
-  min-height: 672px; /* 42rem */
+  // min-width: 832px; /* 52rem */
+  min-height: 472px; /* 42rem */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
   margin: 4px;
 }
@@ -37,8 +37,8 @@
 }
 
 .right-column {
-  min-width: 416px; /* 26rem */
   padding: 12px 0;
+  // min-width: 416px;
 }
 
 /* ───────────────────────────────────────────────────────────────
@@ -54,8 +54,7 @@
 .header-action-btn {
   all: unset;
   color: $tx-3;
-  padding: 4px 12px;
-  margin: 4px;
+  padding: 0 20px;
   border-radius: 6px;
   font-size: 13px; /* 0.85rem */
   transition: background-color 0.15s;
@@ -63,7 +62,7 @@
 
 .header-action-btn:hover {
   color: $tx-2;
-  background-color: $magenta;
+  background-color: transparent;
 }
 
 /* ───────────────────────────────────────────────────────────────
@@ -112,9 +111,7 @@
    ─────────────────────────────────────────────────────────────── */
 
 .dnd-box {
-  margin: 0 12px 0px 12px;
-  padding: 10px 0px 0px 0px;
-  border-top: solid 1px $ui-1;
+  padding: 8px;
 }
 
 .dnd-label {
@@ -153,7 +150,7 @@
 .weather-compact {
   all: unset;
   padding: 8px 16px;
-  margin: 0 12px 8px 12px;
+  margin: 0 12px 0px 12px;
   background-color: $bg-2;
   border: 1px solid $ui-1;
   border-radius: 8px;
@@ -187,8 +184,8 @@
   all: unset;
   background-color: $cyan;
   color: $bg-1;
-  padding: 6px;
-  margin: 0 12px 0px 12px;
+  margin: 8px;
+  padding: 3px;
   border-radius: 10px;
   font-size: 14px; /* 0.9rem */
   font-weight: 500;

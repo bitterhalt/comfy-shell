@@ -105,7 +105,7 @@ class IntegratedCenter(widgets.Window):
             child=notif_content,
         )
 
-        # DND toggle at bottom
+        # DND toggle
         dnd_switch = widgets.Switch(
             active=options.notifications.bind("dnd"),
             on_change=lambda _, state: options.notifications.set_dnd(state),
@@ -114,7 +114,10 @@ class IntegratedCenter(widgets.Window):
         dnd_box = widgets.Box(
             spacing=8,
             css_classes=["dnd-box"],
+            hexpand=True,
+            halign="start",
             child=[
+                widgets.Label(css_classes=["dnd-label"]),
                 dnd_switch,
             ],
         )
@@ -126,18 +129,26 @@ class IntegratedCenter(widgets.Window):
             halign="center",
         )
 
+        bottom_bar = widgets.Box(
+            spacing=8,
+            css_classes=["left-bottom-bar"],
+            halign="fill",
+            valign="end",
+            child=[
+                dnd_box,
+                clear_btn,
+            ],
+        )
+
         left_column = widgets.Box(
             vertical=True,
             css_classes=["left-column"],
             child=[
                 notif_scroll,
-                clear_btn,
-                dnd_box,
+                bottom_bar,
             ],
         )
 
-        # ── right column: weather + calendar + tasks ─────────────
-        # Compact weather at top (same API as your bar / popup)
         self._weather_icon = widgets.Icon(
             image="weather-clouds-symbolic",
             pixel_size=32,
@@ -167,7 +178,7 @@ class IntegratedCenter(widgets.Window):
         self._calendar = widgets.Calendar(
             css_classes=["center-calendar"],
             show_day_names=True,
-            show_heading=True,
+            show_heading=False,
         )
 
         # Tasks list
