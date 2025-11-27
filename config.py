@@ -28,6 +28,9 @@ from modules.osd.workspace_osd import init_workspace_osd, set_bar_visibility
 # Import recorder module
 from modules.recorder.recorder import register_recorder_commands
 
+# Import weather
+from modules.weather.weather_window import toggle_weather_popup
+
 css = CssManager.get_default()
 
 
@@ -85,12 +88,10 @@ for i in range(utils.get_n_monitors()):
 # Register commands
 command_manager = CommandManager.get_default()
 
-# Launcher
 command_manager.add_command("launcher-toggle", toggle_launcher)
-
-# Submap OSD commands (for bash watcher)
 command_manager.add_command("submap-show", show_submap_osd)
 command_manager.add_command("submap-hide", hide_submap_osd)
+command_manager.add_command("weather-popup-toggle", toggle_weather_popup)
 
 # Register recorder commands
 register_recorder_commands()
