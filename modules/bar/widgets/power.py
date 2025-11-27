@@ -69,44 +69,43 @@ def confirm_dialog(title: str, message: str, on_confirm):
 # POWER MENU
 # ---------------------------------------------------------------
 def power_menu():
-    model = IgnisMenuModel(
-        # --- Lock ---
-        IgnisMenuItem(
-            label="Lock",
-            on_activate=lambda *_: exec_async("hyprlock"),
-        ),
-        # --- Suspend ---
-        IgnisMenuItem(
-            label="Suspend",
-            on_activate=lambda *_: exec_async("systemctl suspend"),
-        ),
-        # --- Reboot ---
-        IgnisMenuItem(
-            label="Reboot",
-            on_activate=lambda *_: confirm_dialog(
-                "Reboot System",
-                "Are you sure you want to reboot?",
-                on_confirm=lambda: exec_async("systemctl reboot"),
-            ),
-        ),
-        # --- Shutdown ---
-        IgnisMenuItem(
-            label="Shutdown",
-            on_activate=lambda *_: confirm_dialog(
-                "Power Off",
-                "Are you sure you want to shut down?",
-                on_confirm=lambda: exec_async("systemctl poweroff"),
-            ),
-        ),
-        # --- Logout ---
-        IgnisMenuItem(
-            label="Logout",
-            on_activate=lambda *_: confirm_dialog(
+    menu_items = [
+        ("Lock", lambda *_: exec_async("hyprlock"), "cyan"),
+        (
+            "Logout",
+            lambda *_: confirm_dialog(
                 "Logout",
                 "Are you sure you want to log out?",
                 on_confirm=lambda: exec_async("hyprctl dispatch exit 0"),
             ),
+            "cyan",
         ),
+        ("Suspend", lambda *_: exec_async("systemctl suspend"), "cyan"),
+        (
+            "Reboot",
+            lambda *_: confirm_dialog(
+                "Reboot System",
+                "Are you sure you want to reboot?",
+                on_confirm=lambda: exec_async("systemctl reboot"),
+            ),
+            "red",
+        ),
+        (
+            "Shutdown",
+            lambda *_: confirm_dialog(
+                "Power Off",
+                "Are you sure you want to shut down?",
+                on_confirm=lambda: exec_async("systemctl poweroff"),
+            ),
+            "red",
+        ),
+    ]
+
+    model = IgnisMenuModel(
+        *[
+            IgnisMenuItem(label=label, on_activate=action)
+            for label, action, _ in menu_items
+        ]
     )
 
     menu = widgets.PopoverMenu(

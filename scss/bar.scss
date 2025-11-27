@@ -242,3 +242,25 @@ tooltip label,
 .confirm-ok:hover {
   background: lighten($red, 10%);
 }
+
+/* Power menu dot colors */
+.power-menu-popover modelbutton label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: inherit;
+}
+
+.power-menu-popover modelbutton:nth-child(1) label,
+.power-menu-popover modelbutton:nth-child(2) label,
+.power-menu-popover modelbutton:nth-child(3) label {
+  color: $tx-1;
+}
+.power-menu-popover modelbutton:nth-child(4) label,
+.power-menu-popover modelbutton:nth-child(5) label {
+  color: $red;
+}
+
+/* Hover effect - brighten the whole item */
+.power-menu-popover modelbutton:hover label {
+  color: $tx-2;
+}
