@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 
 from gi.repository import Gdk, GioUnix
+
 from ignis import utils, widgets
 from ignis.menu_model import IgnisMenuItem, IgnisMenuModel, IgnisMenuSeparator
 from ignis.services.applications import (

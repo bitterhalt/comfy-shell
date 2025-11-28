@@ -68,11 +68,6 @@ def save_tasks(tasks):
 
 
 class IntegratedCenter(widgets.Window):
-    """
-    GNOME-style notification center with two columns:
-    - left: notifications + DND toggle
-    - right: weather (small), calendar, tasks, Add Task
-    """
 
     # ── visibility animation ─────────────────────────────────────
 

@@ -40,7 +40,7 @@
 .app-item {
   all: unset;
   background: $bg-2;
-  border: 1px solid $ui-1;
+  border: 1px solid transparent;
   border-radius: 8px;
   padding: 12px 16px;
   margin-top: 8px;
@@ -52,7 +52,7 @@
 .app-item:hover,
 .app-item:focus {
   background: $ui-2;
-  border-color: $cyan;
+  transform: translateX(4px);
 }
 
 .app-name {
@@ -70,7 +70,7 @@
   background: $bg-2;
   border: 1px solid transparent;
   border-radius: 8px;
-  padding: 10px 16px;
+  padding: 12px 16px;
   margin-top: 8px;
   transition:
     background 0.2s,
@@ -81,7 +81,6 @@
 .emoji-item:hover,
 .emoji-item:focus {
   background: $ui-2;
-  border-color: $cyan;
   transform: translateX(4px);
 }
 
@@ -125,7 +124,6 @@
 .calc-result:hover,
 .calc-result:focus {
   background: $ui-2;
-  border-color: $cyan;
   transform: translateX(4px);
 }
 
@@ -148,7 +146,6 @@
 .calc-answer {
   font-size: 1.2rem;
   font-weight: 600;
-  color: $cyan;
   margin-top: 4px;
   font-family: "Cascadia Code", monospace;
 }

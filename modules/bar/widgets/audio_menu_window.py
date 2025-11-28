@@ -1,4 +1,4 @@
-from ignis import utils, widgets
+from ignis import widgets
 from ignis.services.audio import AudioService
 
 audio = AudioService.get_default()
@@ -90,7 +90,7 @@ class AudioSection(widgets.Box):
         arrow_btn = widgets.Button(
             css_classes=["audio-menu-expand-btn"],
             child=self._arrow,
-            on_click=lambda *_: self._toggle_revealer(),
+            on_click=lambda *_: self._toggle_list(),
         )
 
         # Main row
@@ -99,32 +99,26 @@ class AudioSection(widgets.Box):
             child=[mute_btn, slider, arrow_btn],
         )
 
-        # Device list revealer
-        self._revealer = widgets.Revealer(
-            reveal_child=False,
-            transition_type="slide_down",
-            transition_duration=180,
-        )
-
+        # Device list (no revealer, just a box)
         self._device_list = widgets.Box(
             vertical=True,
             spacing=4,
+            visible=False,  # Hidden by default
         )
-        self._revealer.child = self._device_list
 
         # Build section
-        self.child = [row, self._revealer]
+        self.child = [row, self._device_list]
 
         # Populate devices
         self._populate_devices()
         audio.connect(f"{device_type}-added", lambda *_: self._populate_devices())
         audio.connect(f"notify::{device_type}", lambda *_: self._populate_devices())
 
-    def _toggle_revealer(self):
+    def _toggle_list(self):
         """Toggle device list visibility"""
-        new_state = not self._revealer.reveal_child
+        new_state = not self._device_list.visible
         self._arrow.rotated = new_state
-        self._revealer.reveal_child = new_state
+        self._device_list.visible = new_state
 
     def _populate_devices(self):
         """Populate device list"""
@@ -158,20 +152,12 @@ class AudioMenuWindow(widgets.Window):
             ],
         )
 
-        # Revealer for animation
-        self._revealer = widgets.Revealer(
-            child=content,
-            reveal_child=False,
-            transition_type="slide_down",
-            transition_duration=180,
-        )
-
-        # Centered container
+        # Centered container (no revealer)
         centered = widgets.Box(
             valign="start",
             halign="end",
             css_classes=["audio-menu-container"],
-            child=[self._revealer],
+            child=[content],
         )
 
         # Click outside to close overlay
@@ -201,15 +187,7 @@ class AudioMenuWindow(widgets.Window):
 
     def toggle(self):
         """Toggle menu visibility"""
-        if not self.visible:
-            self.visible = True
-            utils.Timeout(10, lambda: setattr(self._revealer, "reveal_child", True))
-        else:
-            self._revealer.reveal_child = False
-            utils.Timeout(
-                self._revealer.transition_duration,
-                lambda: setattr(self, "visible", False),
-            )
+        self.visible = not self.visible
 
 
 # Global instance
