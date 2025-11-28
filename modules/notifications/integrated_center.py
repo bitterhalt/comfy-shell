@@ -68,19 +68,8 @@ def save_tasks(tasks):
 
 
 class IntegratedCenter(widgets.Window):
-
-    # ── visibility animation ─────────────────────────────────────
-
-    def _on_visible_change(self, *_):
-        if self.visible:
-            utils.Timeout(
-                10,
-                lambda: setattr(self._revealer, "reveal_child", True),
-            )
-        else:
-            self._revealer.reveal_child = False
-
     def __init__(self):
+        # ── left column: notifications ──────────────────────────
         self._notif_list = widgets.Box(vertical=True, css_classes=["content-list"])
         self._notif_empty = widgets.Label(
             label="No notifications",
@@ -144,6 +133,7 @@ class IntegratedCenter(widgets.Window):
             ],
         )
 
+        # ── right column: weather + calendar + tasks ────────────
         self._weather_icon = widgets.Icon(
             image="weather-clouds-symbolic",
             pixel_size=32,
@@ -208,26 +198,26 @@ class IntegratedCenter(widgets.Window):
             child=[weather_compact, self._calendar, task_scroll, add_task_btn],
         )
 
-        # ── two-column layout in a single revealer ────────────────
+        # Main two-column content
         two_columns = widgets.Box(
             css_classes=["integrated-center"],
             child=[left_column, right_column],
         )
-
         self._main_content = two_columns
 
-        self._revealer = widgets.Revealer(
-            child=two_columns,
-            reveal_child=False,
-            transition_type="slide_down",
-            transition_duration=180,
+        # Wrapper for main content + dialogs
+        self._stack = widgets.Box(
+            vertical=True,
+            halign="center",
+            valign="start",
+            child=[two_columns],
         )
 
         centered = widgets.Box(
             valign="start",
             halign="center",
             css_classes=["center-container"],
-            child=[self._revealer],
+            child=[self._stack],
         )
 
         overlay_button = widgets.Button(
@@ -253,8 +243,6 @@ class IntegratedCenter(widgets.Window):
             child=root_overlay,
             kb_mode="on_demand",
         )
-
-        self.connect("notify::visible", self._on_visible_change)
 
         # initial load
         self._load_notifications()
@@ -369,7 +357,7 @@ class IntegratedCenter(widgets.Window):
         self._reload_tasks()
 
     # ───────────────────────────────────────────────────────────
-    # weather (mini, using your async API)
+    # weather
     # ───────────────────────────────────────────────────────────
 
     def _update_weather(self, *_):
@@ -395,22 +383,21 @@ class IntegratedCenter(widgets.Window):
         self._weather_icon.set_tooltip_text(tooltip)
 
     # ───────────────────────────────────────────────────────────
-    # dialog handling (no more tiny window)
+    # dialog handling
     # ───────────────────────────────────────────────────────────
 
     def _show_dialog(self, dialog):
         """
-        Show Add/Edit dialog as a centered card, full width of the center.
-        No flexbox / CSS hacks, just direct child of the revealer.
+        Show Add/Edit dialog as a centered card inside the center.
         """
-        # Ensure dialog expands enough, actual look is handled by CSS .add-task-dialog
-        dialog.hexpand = True
+        dialog.hexpand = False
         dialog.vexpand = False
-        self._revealer.child = dialog
+        dialog.halign = "center"
+        self._stack.child = [dialog]
 
     def _hide_dialog(self):
         """Return to main two-column layout."""
-        self._revealer.child = self._main_content
+        self._stack.child = [self._main_content]
 
     def _open_add_dialog(self):
         dlg = AddTaskDialog(

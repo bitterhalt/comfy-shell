@@ -4,23 +4,29 @@ from ignis.services.notifications import Notification, NotificationService
 notifications = NotificationService.get_default()
 
 
+# =====================================================================
+#  NOTIFICATION WIDGET (single cards)
+# =====================================================================
+
+
 class NotificationWidget(widgets.Box):
-    """Individual notification widget with close button and actions"""
+    """Single popup notification card."""
 
     def __init__(self, notification: Notification):
-        # Determine urgency CSS class first
         urgency_class = "notif-box"
         title_class = "notif-title"
         body_class = "notif-body"
 
-        if notification.urgency == 0:  # Low Urgency
+        if notification.urgency == 0:
             urgency_class = "notif-low"
-        elif notification.urgency == 2:  # Critical Urgency
+        elif notification.urgency == 2:
             urgency_class = "notif-critical"
             title_class = "notif-title-critical"
             body_class = "notif-body-critical"
 
-        # Icon if available, otherwise colored dot
+        # ─────────────────────────────────────────────
+        # ICON or colored dot
+        # ─────────────────────────────────────────────
         if notification.icon:
             icon_widget = widgets.Icon(
                 image=notification.icon,
@@ -38,150 +44,162 @@ class NotificationWidget(widgets.Box):
                 valign="start",
             )
 
-        # Summary and body labels with urgency-specific classes
+        # Text
         summary = widgets.Label(
-            ellipsize="end",
             label=notification.summary,
-            halign="start",
             visible=notification.summary != "",
+            ellipsize="end",
+            halign="start",
             css_classes=[title_class],
         )
 
         body = widgets.Label(
             label=notification.body,
+            visible=notification.body != "",
             ellipsize="end",
             halign="start",
             css_classes=[body_class],
-            visible=notification.body != "",
         )
 
         # Close button
         close_btn = widgets.Button(
             child=widgets.Icon(image="window-close-symbolic", pixel_size=20),
+            css_classes=["notif-close"],
             halign="end",
             valign="start",
             hexpand=True,
-            css_classes=["notif-close"],
-            on_click=lambda x: notification.close(),
+            on_click=lambda *_: notification.close(),
         )
 
-        # Text container
         text_box = widgets.Box(
             vertical=True,
+            spacing=4,
             style="margin-left: 0.75rem;",
             child=[summary, body],
         )
 
-        # Main content box
-        content = widgets.Box(
+        main_row = widgets.Box(
+            spacing=8,
             child=[icon_widget, text_box, close_btn],
         )
 
-        # Action buttons (if any)
-        action_box = widgets.Box(
-            child=[
-                widgets.Button(
-                    child=widgets.Label(label=action.label),
-                    on_click=lambda x, action=action: action.invoke(),
-                    css_classes=["notif-action"],
-                )
-                for action in notification.actions
-            ],
-            homogeneous=True,
-            style="margin-top: 0.75rem;" if notification.actions else "",
-            spacing=10,
-        )
+        # Actions (optional)
+        if notification.actions:
+            action_row = widgets.Box(
+                spacing=10,
+                homogeneous=True,
+                style="margin-top: 0.75rem;",
+                child=[
+                    widgets.Button(
+                        child=widgets.Label(label=action.label),
+                        css_classes=["notif-action"],
+                        on_click=lambda *_a, action=action: action.invoke(),
+                    )
+                    for action in notification.actions
+                ],
+            )
+            children = [main_row, action_row]
+        else:
+            children = [main_row]
 
         super().__init__(
             vertical=True,
+            spacing=6,
             css_classes=[urgency_class],
-            child=[content, action_box] if notification.actions else [content],
+            child=children,
         )
 
 
-class Popup(widgets.Revealer):
-    """Animated popup wrapper for notifications"""
+# =====================================================================
+#  ANIMATION-FREE POPUP WRAPPER
+# =====================================================================
+
+
+class Popup(widgets.Box):
+    """
+    A notification entry in the popup stack.
+    """
 
     def __init__(self, notification: Notification):
-        self._notification = notification
-
-        widget = NotificationWidget(notification)
-
         super().__init__(
-            transition_type="slide_down",
-            transition_duration=300,
-            reveal_child=False,
-            child=widget,
+            vertical=True,
+            child=[NotificationWidget(notification)],
         )
 
-        notification.connect("dismissed", lambda x: self.destroy())
-        notification.connect("closed", lambda x: self.destroy())
+        self._notification = notification
+
+        notification.connect("closed", lambda *_: self.destroy())
+        notification.connect("dismissed", lambda *_: self.destroy())
 
     def destroy(self):
-        """Animated destruction of the popup"""
-        self.reveal_child = False
-        utils.Timeout(self.transition_duration, self.unparent)
+        """Remove popup instantly"""
+        self.visible = False
+        utils.Timeout(1, self.unparent)
+
+
+# =====================================================================
+#  CONTAINER WINDOW
+# =====================================================================
 
 
 class NotificationPopup(widgets.Window):
-    """Main notification popup window"""
+    """
+    Notification popup window on each monitor.
+    No animations → Hyprland handles fade/slide.
+    """
 
     def __init__(self, monitor: int):
         self._notif_box = widgets.Box(
             vertical=True,
+            spacing=8,
             valign="start",
             halign="end",
         )
 
         super().__init__(
-            anchor=["right", "top"],
+            anchor=["top", "right"],
             monitor=monitor,
             namespace=f"ignis_NOTIFICATION_POPUP_{monitor}",
             layer="overlay",
-            child=self._notif_box,
-            visible=False,
             css_classes=["notification-window"],
+            visible=False,
+            child=self._notif_box,
         )
 
-        # Connect to new notifications
         notifications.connect("new_popup", self._on_new_popup)
 
+    # ────────────────────────────────────────────────
+    # When a new notification arrives
+    # ────────────────────────────────────────────────
     def _on_new_popup(self, service, notification):
-        """Add new notification popup"""
         popup = Popup(notification)
         self._notif_box.prepend(popup)
 
-        # Show window only if we have actual content
         if not self.visible:
             self.visible = True
 
-        # Reveal after adding to DOM
-        utils.Timeout(10, popup.set_reveal_child, True)
-
-        # Hide window when notification closes
-        notification.connect("closed", lambda x: self._check_if_empty())
-        notification.connect("dismissed", lambda x: self._check_if_empty())
+        # When notification closes → possibly hide window
+        notification.connect("closed", lambda *_: self._check_if_empty())
+        notification.connect("dismissed", lambda *_: self._check_if_empty())
 
     def _check_if_empty(self):
-        """Hide window if no popups remain"""
-        # Use longer delay to account for animation + any stragglers
-        utils.Timeout(400, self._do_check)
+        utils.Timeout(50, self._do_check)
 
     def _do_check(self):
-        """Actually check and hide window if empty"""
-        # Count children that are actually visible and mapped
-        visible_children = [
-            c for c in self._notif_box.child if c.get_visible() and c.get_mapped()
-        ]
+        """Hide window if no popups remain."""
+        remaining = [c for c in self._notif_box.child if c.visible]
 
-        # Only hide if truly empty
-        if len(visible_children) == 0:
+        if not remaining:
             self.visible = False
 
 
-def init_notifications():
-    """Initialize notification popups for all monitors"""
-    from ignis import utils
+# =====================================================================
+#  INITIALIZER
+# =====================================================================
 
-    for i in range(utils.get_n_monitors()):
+
+def init_notifications():
+    import ignis.utils as _utils
+
+    for i in range(_utils.get_n_monitors()):
         NotificationPopup(i)

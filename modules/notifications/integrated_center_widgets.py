@@ -1,5 +1,3 @@
-# modules/notifications/integrated_center_widgets.py
-
 import time
 from datetime import datetime, timedelta
 
@@ -12,7 +10,7 @@ from ignis.services.notifications import Notification
 
 
 def format_time_until(fire_at: int) -> str:
-    """Human-friendly time delta string for a future timestamp."""
+    """Human-friendly time delta stroot_overlaying for a future timestamp."""
     now = int(time.time())
     diff = fire_at - now
     if diff < 0:
@@ -178,7 +176,7 @@ class TaskItem(widgets.Box):
 
 
 # ═══════════════════════════════════════════════════════════════
-# ADD TASK DIALOG  (FIXED)
+# ADD TASK DIALOG
 # ═══════════════════════════════════════════════════════════════
 
 
