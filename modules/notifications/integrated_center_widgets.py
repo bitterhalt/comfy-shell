@@ -213,13 +213,6 @@ class AddTaskDialog(widgets.Box):
         )
         self._date.text = now.strftime("%d-%m-%Y")
 
-        # Quick date buttons
-        today_btn = widgets.Button(
-            child=widgets.Label(label="Today"),
-            css_classes=["date-btn"],
-            on_click=lambda *_: self._set_date_offset(0),
-        )
-
         tomorrow_btn = widgets.Button(
             child=widgets.Label(label="Tomorrow"),
             css_classes=["date-btn"],
@@ -258,7 +251,6 @@ class AddTaskDialog(widgets.Box):
                     child=[
                         widgets.Label(label="Date:", css_classes=["input-label"]),
                         self._date,
-                        today_btn,
                         tomorrow_btn,
                     ],
                 ),

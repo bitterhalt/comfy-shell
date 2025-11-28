@@ -20,54 +20,68 @@
   background-color: $bg-1;
   border: none;
   border-radius: 16px;
-  // min-width: 832px; /* 52rem */
-  min-height: 472px; /* 42rem */
+  min-height: 472px;
   box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.35);
   margin: 4px;
 }
 
 /* ───────────────────────────────────────────────────────────────
-   TWO COLUMN LAYOUT
+   TWO COLUMNS
    ─────────────────────────────────────────────────────────────── */
 
 .left-column {
-  min-width: 416px; /* 26rem */
+  min-width: 416px;
   border-right: 1px solid $ui-1;
-  padding: 12px 0;
+  padding: 12px 0 20px 0;
 }
 
 .right-column {
   padding: 12px 0;
-  // min-width: 416px;
 }
 
 /* ───────────────────────────────────────────────────────────────
-   COLUMN HEADER (compact)
+   HEADER ACTIONS
    ─────────────────────────────────────────────────────────────── */
-
-.column-header {
-  padding: 0 16px 8px 16px;
-  border-bottom: none;
-  margin-bottom: 8px;
-}
 
 .header-action-btn {
   all: unset;
   color: $tx-3;
   padding: 0 20px;
   border-radius: 6px;
-  font-size: 13px; /* 0.85rem */
+  font-size: 13px;
   transition: background-color 0.15s;
-}
 
-.header-action-btn:hover {
-  color: $tx-2;
-  background-color: transparent;
+  &:hover {
+    color: $tx-2;
+  }
 }
 
 /* ───────────────────────────────────────────────────────────────
-   CALENDAR (top of right column)
+   CALENDAR EXPANDER
    ─────────────────────────────────────────────────────────────── */
+
+.calendar-expander {
+  all: unset;
+  background-color: rgba($tx-1, 0.06);
+  border-radius: 12px;
+  padding: 4px;
+  margin: 8px 12px 4px 12px;
+  transition: background-color 0.15s;
+
+  .calendar-expander-icon {
+    opacity: 0.7;
+  }
+
+  &:hover {
+    background-color: rgba($tx-1, 0.12);
+  }
+}
+
+.calendar-box {
+  margin-bottom: 10px;
+}
+
+/* Calendar widget */
 
 .center-calendar {
   all: unset;
@@ -76,138 +90,101 @@
   border-radius: 10px;
   padding: 8px;
   margin: 12px;
-}
 
-.center-calendar:selected {
-  background-color: $cyan;
-  color: $bg-1;
-  border-radius: 4px;
-}
-
-.center-calendar header {
-  background-color: transparent;
-  border: none;
-  padding: 4px;
-}
-
-.center-calendar .day-number {
-  color: $tx-2;
-}
-
-.center-calendar .today {
-  background-color: $bg-2;
-  color: $magenta;
-  font-weight: 600;
-  border-radius: 4px;
-}
-
-.center-calendar .other-month {
-  color: $tx-3;
-  opacity: 0.5;
+  .day-number {
+    color: $tx-2;
+  }
+  .today {
+    color: $magenta;
+    font-weight: 600;
+  }
+  .other-month {
+    color: $tx-3;
+    opacity: 0.5;
+  }
 }
 
 /* ───────────────────────────────────────────────────────────────
-   DND TOGGLE (bottom of left column)
+   MEDIA PILL (MPRIS)
    ─────────────────────────────────────────────────────────────── */
 
-.dnd-box {
-  padding: 8px;
+.media-center-wrapper {
+  margin: 8px 12px 12px 12px;
 }
 
-.dnd-label {
-  color: $tx-1;
-  font-size: 15px; /* 0.95rem */
+.media-pill {
+  background-color: $bg-2;
+  border: 1px solid $ui-1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  min-width: 248px;
+
+  &:hover {
+    background-color: $ui-2;
+    border-color: $ui-2;
+  }
 }
 
-.dnd-box switch {
-  background-color: $ui-1;
-  border-radius: 10px;
-  padding: 0 6px;
-  min-height: 24px;
+.media-pill-icon {
+  color: $tx-2;
+}
+.media-pill-title {
+  color: $tx-2;
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.dnd-box switch trough {
-  background-color: $ui-2;
-  border-radius: 10px;
-  transition: background-color 0.2s;
-}
+.media-pill-button {
+  all: unset;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background-color 0.15s;
 
-.dnd-box switch slider {
-  background-color: $bg-1;
-  border-radius: 10px;
-  margin: 4px 0px;
-  transition: transform 0.2s;
-}
-
-.dnd-box switch:checked {
-  background-color: $red;
+  &:hover {
+    background-color: $ui-3;
+  }
 }
 
 /* ───────────────────────────────────────────────────────────────
-   WEATHER (compact strip at very top of right column)
+   WEATHER
    ─────────────────────────────────────────────────────────────── */
 
 .weather-compact {
   all: unset;
   padding: 8px 16px;
-  margin: 0 12px 0px 12px;
+  margin: 0 12px;
   background-color: $bg-2;
   border: 1px solid $ui-1;
   border-radius: 8px;
   transition:
     background-color 0.15s,
     border-color 0.15s;
-}
 
-.weather-compact:hover {
-  background-color: $ui-2;
-  border-color: $ui-2;
+  &:hover {
+    background-color: $ui-2;
+    border-color: $ui-2;
+  }
 }
 
 .weather-temp-compact {
-  font-size: 17px; /* 1.1rem */
+  font-size: 17px;
   font-weight: 600;
   color: $tx-1;
-  min-width: 3rem;
 }
-
 .weather-desc-compact {
-  font-size: 13px; /* 0.8rem */
+  font-size: 13px;
   color: $tx-3;
 }
 
 /* ───────────────────────────────────────────────────────────────
-   ADD TASK BUTTON
-   ─────────────────────────────────────────────────────────────── */
-
-.add-task-btn {
-  all: unset;
-  background-color: $cyan;
-  color: $bg-1;
-  margin: 8px;
-  padding: 3px;
-  border-radius: 10px;
-  font-size: 14px; /* 0.9rem */
-  font-weight: 500;
-  transition: background-color 0.15s;
-}
-
-.add-task-btn:hover {
-  background-color: lighten($cyan, 10%);
-}
-
-.add-task-btn label {
-}
-
-/* ───────────────────────────────────────────────────────────────
-   CONTENT LISTS
+   LISTS: Notifications, Tasks
    ─────────────────────────────────────────────────────────────── */
 
 .content-list {
   padding: 0 12px;
 }
 
-/* Notification items */
+/* Notification item */
 
 .notif-history-item {
   background-color: $bg-2;
@@ -218,64 +195,29 @@
   transition:
     background-color 0.2s,
     border-color 0.2s;
+
+  &:hover {
+    background-color: $ui-2;
+    border-color: $ui-3;
+  }
 }
 
-.notif-history-item:hover {
-  background-color: $ui-2;
-  border-color: $ui-3;
-}
-
-.notif-history-dot {
-  font-size: 1.5rem;
-  line-height: 1;
-  margin-top: 2px;
-}
-
-.notif-history-dot.normal {
-  color: $cyan;
-}
-
-.notif-history-dot.critical {
-  color: $red;
-}
 .notif-history-title {
-  font-size: 15px; /* 0.95rem */
+  font-size: 15px;
   font-weight: 600;
   color: $tx-2;
-  margin-bottom: 2px;
-}
 
-.notif-history-title.critical {
-  color: $red;
+  &.critical {
+    color: $red;
+  }
 }
 
 .notif-history-body {
-  font-size: 13px; /* 0.85rem */
+  font-size: 13px;
   color: $tx-3;
-  line-height: 1.3;
 }
 
-.notif-history-body.critical {
-  color: $yellow;
-}
-
-.notif-history-close {
-  all: unset;
-  background-color: transparent;
-  border-radius: 16px;
-  padding: 2px;
-  min-width: 24px;
-  min-height: 24px;
-  transition: background-color 0.2s;
-  opacity: 0.5;
-}
-
-.notif-history-close:hover {
-  background-color: $ui-3;
-  opacity: 1;
-}
-
-/* Task items */
+/* Task item */
 
 .task-item {
   background-color: $bg-2;
@@ -286,151 +228,155 @@
   transition:
     background-color 0.2s,
     border-color 0.2s;
-}
 
-.task-item:hover {
-  background-color: $ui-2;
-  border-color: $ui-3;
+  &:hover {
+    background-color: $ui-2;
+    border-color: $ui-3;
+  }
 }
 
 .task-title {
-  font-size: 15px; /* 0.95rem */
   font-weight: 600;
   color: $tx-2;
 }
-
 .task-time {
-  font-size: 13px; /* 0.8rem */
+  font-size: 13px;
   color: $tx-3;
-  margin-top: 2px;
-}
-
-.task-actions-row {
-  padding-top: 6px;
-  margin-top: 4px;
-  border-top: 1px solid rgba($ui-1, 0.3);
 }
 
 .task-action-btn {
   all: unset;
   padding: 6px;
   border-radius: 10px;
+  opacity: 0.6;
   transition:
     background-color 0.15s,
-    color 0.15s;
-  opacity: 0.6;
-}
+    opacity 0.15s;
 
-.task-action-btn:hover {
-  opacity: 1;
+  &:hover {
+    opacity: 1;
+  }
 }
 
 .task-edit:hover {
   background-color: $yellow;
   color: $bg-1;
 }
-
 .task-complete:hover {
   background-color: $cyan;
   color: $bg-1;
 }
-
 .task-delete:hover {
   background-color: $red;
   color: $bg-1;
 }
 
-/* Empty states */
-
-.empty-state {
-  color: $tx-3;
-  font-size: 13px; /* 0.85rem */
-  padding: 20px;
-}
-
-/* ───────────────────────────────────────────────────────────────
-   ADD / EDIT TASK DIALOG
-   ─────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   TASK DIALOG
+   ═══════════════════════════════════════════════════════════════ */
 
 .add-task-dialog {
   background-color: $bg-1;
   border: 1px solid $ui-1;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 24px;
   margin: 40px 16px;
-  min-width: 512px; /* 32rem */
+  min-width: 480px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.35);
 }
 
 .dialog-title {
-  font-size: 18px; /* 1.2rem */
+  font-size: 18px;
   font-weight: 600;
   color: $tx-2;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
-/* Inputs inside dialogs */
+/* Inputs */
 
 .task-input {
   all: unset;
   background-color: $bg-2;
   border: 1px solid $ui-1;
   border-radius: 10px;
-  padding: 10px;
+  padding: 12px;
+  font-size: 15px;
   color: $tx-2;
-  font-size: 15px; /* 0.95rem */
-  caret-color: $tx-2;
+  caret-color: $tx-1;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s;
+
+  &:focus {
+    border-color: $ui-3;
+  }
 }
 
 .input-label {
-  color: $tx-2;
-  font-size: 14px; /* 0.9rem */
-  min-width: 50px;
+  color: $tx-3;
+  font-size: 14px;
+  min-width: 60px;
 }
 
-.date-btn {
-  all: unset;
-  background-color: $ui-2;
-  color: $tx-2;
-  padding: 6px 12px;
-  border-radius: 10px;
-  font-size: 14px; /* 0.9rem */
-  transition: background-color 0.15s;
-}
-
-.date-btn:hover {
-  background-color: $ui-3;
-}
-
-.dialog-footer {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid $ui-1;
-}
+/* Base dialog buttons (low specificity) */
 
 .dialog-btn {
-  all: unset;
-  padding: 8px 16px;
+  padding: 10px 18px;
   border-radius: 10px;
-  font-size: 14px; /* 0.9rem */
-  transition: background-color 0.15s;
+  font-weight: 600;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 
-.cancel-btn {
+/* Secondary button — Cancel / Tomorrow */
+
+.cancel-btn,
+.date-btn {
+  all: unset;
+  padding: 8px 18px;
+  margin: 4px;
+  font-weight: 600;
+  border-radius: 10px;
   background-color: $ui-2;
-  margin-right: 4px;
-  color: $tx-2;
+  color: $tx-1;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: $ui-3;
+  }
 }
 
-.cancel-btn:hover {
-  background-color: $ui-3;
-}
+/* Primary button — Add Task */
 
 .add-btn {
+  padding: 8px 18px;
+  margin: 4px;
+  border-radius: 10px;
   background-color: $cyan;
-  margin-left: 4px;
   color: $bg-1;
+  font-weight: 600;
+  transition:
+    background-color 0.15s,
+    transform 0.1s;
+
+  &:hover {
+    background-color: lighten($cyan, 10%);
+    transform: translateY(-1px);
+  }
 }
 
-.add-btn:hover {
-  background-color: lighten($cyan, 10%);
+/* "Add Task" button in main column */
+
+.add-task-btn {
+  all: unset;
+  color: $tx-1;
+  margin-top: 8px;
+  border-radius: 10px;
+  font-weight: 500;
+  transition: color 0.15s;
+
+  &:hover {
+    color: $cyan;
+  }
 }

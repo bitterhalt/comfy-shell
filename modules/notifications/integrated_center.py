@@ -14,6 +14,7 @@ from modules.notifications.integrated_center_widgets import (
     NotificationHistoryItem,
     TaskItem,
 )
+from modules.notifications.media import MediaCenterWidget  # ← MPRIS pill
 
 notifications = NotificationService.get_default()
 queue_file = Path("~/.local/share/timers/queue.json").expanduser()
@@ -133,7 +134,7 @@ class IntegratedCenter(widgets.Window):
             ],
         )
 
-        # ── right column: weather + calendar + tasks ────────────
+        # ── right column: weather + media pill + calendar + tasks ────────────
         self._weather_icon = widgets.Icon(
             image="weather-clouds-symbolic",
             pixel_size=32,
@@ -159,11 +160,36 @@ class IntegratedCenter(widgets.Window):
             ),
         )
 
-        # Calendar directly under weather
+        # MPRIS media pill
+        self._media_pill = MediaCenterWidget()
+
+        # Calendar (hidden behind expander)
         self._calendar = widgets.Calendar(
             css_classes=["center-calendar"],
             show_day_names=True,
             show_heading=False,
+        )
+
+        self._calendar_expanded = False
+
+        # Expander icon we can flip
+        self._calendar_expander_icon = widgets.Icon(
+            image="pan-down-symbolic",
+            pixel_size=18,
+            css_classes=["calendar-expander-icon"],
+        )
+
+        calendar_expander = widgets.Button(
+            css_classes=["calendar-expander"],
+            on_click=lambda *_: self._toggle_calendar(),
+            child=self._calendar_expander_icon,
+        )
+
+        self._calendar_box = widgets.Box(
+            vertical=True,
+            css_classes=["calendar-box"],
+            visible=False,  # start collapsed
+            child=[self._calendar],
         )
 
         # Tasks list
@@ -195,7 +221,14 @@ class IntegratedCenter(widgets.Window):
         right_column = widgets.Box(
             vertical=True,
             css_classes=["right-column"],
-            child=[weather_compact, self._calendar, task_scroll, add_task_btn],
+            child=[
+                weather_compact,
+                self._media_pill,  # ← MPRIS pill
+                calendar_expander,  # ← small arrow
+                self._calendar_box,  # ← collapsible calendar
+                task_scroll,
+                add_task_btn,
+            ],
         )
 
         # Main two-column content
@@ -252,6 +285,17 @@ class IntegratedCenter(widgets.Window):
         notifications.connect("notified", self._on_notified)
         utils.Poll(30000, lambda *_: self._reload_tasks())
         utils.Poll(600000, lambda *_: self._update_weather())
+
+    # ───────────────────────────────────────────────────────────
+    # calendar expander
+    # ───────────────────────────────────────────────────────────
+
+    def _toggle_calendar(self):
+        self._calendar_expanded = not self._calendar_expanded
+        self._calendar_box.visible = self._calendar_expanded
+        self._calendar_expander_icon.image = (
+            "pan-up-symbolic" if self._calendar_expanded else "pan-down-symbolic"
+        )
 
     # ───────────────────────────────────────────────────────────
     # weather popup opening
