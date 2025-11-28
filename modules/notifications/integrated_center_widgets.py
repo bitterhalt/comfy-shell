@@ -35,16 +35,26 @@ class NotificationHistoryItem(widgets.Box):
     """Item shown in the Integrated Center's notification list."""
 
     def __init__(self, notification: Notification):
-        # Colored dot uses color defined on popup.py
-        dot_color = "critical" if notification.urgency == 2 else "normal"
 
-        dot = widgets.Label(
-            label="●",
-            css_classes=["notif-popup-dot", dot_color],
-            halign="start",
-            valign="start",
-        )
+        # --- ICON OR DOT -----------------------------------------------------
+        if notification.icon:
+            icon_widget = widgets.Icon(
+                image=notification.icon,
+                pixel_size=32,
+                halign="start",
+                valign="start",
+                css_classes=["notif-history-icon"],
+            )
+        else:
+            dot_color = "critical" if notification.urgency == 2 else "normal"
+            icon_widget = widgets.Label(
+                label="●",
+                css_classes=["notif-popup-dot", dot_color],
+                halign="start",
+                valign="start",
+            )
 
+        # --- TITLE -----------------------------------------------------------
         title_css_classes = ["notif-history-title"]
         if notification.urgency == 2:
             title_css_classes.append("critical")
@@ -58,6 +68,7 @@ class NotificationHistoryItem(widgets.Box):
             wrap=True,
         )
 
+        # --- BODY ------------------------------------------------------------
         body = widgets.Label(
             label=notification.body,
             halign="start",
@@ -68,6 +79,7 @@ class NotificationHistoryItem(widgets.Box):
             wrap=True,
         )
 
+        # --- CLOSE BUTTON ----------------------------------------------------
         close_btn = widgets.Button(
             child=widgets.Icon(image="window-close-symbolic", pixel_size=18),
             css_classes=["notif-history-close"],
@@ -75,6 +87,7 @@ class NotificationHistoryItem(widgets.Box):
             on_click=lambda *_: notification.close(),
         )
 
+        # --- TEXT CONTAINER --------------------------------------------------
         text_box = widgets.Box(
             vertical=True,
             spacing=4,
@@ -82,12 +95,14 @@ class NotificationHistoryItem(widgets.Box):
             hexpand=True,
         )
 
+        # --- MAIN ROW --------------------------------------------------------
         super().__init__(
             css_classes=["notif-history-item"],
             spacing=12,
-            child=[dot, text_box, close_btn],
+            child=[icon_widget, text_box, close_btn],
         )
 
+        # When closed → hide
         notification.connect("closed", lambda *_: setattr(self, "visible", False))
 
 
