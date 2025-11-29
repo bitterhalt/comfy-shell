@@ -3,6 +3,7 @@ import fcntl
 import json
 import time
 from contextlib import contextmanager
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from ignis import utils, widgets
@@ -13,8 +14,9 @@ from modules.notifications.integrated_center_widgets import (
     EditTaskDialog,
     NotificationHistoryItem,
     TaskItem,
+    format_time_until,
 )
-from modules.notifications.media import MediaCenterWidget  # ← MPRIS pill
+from modules.notifications.media import MediaCenterWidget
 
 notifications = NotificationService.get_default()
 queue_file = Path("~/.local/share/timers/queue.json").expanduser()
@@ -69,8 +71,21 @@ def save_tasks(tasks):
 
 
 class IntegratedCenter(widgets.Window):
+    # ── visibility animation ─────────────────────────────────────
+
+    def _on_visible_change(self, *_):
+        if self.visible:
+            utils.Timeout(
+                10,
+                lambda: setattr(self._revealer, "reveal_child", True),
+            )
+        else:
+            self._revealer.reveal_child = False
+
     def __init__(self):
-        # ── left column: notifications ──────────────────────────
+        # ────────────────────────────────────────────────────────
+        # LEFT COLUMN – NOTIFICATIONS
+        # ────────────────────────────────────────────────────────
         self._notif_list = widgets.Box(vertical=True, css_classes=["content-list"])
         self._notif_empty = widgets.Label(
             label="No notifications",
@@ -134,7 +149,11 @@ class IntegratedCenter(widgets.Window):
             ],
         )
 
-        # ── right column: weather + media pill + calendar + tasks ────────────
+        # ────────────────────────────────────────────────────────
+        # RIGHT COLUMN – WEATHER + MEDIA + CALENDAR + TASKS
+        # ────────────────────────────────────────────────────────
+
+        # Weather (compact pill at top)
         self._weather_icon = widgets.Icon(
             image="weather-clouds-symbolic",
             pixel_size=32,
@@ -150,7 +169,6 @@ class IntegratedCenter(widgets.Window):
             max_width_chars=20,
         )
 
-        # Make weather clickable
         weather_compact = widgets.Button(
             css_classes=["weather-compact"],
             on_click=lambda *_: self._open_weather_popup(),
@@ -163,7 +181,7 @@ class IntegratedCenter(widgets.Window):
         # MPRIS media pill
         self._media_pill = MediaCenterWidget()
 
-        # Calendar (hidden behind expander)
+        # Calendar
         self._calendar = widgets.Calendar(
             css_classes=["center-calendar"],
             show_day_names=True,
@@ -172,27 +190,60 @@ class IntegratedCenter(widgets.Window):
 
         self._calendar_expanded = False
 
-        # Expander icon we can flip
-        self._calendar_expander_icon = widgets.Icon(
-            image="pan-down-symbolic",
-            pixel_size=18,
-            css_classes=["calendar-expander-icon"],
-        )
-
-        calendar_expander = widgets.Button(
+        self._calendar_expander_button = widgets.Button(
             css_classes=["calendar-expander"],
             on_click=lambda *_: self._toggle_calendar(),
-            child=self._calendar_expander_icon,
+            child=widgets.Icon(
+                image="pan-down-symbolic",
+                pixel_size=16,
+                css_classes=["calendar-expander-icon"],
+            ),
         )
 
         self._calendar_box = widgets.Box(
             vertical=True,
             css_classes=["calendar-box"],
-            visible=False,  # start collapsed
+            visible=False,
             child=[self._calendar],
         )
 
-        # Tasks list
+        # NEXT UPCOMING TASK PILL
+        self._next_task_title = widgets.Label(
+            label="No tasks for today",
+            halign="start",
+            ellipsize="end",
+            max_width_chars=30,
+            css_classes=["next-task-title"],
+        )
+
+        self._next_task_meta = widgets.Label(
+            label="",
+            halign="start",
+            css_classes=["next-task-meta"],
+            visible=False,
+        )
+
+        next_task_text_column = widgets.Box(
+            vertical=True,
+            hexpand=True,
+            css_classes=["next-task-text-column"],
+            child=[self._next_task_title, self._next_task_meta],
+        )
+
+        next_task_add_btn = widgets.Button(
+            child=widgets.Label(label="Add Task"),
+            css_classes=["add-task-btn"],
+            on_click=lambda *_: self._open_add_dialog(),
+            halign="end",
+        )
+
+        self._next_task_box = widgets.Box(
+            spacing=8,
+            css_classes=["next-task-box"],
+            child=[next_task_text_column, next_task_add_btn],
+        )
+
+        # TASK LIST (full list, only visible when calendar expanded)
         self._task_list = widgets.Box(vertical=True, css_classes=["content-list"])
         self._task_empty = widgets.Label(
             label="No tasks",
@@ -210,47 +261,44 @@ class IntegratedCenter(widgets.Window):
             vscrollbar_policy="automatic",
             child=task_content,
         )
-
-        # Add task button at bottom
-        add_task_btn = widgets.Button(
-            child=widgets.Label(label="Add Task"),
-            css_classes=["add-task-btn"],
-            on_click=lambda *_: self._open_add_dialog(),
-        )
+        task_scroll.visible = False
+        self._task_scroll = task_scroll
 
         right_column = widgets.Box(
             vertical=True,
             css_classes=["right-column"],
             child=[
                 weather_compact,
-                self._media_pill,  # ← MPRIS pill
-                calendar_expander,  # ← small arrow
-                self._calendar_box,  # ← collapsible calendar
-                task_scroll,
-                add_task_btn,
+                self._media_pill,
+                self._calendar_expander_button,
+                self._calendar_box,
+                self._next_task_box,
+                self._task_scroll,
             ],
         )
 
-        # Main two-column content
+        # ────────────────────────────────────────────────────────
+        # MAIN LAYOUT + WINDOW
+        # ────────────────────────────────────────────────────────
+
         two_columns = widgets.Box(
             css_classes=["integrated-center"],
             child=[left_column, right_column],
         )
         self._main_content = two_columns
 
-        # Wrapper for main content + dialogs
-        self._stack = widgets.Box(
-            vertical=True,
-            halign="center",
-            valign="start",
-            child=[two_columns],
+        self._revealer = widgets.Revealer(
+            child=two_columns,
+            reveal_child=False,
+            transition_type="slide_down",
+            transition_duration=180,
         )
 
         centered = widgets.Box(
             valign="start",
             halign="center",
             css_classes=["center-container"],
-            child=[self._stack],
+            child=[self._revealer],
         )
 
         overlay_button = widgets.Button(
@@ -277,6 +325,8 @@ class IntegratedCenter(widgets.Window):
             kb_mode="on_demand",
         )
 
+        self.connect("notify::visible", self._on_visible_change)
+
         # initial load
         self._load_notifications()
         self._reload_tasks()
@@ -287,15 +337,22 @@ class IntegratedCenter(widgets.Window):
         utils.Poll(600000, lambda *_: self._update_weather())
 
     # ───────────────────────────────────────────────────────────
-    # calendar expander
+    # calendar / tasks toggle
     # ───────────────────────────────────────────────────────────
 
     def _toggle_calendar(self):
         self._calendar_expanded = not self._calendar_expanded
         self._calendar_box.visible = self._calendar_expanded
-        self._calendar_expander_icon.image = (
+        self._task_scroll.visible = self._calendar_expanded
+
+        icon_name = (
             "pan-up-symbolic" if self._calendar_expanded else "pan-down-symbolic"
         )
+        # Button child is [Icon]; update it
+
+        child = self._calendar_expander_button.child
+        if isinstance(child, widgets.Icon):
+            child.image = icon_name
 
     # ───────────────────────────────────────────────────────────
     # weather popup opening
@@ -342,6 +399,7 @@ class IntegratedCenter(widgets.Window):
         tasks = [t for t in load_tasks() if t.get("fire_at", 0) > now]
         tasks.sort(key=lambda t: t["fire_at"])
 
+        # full list (used when calendar expanded)
         self._task_list.child = [
             TaskItem(
                 t,
@@ -353,6 +411,32 @@ class IntegratedCenter(widgets.Window):
             for t in tasks
         ]
         self._task_empty.visible = len(tasks) == 0
+
+        # next upcoming pill
+        if tasks:
+            next_task = tasks[0]
+            fire_at = next_task["fire_at"]
+            fire_dt = datetime.fromtimestamp(fire_at)
+            today = datetime.now().date()
+            tomorrow = today + timedelta(days=1)
+
+            if fire_dt.date() == today:
+                day_label = "Today"
+            elif fire_dt.date() == tomorrow:
+                day_label = "Tomorrow"
+            else:
+                day_label = fire_dt.strftime("%d.%m")
+
+            time_label = fire_dt.strftime("%H:%M")
+            remaining = format_time_until(fire_at)
+
+            self._next_task_title.label = next_task.get("message", "")
+            self._next_task_meta.label = f"{day_label} • {time_label} • {remaining}"
+            self._next_task_meta.visible = True
+        else:
+            self._next_task_title.label = "No tasks for today"
+            self._next_task_meta.visible = False
+
         return True
 
     def _add_task_and_refresh(self, task):
@@ -401,7 +485,7 @@ class IntegratedCenter(widgets.Window):
         self._reload_tasks()
 
     # ───────────────────────────────────────────────────────────
-    # weather
+    # weather (mini, using async API)
     # ───────────────────────────────────────────────────────────
 
     def _update_weather(self, *_):
@@ -434,14 +518,13 @@ class IntegratedCenter(widgets.Window):
         """
         Show Add/Edit dialog as a centered card inside the center.
         """
-        dialog.hexpand = False
+        dialog.hexpand = True
         dialog.vexpand = False
-        dialog.halign = "center"
-        self._stack.child = [dialog]
+        self._revealer.child = dialog
 
     def _hide_dialog(self):
         """Return to main two-column layout."""
-        self._stack.child = [self._main_content]
+        self._revealer.child = self._main_content
 
     def _open_add_dialog(self):
         dlg = AddTaskDialog(

@@ -237,7 +237,7 @@ class AddTaskDialog(widgets.Box):
             spacing=18,
             css_classes=["add-task-dialog"],
             child=[
-                widgets.Label(label="Add New Task", css_classes=["dialog-title"]),
+                widgets.Label(label="New Task", css_classes=["dialog-title"]),
                 widgets.Box(spacing=12, child=[self._message]),
                 widgets.Box(
                     spacing=12,
