@@ -7,6 +7,11 @@
   border: none;
 }
 
+.power-overlay-background {
+  all: unset;
+  background: rgba(0, 0, 0, 0.7);
+}
+
 .power-overlay {
   background: $bg-1;
   border: 1px solid $ui-1;
@@ -14,6 +19,7 @@
   padding: 32px;
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
 }
+
 .power-overlay-btn {
   all: unset;
   color: $tx-1;
