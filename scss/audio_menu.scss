@@ -59,7 +59,6 @@
 }
 
 .audio-menu-mute-btn {
-  color: $tx-1;
   border-radius: 6px;
   padding: 8px;
   transition: background 0.15s;
@@ -81,8 +80,18 @@
   }
 }
 
-.audio-menu-expand-btn {
+.audio-menu-settings-btn {
+  background: $ui-2;
   color: $tx-2;
+  border-radius: 8px;
+  padding: 12px 16px;
+  transition: background 0.15s;
+  &:hover {
+    color: $tx-3;
+  }
+}
+
+.audio-menu-expand-btn {
   background: transparent;
   border-radius: 6px;
   padding: 4px;
