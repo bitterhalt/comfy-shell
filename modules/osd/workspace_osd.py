@@ -26,7 +26,7 @@ class WorkspaceOSD(widgets.Window):
 
         icon = widgets.Icon(
             image="view-grid-symbolic",
-            pixel_size=24,
+            pixel_size=22,
             css_classes=["workspace-osd-icon"],
         )
 
