@@ -71,17 +71,6 @@ def save_tasks(tasks):
 
 
 class IntegratedCenter(widgets.Window):
-    # ── visibility animation ─────────────────────────────────────
-
-    def _on_visible_change(self, *_):
-        if self.visible:
-            utils.Timeout(
-                10,
-                lambda: setattr(self._revealer, "reveal_child", True),
-            )
-        else:
-            self._revealer.reveal_child = False
-
     def __init__(self):
         # ────────────────────────────────────────────────────────
         # LEFT COLUMN – NOTIFICATIONS
@@ -287,11 +276,12 @@ class IntegratedCenter(widgets.Window):
         )
         self._main_content = two_columns
 
+        # Revealer with NO animation (instant reveal)
         self._revealer = widgets.Revealer(
             child=two_columns,
-            reveal_child=False,
-            transition_type="slide_down",
-            transition_duration=180,
+            reveal_child=True,  # Always revealed
+            transition_type="none",  # No animation
+            transition_duration=0,
         )
 
         centered = widgets.Box(
@@ -324,8 +314,6 @@ class IntegratedCenter(widgets.Window):
             child=root_overlay,
             kb_mode="on_demand",
         )
-
-        self.connect("notify::visible", self._on_visible_change)
 
         # initial load
         self._load_notifications()
