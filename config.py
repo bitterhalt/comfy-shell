@@ -10,6 +10,9 @@ from modules.bar.bar import create_bar
 # Import bar toggle
 from modules.bar.bar_toggle import register_bar
 
+# Power menu overlay
+from modules.bar.widgets.power_overlay import toggle_power_overlay
+
 # Import launcher
 from modules.launcher.launcher import toggle_launcher
 
@@ -27,6 +30,7 @@ from modules.osd.workspace_osd import init_workspace_osd, set_bar_visibility
 
 # Import recorder module
 from modules.recorder.recorder import register_recorder_commands
+from modules.recorder.recording_overlay import toggle_recording_overlay
 
 # Import weather
 from modules.weather.weather_window import toggle_weather_popup
@@ -92,6 +96,7 @@ command_manager.add_command("launcher-toggle", toggle_launcher)
 command_manager.add_command("submap-show", show_submap_osd)
 command_manager.add_command("submap-hide", hide_submap_osd)
 command_manager.add_command("weather-popup-toggle", toggle_weather_popup)
-
+command_manager.add_command("recording-overlay-toggle", toggle_recording_overlay)
+command_manager.add_command("power-overlay-toggle", toggle_power_overlay)
 # Register recorder commands
 register_recorder_commands()
