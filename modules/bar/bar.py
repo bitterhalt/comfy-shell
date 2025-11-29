@@ -4,7 +4,7 @@ from modules.bar.widgets.audio_combined import audio_widgets
 from .widgets.battery import battery_widget
 from .widgets.clock import clock
 from .widgets.network import network_widget
-from .widgets.power import power_menu
+from .widgets.power_overlay import toggle_power_overlay
 from .widgets.recorder import recording_indicator
 from .widgets.title import window_title
 from .widgets.workspaces import workspaces
@@ -39,7 +39,14 @@ def right_section():
             network_widget(),
             audio_widgets(),
             battery_widget(),
-            power_menu(),
+            widgets.Button(
+                css_classes=["power-menu-button"],
+                on_click=lambda *_: toggle_power_overlay(),
+                child=widgets.Icon(
+                    image="system-shutdown-symbolic",
+                    pixel_size=22,
+                ),
+            ),
         ],
     )
 

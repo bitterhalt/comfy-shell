@@ -245,15 +245,18 @@ class WeatherPopup(widgets.Window):
 # SINGLETON API
 # ──────────────────────────────────────────────────────────────
 
-_weather_popup: Optional[WeatherPopup] = None
-
-
-def get_weather_popup() -> WeatherPopup:
-    global _weather_popup
-    if _weather_popup is None:
-        _weather_popup = WeatherPopup()
-    return _weather_popup
+# Example for weather popup
+_weather_popup = None
 
 
 def toggle_weather_popup():
-    get_weather_popup().toggle()
+    global _weather_popup
+
+    if _weather_popup is not None and _weather_popup.visible:
+        # Close and destroy
+        _weather_popup.close()
+        _weather_popup = None
+    else:
+        # Create new instance
+        _weather_popup = WeatherPopup()
+        _weather_popup.visible = True

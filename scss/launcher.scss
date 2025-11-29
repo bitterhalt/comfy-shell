@@ -51,6 +51,7 @@
 
 .app-item:hover,
 .app-item:focus {
+  border: 1px solid $ui-3;
   background: $ui-2;
   transform: translateX(4px);
 }
@@ -80,6 +81,7 @@
 
 .emoji-item:hover,
 .emoji-item:focus {
+  border: 1px solid $ui-3;
   background: $ui-2;
   transform: translateX(4px);
 }
