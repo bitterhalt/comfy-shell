@@ -3,36 +3,16 @@ import os
 from ignis import utils
 from ignis.command_manager import CommandManager
 from ignis.css_manager import CssInfoPath, CssManager
-
-# Import the main bar creation function
 from modules.bar.bar import create_bar
-
-# Import bar toggle
 from modules.bar.bar_toggle import register_bar
-
-# Power menu overlay
-from modules.bar.widgets.power_overlay import toggle_power_overlay
-
-# Import launcher
 from modules.launcher.launcher import toggle_launcher
-
-# Import notification popup initialization
 from modules.notifications.popup import init_notifications
-
-# Import task popup initialization
 from modules.notifications.task_popup import init_task_popup
-
-# Import submap OSD (display only - controlled by bash watcher)
 from modules.osd.submap_osd import hide_submap_osd, init_submap_osd, show_submap_osd
-
-# Import workspace OSD
 from modules.osd.workspace_osd import init_workspace_osd, set_bar_visibility
-
-# Import recorder module
+from modules.overlays.power_overlay import toggle_power_overlay
+from modules.overlays.recording_overlay import toggle_recording_overlay
 from modules.recorder.recorder import register_recorder_commands
-from modules.recorder.recording_overlay import toggle_recording_overlay
-
-# Import weather
 from modules.weather.weather_window import toggle_weather_popup
 
 css = CssManager.get_default()
