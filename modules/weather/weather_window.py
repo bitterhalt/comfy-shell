@@ -245,18 +245,35 @@ class WeatherPopup(widgets.Window):
 # SINGLETON API
 # ──────────────────────────────────────────────────────────────
 
-# Example for weather popup
 _weather_popup = None
+
+
+def reset_weather_popup():
+    """Force reset the weather popup instance (called from integrated center)"""
+    global _weather_popup
+
+    if _weather_popup is not None:
+        try:
+            if _weather_popup.visible:
+                _weather_popup.visible = False
+            _weather_popup.close()
+        except Exception:  # ← Change this from bare except:
+            pass  # Silently ignore cleanup errors
+
+    _weather_popup = None
 
 
 def toggle_weather_popup():
     global _weather_popup
 
+    # If popup exists and is visible, close it
     if _weather_popup is not None and _weather_popup.visible:
-        # Close and destroy
         _weather_popup.close()
         _weather_popup = None
-    else:
-        # Create new instance
+        return
+
+    # Create new instance
+    if _weather_popup is None:
         _weather_popup = WeatherPopup()
-        _weather_popup.visible = True
+
+    _weather_popup.visible = True

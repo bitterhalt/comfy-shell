@@ -348,10 +348,16 @@ class IntegratedCenter(widgets.Window):
 
     def _open_weather_popup(self):
         """Open the weather popup window"""
-        from modules.weather.weather_window import toggle_weather_popup
+        from modules.weather.weather_window import (
+            reset_weather_popup,
+            toggle_weather_popup,
+        )
 
-        # Close the integrated center
+        # Close the integrated center FIRST
         toggle_integrated_center()
+
+        # Reset any existing weather popup to ensure clean state
+        reset_weather_popup()
 
         # Open weather popup after a small delay
         utils.Timeout(200, toggle_weather_popup)
