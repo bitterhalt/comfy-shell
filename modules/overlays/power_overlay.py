@@ -170,7 +170,7 @@ class PowerOverlay(widgets.Window):
                         pixel_size=48,
                     ),
                     widgets.Label(
-                        label="Lock",
+                        label="[L]ock",
                         css_classes=["power-overlay-label"],
                     ),
                 ],
@@ -191,7 +191,7 @@ class PowerOverlay(widgets.Window):
                         pixel_size=48,
                     ),
                     widgets.Label(
-                        label="Logout",
+                        label="[L]ogout",
                         css_classes=["power-overlay-label"],
                     ),
                 ],
@@ -212,7 +212,7 @@ class PowerOverlay(widgets.Window):
                         pixel_size=48,
                     ),
                     widgets.Label(
-                        label="Suspend",
+                        label="z[Z]zz",
                         css_classes=["power-overlay-label"],
                     ),
                 ],
@@ -233,7 +233,7 @@ class PowerOverlay(widgets.Window):
                         pixel_size=48,
                     ),
                     widgets.Label(
-                        label="Reboot",
+                        label="[R]eboot",
                         css_classes=["power-overlay-label"],
                     ),
                 ],
@@ -254,7 +254,7 @@ class PowerOverlay(widgets.Window):
                         pixel_size=48,
                     ),
                     widgets.Label(
-                        label="Shutdown",
+                        label="[S]hutdown",
                         css_classes=["power-overlay-label"],
                     ),
                 ],
@@ -324,8 +324,34 @@ class PowerOverlay(widgets.Window):
         """Handle keyboard shortcuts"""
         keyname = Gdk.keyval_name(keyval)
 
+        # Escape to close
         if keyname == "Escape":
             self.toggle()
+            return True
+
+        # L - Lock
+        elif keyname.lower() == "l":
+            self._lock()
+            return True
+
+        # E - Exit (logout)
+        elif keyname.lower() == "e":
+            self._logout()
+            return True
+
+        # Z - Sleep (suspend)
+        elif keyname.lower() == "z":
+            self._suspend()
+            return True
+
+        # R - Reboot
+        elif keyname.lower() == "r":
+            self._reboot()
+            return True
+
+        # S - Shutdown
+        elif keyname.lower() == "s":
+            self._shutdown()
             return True
 
         return False
