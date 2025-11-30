@@ -27,6 +27,7 @@
   border-radius: 12px;
 }
 
+/* Search text NOTE: FIX HOVER? */
 .launcher-entry {
   all: unset;
   color: $tx-1;
@@ -53,7 +54,6 @@
 .app-item:focus {
   border: 1px solid $ui-3;
   background: $ui-2;
-  transform: translateX(4px);
 }
 
 .app-name {
@@ -83,11 +83,6 @@
 .emoji-item:focus {
   border: 1px solid $ui-3;
   background: $ui-2;
-  transform: translateX(4px);
-}
-
-.emoji-item:active {
-  transform: translateX(2px) scale(0.98);
 }
 
 .emoji-char {
@@ -126,11 +121,9 @@
 .calc-result:hover,
 .calc-result:focus {
   background: $ui-2;
-  transform: translateX(4px);
 }
 
 .calc-result:active {
-  transform: translateX(2px) scale(0.98);
 }
 
 .calc-icon {
