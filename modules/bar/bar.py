@@ -1,11 +1,10 @@
 from ignis import utils, widgets
-from modules.bar.widgets.audio_combined import audio_widgets
-from modules.overlays.power_overlay import toggle_power_overlay
+from modules.bar.widgets.volume_osd_watcher import init_volume_osd_watcher
 
 from .widgets.battery import battery_widget
 from .widgets.clock import clock
-from .widgets.network import network_widget
 from .widgets.recorder import recording_indicator
+from .widgets.system_indicator import system_indicator
 from .widgets.title import window_title
 from .widgets.workspaces import workspaces
 
@@ -36,17 +35,8 @@ def right_section():
         spacing=12,
         child=[
             recording_indicator(),
-            network_widget(),
-            audio_widgets(),
+            system_indicator(),  # unified clickable module for audio and network
             battery_widget(),
-            widgets.Button(
-                css_classes=["power-menu-button"],
-                on_click=lambda *_: toggle_power_overlay(),
-                child=widgets.Icon(
-                    image="system-shutdown-symbolic",
-                    pixel_size=22,
-                ),
-            ),
         ],
     )
 
@@ -58,6 +48,7 @@ def right_section():
 
 def create_bar(monitor_id: int = 0):
     monitor_name = utils.get_monitor(monitor_id).get_connector()
+    init_volume_osd_watcher()
 
     return widgets.Window(
         namespace=f"ignis_bar_{monitor_id}",

@@ -4,8 +4,13 @@ from ignis.services.audio import AudioService
 audio = AudioService.get_default()
 
 
+# ───────────────────────────────────────────────────────────────
+#  DEVICE ROW (CHECKMARK + NAME ONLY)
+# ───────────────────────────────────────────────────────────────
+
+
 class AudioDeviceItem(widgets.Button):
-    """Individual audio device button"""
+    """Individual audio device button (clean: no device icon)."""
 
     def __init__(self, stream, device_type: str):
         super().__init__(
@@ -14,15 +19,13 @@ class AudioDeviceItem(widgets.Button):
             child=widgets.Box(
                 spacing=10,
                 child=[
+                    # Checkmark for default device
                     widgets.Icon(
                         image="object-select-symbolic",
                         pixel_size=16,
                         visible=stream.bind("is_default"),
                     ),
-                    widgets.Icon(
-                        image=stream.icon_name,
-                        pixel_size=22,
-                    ),
+                    # Device name
                     widgets.Label(
                         label=stream.description,
                         ellipsize="end",
@@ -35,8 +38,13 @@ class AudioDeviceItem(widgets.Button):
         )
 
 
+# ───────────────────────────────────────────────────────────────
+#  AUDIO SECTION (DYNAMIC ICON + SLIDER + DEVICE LIST)
+# ───────────────────────────────────────────────────────────────
+
+
 class AudioSection(widgets.Box):
-    """Audio section with slider and expandable device list"""
+    """Audio section with slider and expandable device list."""
 
     def __init__(self, stream, device_type: str):
         super().__init__(vertical=True, spacing=10)
@@ -44,32 +52,36 @@ class AudioSection(widgets.Box):
         self.stream = stream
         self.device_type = device_type
 
-        # Mute button
+        # ─────────────────────────────────────────────
+        #  DYNAMIC ICON (bind only to is_muted)
+        #  The lambda reads stream.volume manually
+        # ─────────────────────────────────────────────
+        mute_icon = widgets.Icon(
+            image=stream.bind(
+                "is_muted",
+                lambda m: (
+                    # If muted → always show muted icon
+                    (
+                        "microphone-sensitivity-muted-symbolic"
+                        if device_type == "microphone"
+                        else "audio-volume-muted-symbolic"
+                    )
+                    if m
+                    else self._volume_icon(stream.volume)
+                ),
+            ),
+            pixel_size=22,
+        )
+
         mute_btn = widgets.Button(
             css_classes=["audio-menu-mute-btn"],
-            child=widgets.Icon(
-                image=stream.bind(
-                    "is_muted",
-                    lambda m: (
-                        (
-                            "audio-input-microphone-muted-symbolic"
-                            if device_type == "microphone"
-                            else "audio-volume-muted-symbolic"
-                        )
-                        if m
-                        else (
-                            "audio-input-microphone-symbolic"
-                            if device_type == "microphone"
-                            else "audio-volume-high-symbolic"
-                        )
-                    ),
-                ),
-                pixel_size=22,
-            ),
+            child=mute_icon,
             on_click=lambda *_: setattr(stream, "is_muted", not stream.is_muted),
         )
 
-        # Volume slider
+        # ─────────────────────────────────────────────
+        #  SLIDER (bind keeps it reactive)
+        # ─────────────────────────────────────────────
         slider = widgets.Scale(
             min=0,
             max=100,
@@ -80,7 +92,12 @@ class AudioSection(widgets.Box):
             css_classes=["audio-menu-slider"],
         )
 
-        # Arrow button for expanding device list
+        # Also update icon when slider moves
+        stream.connect("notify::volume", lambda *_: self._update_icon(mute_icon))
+
+        # ─────────────────────────────────────────────
+        #  EXPAND ARROW
+        # ─────────────────────────────────────────────
         self._arrow = widgets.Arrow(
             pixel_size=18,
             rotated=False,
@@ -93,116 +110,87 @@ class AudioSection(widgets.Box):
             on_click=lambda *_: self._toggle_list(),
         )
 
-        # Main row
+        # Row layout
         row = widgets.Box(
             spacing=2,
             child=[mute_btn, slider, arrow_btn],
         )
 
-        # Device list (no revealer, just a box)
+        # Device list container
         self._device_list = widgets.Box(
             vertical=True,
             spacing=4,
-            visible=False,  # Hidden by default
+            visible=False,
         )
 
-        # Build section
         self.child = [row, self._device_list]
 
-        # Populate devices
+        # Populate device list
         self._populate_devices()
         audio.connect(f"{device_type}-added", lambda *_: self._populate_devices())
         audio.connect(f"notify::{device_type}", lambda *_: self._populate_devices())
 
+    # ─────────────────────────────────────────────
+    #  ICON LOGIC
+    # ─────────────────────────────────────────────
+    def _volume_icon(self, vol: int):
+        """Return correct volume icon based on volume percent."""
+        if self.device_type == "microphone":
+            return "microphone-sensitivity-high-symbolic"
+
+        if vol <= 25:
+            return "audio-volume-low-symbolic"
+        elif vol <= 75:
+            return "audio-volume-medium-symbolic"
+        else:
+            return "audio-volume-high-symbolic"
+
+    def _update_icon(self, icon_widget):
+        """Update icon when volume changes."""
+        if self.stream.is_muted:
+            icon_widget.image = (
+                "microphone-sensitivity-muted-symbolic"
+                if self.device_type == "microphone"
+                else "audio-volume-muted-symbolic"
+            )
+        else:
+            icon_widget.image = self._volume_icon(self.stream.volume)
+
+    # ─────────────────────────────────────────────
+    #  DEVICE LIST MANAGEMENT
+    # ─────────────────────────────────────────────
     def _toggle_list(self):
-        """Toggle device list visibility"""
         new_state = not self._device_list.visible
         self._arrow.rotated = new_state
         self._device_list.visible = new_state
 
     def _populate_devices(self):
-        """Populate device list"""
         self._device_list.child = []
         streams = getattr(audio, f"{self.device_type}s", [])
-        for stream in streams:
-            self._device_list.append(AudioDeviceItem(stream, self.device_type))
+        for s in streams:
+            self._device_list.append(AudioDeviceItem(s, self.device_type))
+
+
+# ───────────────────────────────────────────────────────────────
+#  Deprecated old popup window (kept for compatibility)
+# ───────────────────────────────────────────────────────────────
 
 
 class AudioMenuWindow(widgets.Window):
-    """Popup audio menu - click outside to close"""
+    """Legacy popup kept only to avoid import errors."""
 
     def __init__(self):
-        speaker_section = AudioSection(
-            stream=audio.speaker,
-            device_type="speaker",
-        )
-
-        mic_section = AudioSection(
-            stream=audio.microphone,
-            device_type="microphone",
-        )
-
-        content = widgets.Box(
-            vertical=True,
-            spacing=4,
-            css_classes=["audio-menu"],
-            child=[
-                speaker_section,
-                mic_section,
-            ],
-        )
-
-        # Centered container (no revealer)
-        centered = widgets.Box(
-            valign="start",
-            halign="end",
-            css_classes=["audio-menu-container"],
-            child=[content],
-        )
-
-        # Click outside to close overlay
-        overlay_btn = widgets.Button(
-            vexpand=True,
-            hexpand=True,
-            can_focus=False,
-            css_classes=["audio-menu-overlay"],
-            on_click=lambda *_: self.toggle(),
-        )
-
-        root_overlay = widgets.Overlay(
-            child=overlay_btn,
-            overlays=[centered],
-        )
-
-        super().__init__(
-            visible=False,
-            anchor=["top", "bottom", "left", "right"],
-            namespace="ignis_AUDIO_MENU",
-            layer="top",
-            popup=True,
-            css_classes=["audio-menu-window"],
-            child=root_overlay,
-            kb_mode="on_demand",
-        )
+        super().__init__(visible=False)
 
     def toggle(self):
-        """Toggle menu visibility"""
         self.visible = not self.visible
 
 
-# Global instance
 _audio_menu_window = None
 
 
 def get_audio_menu_window():
-    """Get or create audio menu window"""
     global _audio_menu_window
     if _audio_menu_window is None:
         _audio_menu_window = AudioMenuWindow()
     return _audio_menu_window
-
-
-def toggle_audio_menu():
-    """Toggle audio menu"""
-    window = get_audio_menu_window()
-    window.toggle()

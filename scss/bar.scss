@@ -11,7 +11,7 @@
 
 .ws-btn {
   all: unset;
-  min-height: 14px;
+  // min-height: 24px;
   min-width: 16px;
   padding: 2px 6px;
   margin: 2px 0px;
@@ -32,7 +32,6 @@
 
 // RIGHT MODULES
 .clock,
-.timer-button,
 .clock-button,
 .audio-widget,
 .network-box {
@@ -89,7 +88,7 @@
 .audio-widget:hover,
 .clock-button:hover,
 .network-box:hover {
-  background: $hover-bg;
+  background: $bg-2;
   color: $tx-2;
 }
 
@@ -108,4 +107,96 @@ tooltip label,
   color: $tx-2;
   font-size: 0.95rem;
   font-weight: 400;
+}
+
+/* ───────────────────────────────────────────────
+   POPUP MENU
+   ─────────────────────────────────────────────── */
+
+.system-menu-window {
+  background-color: transparent;
+  border: none;
+}
+
+.system-menu-overlay {
+  all: unset;
+  background-color: transparent;
+}
+
+.system-menu-container {
+  margin-top: 10px;
+  margin-right: 10px;
+}
+
+/* Panel body  */
+.system-menu {
+  background-color: $bg-1;
+  border-radius: 16px;
+  box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.35);
+  padding: 10px 12px;
+}
+
+/* Pills row: network + airplane  */
+.sys-pills-row {
+  margin-top: 4px;
+}
+
+/* Base pill  */
+.sys-pill {
+  all: unset;
+  padding: 8px 16px;
+  background-color: $bg-2;
+  border: 1px solid $ui-1;
+  border-radius: 8px;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+
+.sys-pill:hover {
+  background-color: $ui-2;
+  border-color: $ui-2;
+}
+
+/* Network details list – Wi-Fi / Ethernet / VPN items */
+
+.net-wifi-item,
+.net-ethernet-item,
+.net-vpn-item {
+  background-color: $bg-2;
+  border: 1px solid $ui-1;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 4px;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+
+.net-wifi-item:hover,
+.net-ethernet-item:hover,
+.net-vpn-item:hover {
+  background-color: $ui-2;
+  border-color: $ui-2;
+}
+
+/* ───────────────────────────────────────────────
+   BAR CLUSTER (volume + mic + network)
+   ─────────────────────────────────────────────── */
+
+.system-indicator-button {
+  all: unset;
+  padding: 2px 6px;
+  margin: 2px 0px;
+  border-radius: 8px;
+  background-color: transparent;
+  transition: background-color 0.15s;
+}
+
+.system-indicator-button:hover {
+  background-color: $bg-2;
+}
+
+.system-indicator icon {
+  color: $tx-1;
 }
