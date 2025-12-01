@@ -1,13 +1,8 @@
-"""
-Task Notification Popup - Shows when a task/timer fires
-Appears in top-right corner with snooze and complete actions
-"""
-
 import time
 from datetime import datetime
 from pathlib import Path
 
-from ignis import widgets
+from ignis import utils, widgets
 
 # Import locking functions from integrated_center
 from modules.notifications.integrated_center import load_tasks, save_tasks
@@ -21,6 +16,7 @@ class TaskPopup(widgets.Revealer):
     def __init__(self, task, parent_window):
         self._task = task
         self._parent_window = parent_window
+        self._sound_timeout_id = None  # Track sound timeout for cleanup
 
         # Task icon
         icon = widgets.Icon(
@@ -124,12 +120,37 @@ class TaskPopup(widgets.Revealer):
             child=container,
         )
 
+        # Start sound loop when popup is created
+        self._play_sound()
+
+    def _play_sound(self):
+        """Play notification sound"""
+        try:
+            utils.exec_sh("canberra-gtk-play -i complete")
+        except Exception as e:
+            print(f"Failed to play sound: {e}")
+
+        # Schedule next sound in 20 seconds
+        self._sound_timeout_id = utils.Timeout(20000, self._play_sound)
+
+    def _stop_sound_loop(self):
+        """Stop the sound loop"""
+        if self._sound_timeout_id is not None:
+            try:
+                # Cancel the timeout if it exists
+                self._sound_timeout_id.cancel()
+            except:
+                pass
+            self._sound_timeout_id = None
+
     def _snooze(self, minutes):
         """Snooze task for specified minutes"""
+        self._stop_sound_loop()  # Stop sound immediately
+
         now = int(time.time())
         new_fire_at = now + (minutes * 60)
 
-        # Update task in queue (now uses file locking)
+        # Update task in queue
         tasks = load_tasks()
         updated = False
         for i, t in enumerate(tasks):
@@ -145,7 +166,9 @@ class TaskPopup(widgets.Revealer):
         self._dismiss()
 
     def _complete(self):
-        """Mark task as complete and remove it (now uses file locking)"""
+        """Mark task as complete and remove it"""
+        self._stop_sound_loop()  # Stop sound immediately
+
         tasks = load_tasks()
         tasks = [t for t in tasks if t != self._task]
         save_tasks(tasks)
@@ -154,13 +177,13 @@ class TaskPopup(widgets.Revealer):
 
     def _dismiss(self):
         """Dismiss the popup"""
+        self._stop_sound_loop()  # Stop sound when dismissing
         self.reveal_child = False
-        from ignis import utils
-
         utils.Timeout(self.transition_duration, self._cleanup)
 
     def _cleanup(self):
         """Remove popup and hide window if empty"""
+        self._stop_sound_loop()  # Ensure sound is stopped
         self.unparent()
         self._parent_window._check_if_empty()
 
@@ -187,8 +210,6 @@ class TaskPopupWindow(widgets.Window):
 
         # Start checking for due tasks
         self._check_tasks()
-        from ignis import utils
-
         utils.Poll(30000, self._check_tasks)  # Check every 30 seconds
 
     def _check_tasks(self, *args):
@@ -221,14 +242,10 @@ class TaskPopupWindow(widgets.Window):
         self._popup_box.prepend(popup)
 
         # Reveal after adding to DOM
-        from ignis import utils
-
         utils.Timeout(10, popup.set_reveal_child, True)
 
     def _check_if_empty(self):
         """Hide window if no popups remain"""
-        from ignis import utils
-
         utils.Timeout(350, self._do_check)
 
     def _do_check(self):

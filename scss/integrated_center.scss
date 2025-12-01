@@ -322,7 +322,18 @@
   font-size: 13px;
   color: $tx-3;
 }
+.notif-timestamp {
+  font-size: 11px;
+  color: $tx-3;
+  opacity: 0.8;
+  margin-top: 1px;
+  margin-bottom: 2px;
+  font-weight: 400;
+}
 
+.notif-history-item:hover .notif-timestamp {
+  opacity: 0.8;
+}
 /* Task items (full list under calendar) */
 
 .task-item {

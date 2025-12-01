@@ -10,7 +10,7 @@ from ignis.services.notifications import Notification
 
 
 def format_time_until(fire_at: int) -> str:
-    """Human-friendly time delta stroot_overlaying for a future timestamp."""
+    """Human-friendly time delta for a future timestamp."""
     now = int(time.time())
     diff = fire_at - now
     if diff < 0:
@@ -22,6 +22,60 @@ def format_time_until(fire_at: int) -> str:
     if hours > 0:
         return f"{hours}h {minutes}m"
     return f"{minutes}m"
+
+
+def format_time_ago(timestamp: int) -> str:
+    """Human-friendly relative time - more readable format."""
+    now = int(time.time())
+    diff = now - timestamp
+
+    if diff < 0:
+        return "just now"
+
+    # Less than a minute
+    if diff < 60:
+        return "just now"
+
+    # Less than an hour
+    minutes = diff // 60
+    if minutes < 60:
+        if minutes == 1:
+            return "1 minute ago"
+        return f"{minutes} minutes ago"
+
+    # Less than a day
+    hours = minutes // 60
+    if hours < 24:
+        if hours == 1:
+            return "1 hour ago"
+        return f"{hours} hours ago"
+
+    # Less than a week
+    days = hours // 24
+    if days < 7:
+        if days == 1:
+            return "yesterday"
+        return f"{days} days ago"
+
+    # Less than a month
+    weeks = days // 7
+    if weeks < 4:
+        if weeks == 1:
+            return "1 week ago"
+        return f"{weeks} weeks ago"
+
+    # Less than a year
+    months = days // 30
+    if months < 12:
+        if months == 1:
+            return "1 month ago"
+        return f"{months} months ago"
+
+    # Years
+    years = days // 365
+    if years == 1:
+        return "1 year ago"
+    return f"{years} years ago"
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -66,6 +120,13 @@ class NotificationHistoryItem(widgets.Box):
             wrap=True,
         )
 
+        # --- TIMESTAMP -------------------------------------------------------
+        timestamp_label = widgets.Label(
+            label=format_time_ago(notification.time),
+            halign="start",
+            css_classes=["notif-timestamp"],
+        )
+
         # --- BODY ------------------------------------------------------------
         body = widgets.Label(
             label=notification.body,
@@ -88,8 +149,8 @@ class NotificationHistoryItem(widgets.Box):
         # --- TEXT CONTAINER --------------------------------------------------
         text_box = widgets.Box(
             vertical=True,
-            spacing=4,
-            child=[summary, body],
+            spacing=2,
+            child=[summary, timestamp_label, body],
             hexpand=True,
         )
 
@@ -103,9 +164,21 @@ class NotificationHistoryItem(widgets.Box):
         # When closed → hide
         notification.connect("closed", lambda *_: setattr(self, "visible", False))
 
+        # Update timestamp every 60 seconds (less frequent since it's more readable)
+        from ignis import utils
+
+        utils.Poll(
+            60000, lambda *_: self._update_timestamp(timestamp_label, notification)
+        )
+
+    def _update_timestamp(self, label: widgets.Label, notification: Notification):
+        """Update the timestamp label"""
+        label.label = format_time_ago(notification.time)
+        return True  # Keep polling
+
 
 # ═══════════════════════════════════════════════════════════════
-# TASK ITEM
+# TASK ITEM (unchanged)
 # ═══════════════════════════════════════════════════════════════
 
 
@@ -176,7 +249,7 @@ class TaskItem(widgets.Box):
 
 
 # ═══════════════════════════════════════════════════════════════
-# ADD TASK DIALOG
+# ADD TASK DIALOG (unchanged)
 # ═══════════════════════════════════════════════════════════════
 
 
@@ -189,7 +262,6 @@ class AddTaskDialog(widgets.Box):
 
         now = datetime.now()
 
-        # Message - FIXED: Initialize text properly
         self._message = widgets.Entry(
             placeholder_text="Task description...",
             css_classes=["task-input"],
@@ -197,15 +269,13 @@ class AddTaskDialog(widgets.Box):
         )
         self._message.text = ""
 
-        # Time - FIXED: Initialize text properly
         self._time = widgets.Entry(
             placeholder_text="HH:MM",
             css_classes=["task-input"],
             width_request=100,
         )
-        self._time.text = ""  # Empty initially, user will fill
+        self._time.text = ""
 
-        # Date
         self._date = widgets.Entry(
             placeholder_text="DD-MM-YYYY",
             css_classes=["task-input"],
@@ -219,7 +289,6 @@ class AddTaskDialog(widgets.Box):
             on_click=lambda *_: self._set_date_offset(1),
         )
 
-        # Footer buttons
         cancel_btn = widgets.Button(
             child=widgets.Label(label="Cancel"),
             css_classes=["dialog-btn", "cancel-btn"],
@@ -287,7 +356,7 @@ class AddTaskDialog(widgets.Box):
 
 
 # ═══════════════════════════════════════════════════════════════
-# EDIT TASK DIALOG
+# EDIT TASK DIALOG (unchanged)
 # ═══════════════════════════════════════════════════════════════
 
 
