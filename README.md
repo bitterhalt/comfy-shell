@@ -2,9 +2,11 @@
 
 _A modular Wayland shell powered by Ignis_
 
-> ⚠️ ** Status VERY Work in Progress**
+> ⚠️ **Status VERY Work in Progress**
 >
 > My first ever python project so don't kill me...
+>
+> I repeat **VERY WIP** at the moment!
 
 ## Overview
 
