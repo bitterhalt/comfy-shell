@@ -11,10 +11,12 @@ from ignis.services.applications import (
     ApplicationAction,
     ApplicationsService,
 )
+from ignis.window_manager import WindowManager
 
 applications = ApplicationsService.get_default()
 TERMINAL_FORMAT = "foot %command%"
 EMOJI_FILE = Path("~/.local/share/emoji/emoji").expanduser()
+window_manager = WindowManager.get_default()
 
 
 def is_url(url: str) -> bool:
@@ -131,16 +133,17 @@ class AppItem(widgets.Button):
                 ]
             ),
         )
+
         self._sync_menu()
         app.connect("notify::is-pinned", lambda x, y: self._sync_menu())
 
     def _launch(self):
         self._app.launch(terminal_format=TERMINAL_FORMAT)
-        launcher.visible = False
+        window_manager.close_window("ignis_LAUNCHER")
 
-    def _launch_action(self, action: ApplicationAction):
+    def launch_action(self, action: ApplicationAction) -> None:
         action.launch()
-        launcher.visible = False
+        window_manager.close_window("ignis_LAUNCHER")
 
     def _sync_menu(self):
         actions = [
