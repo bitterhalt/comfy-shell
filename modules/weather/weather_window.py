@@ -3,9 +3,11 @@ from datetime import datetime
 from typing import List, Optional
 
 from ignis import utils, widgets
+from ignis.window_manager import WindowManager
 
 from .weather_data import fetch_weather_async, format_time_hm, icon_path
 
+wm = WindowManager.get_default()
 CACHE_TTL = 600
 
 
@@ -92,7 +94,7 @@ class WeatherPopup(widgets.Window):
             hexpand=True,
             can_focus=False,
             css_classes=["weather-overlay"],
-            on_click=lambda *_: toggle_weather_popup(),
+            on_click=lambda *_: wm.close_window("ignis_WEATHER"),
         )
 
         root_overlay = widgets.Overlay(
@@ -245,35 +247,11 @@ class WeatherPopup(widgets.Window):
 # SINGLETON API
 # ──────────────────────────────────────────────────────────────
 
-_weather_popup = None
-
-
-def reset_weather_popup():
-    """Force reset the weather popup instance (called from integrated center)"""
-    global _weather_popup
-
-    if _weather_popup is not None:
-        try:
-            if _weather_popup.visible:
-                _weather_popup.visible = False
-            _weather_popup.close()
-        except Exception:  # ← Change this from bare except:
-            pass  # Silently ignore cleanup errors
-
-    _weather_popup = None
-
 
 def toggle_weather_popup():
-    global _weather_popup
-
-    # If popup exists and is visible, close it
-    if _weather_popup is not None and _weather_popup.visible:
-        _weather_popup.close()
-        _weather_popup = None
-        return
-
-    # Create new instance
-    if _weather_popup is None:
-        _weather_popup = WeatherPopup()
-
-    _weather_popup.visible = True
+    try:
+        wm.toggle_window("ignis_WEATHER")
+    except:
+        # Window doesn't exist yet, create it
+        WeatherPopup()
+        wm.toggle_window("ignis_WEATHER")
