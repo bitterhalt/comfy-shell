@@ -8,7 +8,6 @@ from modules.bar.bar_toggle import register_bar
 from modules.launcher.launcher import toggle_launcher
 from modules.notifications.popup import init_notifications
 from modules.notifications.task_popup import init_task_popup
-from modules.osd.submap_osd import hide_submap_osd, init_submap_osd, show_submap_osd
 from modules.osd.workspace_osd import init_workspace_osd, set_bar_visibility
 from modules.overlays.power_overlay import toggle_power_overlay
 from modules.overlays.recording_overlay import toggle_recording_overlay
@@ -44,9 +43,6 @@ init_task_popup()
 # Initialize workspace OSD
 init_workspace_osd()
 
-# Initialize submap OSD
-init_submap_osd()
-
 
 # For bar and barless mod (pure cli)
 def _attach_bar_visibility_listener(bar_window):
@@ -73,8 +69,6 @@ for i in range(utils.get_n_monitors()):
 command_manager = CommandManager.get_default()
 
 command_manager.add_command("launcher-toggle", toggle_launcher)
-command_manager.add_command("submap-show", show_submap_osd)
-command_manager.add_command("submap-hide", hide_submap_osd)
 command_manager.add_command("weather-popup-toggle", toggle_weather_popup)
 command_manager.add_command("recording-overlay-toggle", toggle_recording_overlay)
 command_manager.add_command("power-overlay-toggle", toggle_power_overlay)
