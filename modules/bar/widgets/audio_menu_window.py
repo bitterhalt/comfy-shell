@@ -19,13 +19,11 @@ class AudioDeviceItem(widgets.Button):
             child=widgets.Box(
                 spacing=10,
                 child=[
-                    # Checkmark for default device
                     widgets.Icon(
                         image="object-select-symbolic",
                         pixel_size=16,
                         visible=stream.bind("is_default"),
                     ),
-                    # Device name
                     widgets.Label(
                         label=stream.description,
                         ellipsize="end",
@@ -52,15 +50,10 @@ class AudioSection(widgets.Box):
         self.stream = stream
         self.device_type = device_type
 
-        # ─────────────────────────────────────────────
-        #  DYNAMIC ICON (bind only to is_muted)
-        #  The lambda reads stream.volume manually
-        # ─────────────────────────────────────────────
         mute_icon = widgets.Icon(
             image=stream.bind(
                 "is_muted",
                 lambda m: (
-                    # If muted → always show muted icon
                     (
                         "microphone-sensitivity-muted-symbolic"
                         if device_type == "microphone"
@@ -80,7 +73,7 @@ class AudioSection(widgets.Box):
         )
 
         # ─────────────────────────────────────────────
-        #  SLIDER (bind keeps it reactive)
+        #  SLIDER
         # ─────────────────────────────────────────────
         slider = widgets.Scale(
             min=0,
@@ -125,7 +118,6 @@ class AudioSection(widgets.Box):
 
         self.child = [row, self._device_list]
 
-        # Populate device list
         self._populate_devices()
         audio.connect(f"{device_type}-added", lambda *_: self._populate_devices())
         audio.connect(f"notify::{device_type}", lambda *_: self._populate_devices())
@@ -169,28 +161,3 @@ class AudioSection(widgets.Box):
         streams = getattr(audio, f"{self.device_type}s", [])
         for s in streams:
             self._device_list.append(AudioDeviceItem(s, self.device_type))
-
-
-# ───────────────────────────────────────────────────────────────
-#  Deprecated old popup window (kept for compatibility)
-# ───────────────────────────────────────────────────────────────
-
-
-class AudioMenuWindow(widgets.Window):
-    """Legacy popup kept only to avoid import errors."""
-
-    def __init__(self):
-        super().__init__(visible=False)
-
-    def toggle(self):
-        self.visible = not self.visible
-
-
-_audio_menu_window = None
-
-
-def get_audio_menu_window():
-    global _audio_menu_window
-    if _audio_menu_window is None:
-        _audio_menu_window = AudioMenuWindow()
-    return _audio_menu_window
