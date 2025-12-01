@@ -8,11 +8,12 @@ from ignis.services.network import (
     VpnConnection,
     WifiAccessPoint,
 )
-
+from ignis.window_manager import WindowManager
 from modules.bar.widgets.audio_menu_window import (
     AudioSection,
 )  # reuse your existing audio UI
 
+wm = WindowManager.get_default()
 audio = AudioService.get_default()
 net = NetworkService.get_default()
 wifi = net.wifi
@@ -371,15 +372,11 @@ class SystemPopup(widgets.Window):
 # SINGLETON HELPERS
 # ───────────────────────────────────────────────
 
-_system_popup: SystemPopup | None = None
-
-
-def get_system_popup() -> SystemPopup:
-    global _system_popup
-    if _system_popup is None:
-        _system_popup = SystemPopup()
-    return _system_popup
-
 
 def toggle_system_popup() -> None:
-    get_system_popup().toggle()
+    try:
+        wm.toggle_window("ignis_SYSTEM_MENU")
+    except:
+        # Window doesn't exist yet, create it
+        SystemPopup()
+        wm.toggle_window("ignis_SYSTEM_MENU")
