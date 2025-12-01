@@ -1,13 +1,10 @@
-"""
-Recording Overlay - Shadowplay-style capture interface
-Provides quick access to screenshot and recording functions
-"""
-
 import asyncio
 
 from ignis import utils, widgets
 from ignis.services.recorder import RecorderService
+from ignis.window_manager import WindowManager
 
+wm = WindowManager.get_default()
 recorder = RecorderService.get_default()
 
 
@@ -221,18 +218,9 @@ class RecordingOverlay(widgets.Window):
         self.toggle()
 
 
-# Global instance
-_recording_overlay = None
-
-
-def get_recording_overlay():
-    """Get or create recording overlay"""
-    global _recording_overlay
-    if _recording_overlay is None:
-        _recording_overlay = RecordingOverlay()
-    return _recording_overlay
-
-
 def toggle_recording_overlay():
-    """Toggle recording overlay"""
-    get_recording_overlay().toggle()
+    try:
+        wm.toggle_window("ignis_RECORDING_OVERLAY")
+    except:
+        RecordingOverlay()
+        wm.toggle_window("ignis_RECORDING_OVERLAY")

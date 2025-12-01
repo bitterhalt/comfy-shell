@@ -1,13 +1,11 @@
-"""
-Power Menu Overlay - Shadowplay-style power options
-Provides quick access to lock, logout, suspend, reboot, and shutdown
-"""
-
 import asyncio
 
 from gi.repository import Gdk
 
 from ignis import utils, widgets
+from ignis.window_manager import WindowManager
+
+wm = WindowManager.get_default()
 
 
 def exec_async(cmd: str):
@@ -402,14 +400,9 @@ class PowerOverlay(widgets.Window):
 _power_overlay = None
 
 
-def get_power_overlay():
-    """Get or create power overlay"""
-    global _power_overlay
-    if _power_overlay is None:
-        _power_overlay = PowerOverlay()
-    return _power_overlay
-
-
 def toggle_power_overlay():
-    """Toggle power overlay"""
-    get_power_overlay().toggle()
+    try:
+        wm.toggle_window("ignis_POWER_OVERLAY")
+    except:
+        PowerOverlay()
+        wm.toggle_window("ignis_POWER_OVERLAY")
