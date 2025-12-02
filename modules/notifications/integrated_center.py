@@ -153,7 +153,7 @@ class IntegratedCenter(widgets.Window):
 
         weather_compact = widgets.Button(
             css_classes=["weather-compact"],
-            on_click=lambda *_: self._open_weather_popup(),
+            on_click=lambda x: wm.open_window("ignis_WEATHER"),
             child=widgets.Box(
                 spacing=10,
                 child=[self._weather_icon, self._weather_temp, self._weather_desc],
@@ -272,7 +272,7 @@ class IntegratedCenter(widgets.Window):
             hexpand=True,
             can_focus=False,
             css_classes=["center-overlay"],
-            on_click=lambda *_: wm.close_window("ignis_INTEGRATED_CENTER"),
+            on_click=lambda x: wm.close_window("ignis_INTEGRATED_CENTER"),
         )
 
         root_overlay = widgets.Overlay(
@@ -321,20 +321,6 @@ class IntegratedCenter(widgets.Window):
         icon_widget = self._calendar_expander_button.child
         if isinstance(icon_widget, widgets.Icon):
             icon_widget.image = icon
-
-    # =======================================================================
-    # Weather popup
-    # =======================================================================
-
-    def _open_weather_popup(self):
-        wm.close_window("ignis_INTEGRATED_CENTER")
-        try:
-            wm.toggle_window("ignis_WEATHER")
-        except Exception:
-            from modules.weather.weather_window import WeatherPopup
-
-            WeatherPopup()
-            wm.toggle_window("ignis_WEATHER")
 
     # =======================================================================
     # Notifications
