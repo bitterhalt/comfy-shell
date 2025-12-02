@@ -41,41 +41,41 @@ def format_time_ago(timestamp: int) -> str:
     if minutes < 60:
         if minutes == 1:
             return "1 minute ago"
-        return f"{minutes} minutes ago"
+        return f"{int(minutes)} minutes ago"  # ← int() here
 
     # Less than a day
     hours = minutes // 60
     if hours < 24:
         if hours == 1:
             return "1 hour ago"
-        return f"{hours} hours ago"
+        return f"{int(hours)} hours ago"  # ← int() here
 
     # Less than a week
     days = hours // 24
     if days < 7:
         if days == 1:
             return "yesterday"
-        return f"{days} days ago"
+        return f"{int(days)} days ago"  # ← int() here
 
     # Less than a month
     weeks = days // 7
     if weeks < 4:
         if weeks == 1:
             return "1 week ago"
-        return f"{weeks} weeks ago"
+        return f"{int(weeks)} weeks ago"  # ← int() here
 
     # Less than a year
     months = days // 30
     if months < 12:
         if months == 1:
             return "1 month ago"
-        return f"{months} months ago"
+        return f"{int(months)} months ago"  # ← int() here
 
     # Years
     years = days // 365
     if years == 1:
         return "1 year ago"
-    return f"{years} years ago"
+    return f"{int(years)} years ago"  # ← int() here
 
 
 # ═══════════════════════════════════════════════════════════════
