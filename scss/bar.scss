@@ -136,6 +136,30 @@ tooltip label,
   padding: 10px 12px;
 }
 
+.sys-top-row {
+  padding: 4px 6px 0 6px;
+  margin-bottom: 2px;
+}
+
+.sys-top-btn {
+  background: $bg-2;
+  border: 1px solid $ui-1;
+  border-radius: 10px;
+  padding: 6px;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+
+  &:hover {
+    background: $ui-3;
+    border-color: $ui-3;
+  }
+
+  image {
+    opacity: 0.9;
+  }
+}
+
 /* Pills row: network + airplane  */
 .sys-pills-row {
   margin-top: 4px;

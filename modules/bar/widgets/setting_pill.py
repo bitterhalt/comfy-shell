@@ -1,6 +1,6 @@
 import asyncio
 
-from ignis import widgets
+from ignis import utils, widgets
 from ignis.services.audio import AudioService
 from ignis.services.network import (
     EthernetDevice,
@@ -235,6 +235,44 @@ class AirplanePill(widgets.Button):
 
 class SystemPopup(widgets.Window):
     def __init__(self):
+
+        record_btn = widgets.Button(
+            css_classes=["sys-top-btn"],
+            on_click=lambda x: wm.open_window("ignis_RECORDING_OVERLAY"),
+            child=widgets.Icon(
+                image="camera-photo-symbolic",
+                pixel_size=22,
+            ),
+        )
+
+        lock_btn = widgets.Button(
+            css_classes=["sys-top-btn"],
+            on_click=lambda x: utils.exec_sh("hyprlock"),
+            child=widgets.Icon(
+                image="system-lock-screen-symbolic",
+                pixel_size=22,
+            ),
+        )
+
+        power_btn = widgets.Button(
+            css_classes=["sys-top-btn"],
+            on_click=lambda x: wm.open_window("ignis_POWER_OVERLAY"),
+            child=widgets.Icon(
+                image="system-shutdown-symbolic",
+                pixel_size=22,
+            ),
+        )
+
+        top_row = widgets.Box(
+            spacing=10,
+            css_classes=["sys-top-row"],
+            child=[
+                record_btn,
+                widgets.Box(hexpand=True),  # flexible spacer
+                lock_btn,
+                power_btn,
+            ],
+        )
         # ── Audio: speaker + mic, stacked ─────────────────────────
         speaker = AudioSection(
             stream=audio.speaker,
@@ -318,6 +356,7 @@ class SystemPopup(widgets.Window):
             spacing=12,
             css_classes=["system-menu"],
             child=[
+                top_row,
                 audio_column,
                 pills_row,
                 self._net_revealer,

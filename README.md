@@ -66,12 +66,18 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 <img src="assets/screenshots/weather.png" width="80%" />
 </details>
 
+<details>
+<summary><b>Quick settings</b></summary><br>
+<img src="assets/screenshots/quick_settings.png" width="80%" />
+</details>
+
 ## TODO
 
-> _01.12.27_
+> _02.12.27_
 
-- [ ] adapt new window_manager.api
+- [x] adapt new window_manager.api --> Mostly done, I think 👍🏻
 - [ ] add some settings to control ignis, just simple things like restart etc.
 - [ ] add bluetooth in panel, easy but I don't have any bt devices atm :D
 - [ ] cleanup the code and make syntax more consistenta
 - [ ] add small time stamps to notifications
+- [ ] Parts of of notications are super ugly -> fix when rainy day
