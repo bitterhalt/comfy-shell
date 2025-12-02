@@ -104,7 +104,6 @@ class EmojiItem(widgets.Button):
         display = Gdk.Display.get_default()
         clipboard = display.get_clipboard()
         clipboard.set(self._emoji)
-        launcher.visible = False
 
 
 class AppItem(widgets.Button):
@@ -209,7 +208,6 @@ class SearchWebButton(widgets.Button):
 
     def _launch(self):
         asyncio.create_task(utils.exec_sh_async(f"xdg-open {self._url}"))
-        launcher.visible = False
 
 
 class AppLauncher(widgets.Window):
@@ -410,7 +408,6 @@ class AppLauncher(widgets.Window):
         display = Gdk.Display.get_default()
         clipboard = display.get_clipboard()
         clipboard.set(result)
-        launcher.visible = False
 
     def _search_emojis(self, query: str):
         """Search and display emojis"""
@@ -450,12 +447,3 @@ class AppLauncher(widgets.Window):
     def _close(self):
         """Close launcher"""
         self.visible = False
-
-
-# Create the launcher window
-launcher = AppLauncher()
-
-
-def toggle_launcher():
-    """Toggle launcher visibility"""
-    launcher.visible = not launcher.visible

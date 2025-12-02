@@ -241,17 +241,3 @@ class WeatherPopup(widgets.Window):
         )
 
         self._forecast_box.child = items
-
-
-# ──────────────────────────────────────────────────────────────
-# SINGLETON API
-# ──────────────────────────────────────────────────────────────
-
-
-def toggle_weather_popup():
-    try:
-        wm.toggle_window("ignis_WEATHER")
-    except:
-        # Window doesn't exist yet, create it
-        WeatherPopup()
-        wm.toggle_window("ignis_WEATHER")

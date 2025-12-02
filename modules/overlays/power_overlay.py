@@ -394,15 +394,3 @@ class PowerOverlay(widgets.Window):
             "Are you sure you want to shut down?",
             on_confirm=lambda: exec_async("systemctl poweroff"),
         )
-
-
-# Global instance
-_power_overlay = None
-
-
-def toggle_power_overlay():
-    try:
-        wm.toggle_window("ignis_POWER_OVERLAY")
-    except:
-        PowerOverlay()
-        wm.toggle_window("ignis_POWER_OVERLAY")

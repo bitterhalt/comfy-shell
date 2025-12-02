@@ -5,14 +5,14 @@ from ignis.command_manager import CommandManager
 from ignis.css_manager import CssInfoPath, CssManager
 from modules.bar.bar import create_bar
 from modules.bar.bar_toggle import register_bar
-from modules.launcher.launcher import toggle_launcher
+from modules.launcher.launcher import AppLauncher
 from modules.notifications.popup import init_notifications
 from modules.notifications.task_popup import init_task_popup
 from modules.osd.workspace_osd import init_workspace_osd, set_bar_visibility
-from modules.overlays.power_overlay import toggle_power_overlay
-from modules.overlays.recording_overlay import toggle_recording_overlay
+from modules.overlays.power_overlay import PowerOverlay
+from modules.overlays.recording_overlay import RecordingOverlay
 from modules.recorder.recorder import register_recorder_commands
-from modules.weather.weather_window import toggle_weather_popup
+from modules.weather.weather_window import WeatherPopup
 
 css = CssManager.get_default()
 
@@ -68,9 +68,8 @@ for i in range(utils.get_n_monitors()):
 # Register commands
 command_manager = CommandManager.get_default()
 
-command_manager.add_command("launcher-toggle", toggle_launcher)
-command_manager.add_command("weather-popup-toggle", toggle_weather_popup)
-command_manager.add_command("recording-overlay-toggle", toggle_recording_overlay)
-command_manager.add_command("power-overlay-toggle", toggle_power_overlay)
-# Register recorder commands
 register_recorder_commands()
+WeatherPopup()
+AppLauncher()
+PowerOverlay()
+RecordingOverlay()
