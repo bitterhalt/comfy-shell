@@ -1,18 +1,8 @@
 /* Launcher window */
-.launcher-window {
-  background: transparent;
-  border: none;
-}
-
-.launcher-overlay {
-  all: unset;
-  background: none;
-}
 
 .launcher {
   background: $bg-1;
   border-radius: 12px;
-  min-width: 25rem;
   margin-top: 20rem;
   padding: 1rem;
   border: none;
@@ -24,6 +14,7 @@
   color: $tx-1;
   padding: 12px 16px;
   background: $bg-2;
+  min-width: 25rem;
   border-radius: 12px;
 }
 
@@ -36,53 +27,26 @@
 
 /* Results */
 .launcher-results {
-}
-
-.app-item {
-  all: unset;
   background: $bg-2;
+  border: 1px solid $ui-1;
+  border-radius: 12px;
+}
+
+.app-item,
+.emoji-item {
+  all: unset;
+  background: transparent;
   border: 1px solid transparent;
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-top: 8px;
-  transition:
-    background 0.2s,
-    border-color 0.2s;
+  border-radius: 12px;
+  padding: 4px 8px;
+  margin: 8px;
 }
 
-.app-item:hover,
-.app-item:focus {
-  border: 1px solid $ui-3;
-  background: $ui-2;
-}
-
-.app-name {
+.app-name,
+.emoji-names {
   font-size: 1rem;
   color: $tx-2;
   margin-left: 12px;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   EMOJI SEARCH
-   ═══════════════════════════════════════════════════════════════ */
-
-.emoji-item {
-  all: unset;
-  background: $bg-2;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-top: 8px;
-  transition:
-    background 0.2s,
-    border-color 0.2s,
-    transform 0.1s;
-}
-
-.emoji-item:hover,
-.emoji-item:focus {
-  border: 1px solid $ui-3;
-  background: $ui-2;
 }
 
 .emoji-char {
@@ -91,16 +55,18 @@
   min-width: 2.5rem;
 }
 
-.emoji-name {
-  font-size: 1rem;
-  color: $tx-2;
-}
-
 .no-results {
   color: $tx-3;
   padding: 20px;
 }
 
+.app-item:hover,
+.app-item:focus,
+.emoji-item:focus {
+  border: 1px solid $ui-3;
+  background: $ui-2;
+  margin: 8px;
+}
 /* ═══════════════════════════════════════════════════════════════
    CALCULATOR
    ═══════════════════════════════════════════════════════════════ */

@@ -48,9 +48,6 @@ def save_queue(data: list[dict]) -> None:
     tmp.replace(QUEUE_FILE)
 
 
-# (sound removed completely)
-
-
 # === Locking ================================================================
 
 
@@ -120,9 +117,6 @@ class TimerDaemon:
             return MAX_SLEEP
 
         next_fire = min(fire_times)
-
-        # NO SOUND — we simply acknowledge due timers.
-        # Popup window will handle visuals.
 
         save_queue(queue)
 
