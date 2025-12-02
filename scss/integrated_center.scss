@@ -401,87 +401,145 @@
 }
 
 /* ───────────────────────────────────────────────────────────────
-   TASK DIALOG (add / edit)
+   COMPACT TASK DIALOG (replaces old add-task-dialog styles)
    ─────────────────────────────────────────────────────────────── */
 
-.add-task-dialog {
+.task-dialog-compact {
   background-color: $bg-1;
   border: 1px solid $ui-1;
   border-radius: 12px;
-  padding: 24px;
+  padding: 20px;
   margin: 40px 16px;
-  min-width: 480px;
+  min-width: 420px;
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.35);
 }
 
-.dialog-title {
-  font-size: 18px;
+.task-dialog-title {
+  font-size: 17px;
   font-weight: 600;
   color: $tx-2;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
 }
+
+/* ───────────────────────────────────────────────────────────────
+   TIME ROW (horizontal layout with emoji)
+   ─────────────────────────────────────────────────────────────── */
+
+.task-dialog-time-row {
+  background-color: $bg-2;
+  border: 1px solid $ui-1;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.task-emoji-label {
+  font-size: 18px;
+  padding: 0 4px;
+}
+
+.task-time-input {
+  min-width: 80px;
+}
+
+.task-date-input {
+  min-width: 120px;
+}
+
+/* Tomorrow quick button */
+.date-quick-btn {
+  all: unset;
+  background-color: $ui-2;
+  color: $tx-3;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+
+  &:hover {
+    background-color: $ui-3;
+    color: $tx-2;
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────
+   MESSAGE INPUT (full width)
+   ─────────────────────────────────────────────────────────────── */
+
+.task-message-input {
+  padding: 12px;
+  font-size: 14px;
+}
+
+/* ───────────────────────────────────────────────────────────────
+   SHARED INPUT STYLES
+   ─────────────────────────────────────────────────────────────── */
 
 .task-input {
   all: unset;
   background-color: $bg-2;
   border: 1px solid $ui-1;
-  border-radius: 10px;
-  padding: 12px;
+  border-radius: 8px;
+  padding: 8px 12px;
   color: $tx-2;
-  font-size: 15px;
+  font-size: 14px;
   caret-color: $tx-1;
   transition:
     border-color 0.15s,
     background-color 0.15s;
 
   &:focus {
-    border-color: $ui-3;
+    border-color: $cyan;
     background-color: $bg-2;
+    outline: none;
   }
 }
 
-.input-label {
-  color: $tx-3;
+/* ───────────────────────────────────────────────────────────────
+   BUTTON ROW
+   ─────────────────────────────────────────────────────────────── */
+
+.task-dialog-buttons {
+  margin-top: 8px;
+}
+
+.task-dialog-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
   font-size: 14px;
-  min-width: 60px;
-}
-
-.dialog-footer {
-  margin-top: 20px;
-  padding-top: 14px;
-  border-top: 1px solid $ui-1;
-}
-
-.dialog-btn {
-  padding: 10px 18px;
-  border-radius: 10px;
+  font-weight: 500;
   transition:
     background-color 0.15s,
-    color 0.15s;
-}
-
-.add-btn {
-  background-color: $cyan;
-  color: $bg-1;
-  padding: 8px;
-  margin: 4px;
-  border-radius: 8px;
-  font-weight: 600;
+    color 0.15s,
+    transform 0.1s;
 
   &:hover {
-    background-color: lighten($cyan, 10%);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 }
 
 .cancel-btn {
   background-color: $ui-2;
-  color: $tx-1;
-  padding: 8px;
-  margin: 4px;
-  border-radius: 8px;
-  font-weight: 600;
+  color: $tx-2;
 
   &:hover {
     background-color: $ui-3;
+    color: $tx-1;
+  }
+}
+
+.add-btn {
+  background-color: $cyan;
+  color: $bg-1;
+  font-weight: 600;
+
+  &:hover {
+    background-color: lighten($cyan, 8%);
   }
 }

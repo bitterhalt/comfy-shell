@@ -249,12 +249,12 @@ class TaskItem(widgets.Box):
 
 
 # ═══════════════════════════════════════════════════════════════
-# ADD TASK DIALOG (unchanged)
+# ADD TASK DIALOG
 # ═══════════════════════════════════════════════════════════════
 
 
 class AddTaskDialog(widgets.Box):
-    """Dialog for creating a new task."""
+    """Compact dialog for creating a new task."""
 
     def __init__(self, on_add, on_cancel):
         self._on_add = on_add
@@ -262,72 +262,83 @@ class AddTaskDialog(widgets.Box):
 
         now = datetime.now()
 
-        self._message = widgets.Entry(
-            placeholder_text="Task description...",
-            css_classes=["task-input"],
-            hexpand=True,
-        )
-        self._message.text = ""
+        # Time inputs
 
         self._time = widgets.Entry(
             placeholder_text="HH:MM",
-            css_classes=["task-input"],
-            width_request=100,
+            css_classes=["task-input", "task-time-input"],
         )
         self._time.text = ""
 
         self._date = widgets.Entry(
             placeholder_text="DD-MM-YYYY",
-            css_classes=["task-input"],
-            width_request=140,
+            css_classes=["task-input", "task-date-input"],
         )
         self._date.text = now.strftime("%d-%m-%Y")
 
+        # Tomorrow quick button
         tomorrow_btn = widgets.Button(
             child=widgets.Label(label="Tomorrow"),
-            css_classes=["date-btn"],
+            css_classes=["date-quick-btn"],
             on_click=lambda *_: self._set_date_offset(1),
         )
 
+        time_row = widgets.Box(
+            spacing=8,
+            css_classes=["task-dialog-time-row"],
+            child=[
+                widgets.Label(label="⏰", css_classes=["task-emoji-label"]),
+                self._time,
+                self._date,
+                tomorrow_btn,
+            ],
+        )
+
+        # Description (full width at bottom)
+
+        self._message = widgets.Entry(
+            placeholder_text="What do you need to do?",
+            css_classes=["task-input", "task-message-input"],
+            hexpand=True,
+            on_accept=lambda *_: self._add(),  # Enter to submit
+        )
+        self._message.text = ""
+
+        # Action buttons
         cancel_btn = widgets.Button(
             child=widgets.Label(label="Cancel"),
-            css_classes=["dialog-btn", "cancel-btn"],
+            css_classes=["task-dialog-btn", "cancel-btn"],
             on_click=lambda *_: on_cancel(),
         )
 
         save_btn = widgets.Button(
             child=widgets.Label(label="Add Task"),
-            css_classes=["dialog-btn", "add-btn"],
+            css_classes=["task-dialog-btn", "add-btn"],
             on_click=lambda *_: self._add(),
         )
 
+        button_row = widgets.Box(
+            spacing=8,
+            halign="end",
+            css_classes=["task-dialog-buttons"],
+            child=[cancel_btn, save_btn],
+        )
+
+        # Main layout
         super().__init__(
             vertical=True,
-            spacing=18,
-            css_classes=["add-task-dialog"],
+            spacing=12,
+            css_classes=["task-dialog-compact"],
             child=[
-                widgets.Label(label="New Task", css_classes=["dialog-title"]),
-                widgets.Box(spacing=12, child=[self._message]),
-                widgets.Box(
-                    spacing=12,
-                    child=[
-                        widgets.Label(label="Time:", css_classes=["input-label"]),
-                        self._time,
-                    ],
-                ),
-                widgets.Box(
-                    spacing=12,
-                    child=[
-                        widgets.Label(label="Date:", css_classes=["input-label"]),
-                        self._date,
-                        tomorrow_btn,
-                    ],
-                ),
-                widgets.Box(
-                    css_classes=["dialog-footer"], child=[cancel_btn, save_btn]
-                ),
+                widgets.Label(label="New Task", css_classes=["task-dialog-title"]),
+                time_row,
+                self._message,
+                button_row,
             ],
         )
+
+        # Focus time input on creation
+        self._time.grab_focus()
 
     def _set_date_offset(self, offset):
         date = datetime.now() + timedelta(days=offset)
@@ -356,12 +367,12 @@ class AddTaskDialog(widgets.Box):
 
 
 # ═══════════════════════════════════════════════════════════════
-# EDIT TASK DIALOG (unchanged)
+# Edit task dialog
 # ═══════════════════════════════════════════════════════════════
 
 
 class EditTaskDialog(widgets.Box):
-    """Dialog for editing an existing task."""
+    """Compact dialog for editing an existing task."""
 
     def __init__(self, task, on_save, on_cancel):
         self._task = task
@@ -369,65 +380,74 @@ class EditTaskDialog(widgets.Box):
 
         fire_dt = datetime.fromtimestamp(task["fire_at"])
 
-        self._message = widgets.Entry(
-            placeholder_text="Task description...",
-            css_classes=["task-input"],
-            hexpand=True,
-        )
-        self._message.text = task.get("message", "")
-
+        # Time inputs (horizontal row)
         self._time = widgets.Entry(
             placeholder_text="HH:MM",
-            css_classes=["task-input"],
-            width_request=100,
+            css_classes=["task-input", "task-time-input"],
         )
         self._time.text = fire_dt.strftime("%H:%M")
 
         self._date = widgets.Entry(
             placeholder_text="DD-MM-YYYY",
-            css_classes=["task-input"],
-            width_request=140,
+            css_classes=["task-input", "task-date-input"],
         )
         self._date.text = fire_dt.strftime("%d-%m-%Y")
 
+        time_row = widgets.Box(
+            spacing=8,
+            css_classes=["task-dialog-time-row"],
+            child=[
+                widgets.Label(label="⏰", css_classes=["task-emoji-label"]),
+                self._time,
+                self._date,
+            ],
+        )
+
+        # Description (full width at bottom)
+        self._message = widgets.Entry(
+            placeholder_text="What do you need to do?",
+            css_classes=["task-input", "task-message-input"],
+            hexpand=True,
+            on_accept=lambda *_: self._save(),
+        )
+        self._message.text = task.get("message", "")
+
+        # Action buttons
+
         cancel_btn = widgets.Button(
             child=widgets.Label(label="Cancel"),
-            css_classes=["dialog-btn", "cancel-btn"],
+            css_classes=["task-dialog-btn", "cancel-btn"],
             on_click=lambda *_: on_cancel(),
         )
 
         save_btn = widgets.Button(
             child=widgets.Label(label="Save"),
-            css_classes=["dialog-btn", "add-btn"],
+            css_classes=["task-dialog-btn", "add-btn"],
             on_click=lambda *_: self._save(),
         )
 
+        button_row = widgets.Box(
+            spacing=8,
+            halign="end",
+            css_classes=["task-dialog-buttons"],
+            child=[cancel_btn, save_btn],
+        )
+
+        # Main layout
         super().__init__(
             vertical=True,
-            spacing=18,
-            css_classes=["add-task-dialog"],
+            spacing=12,
+            css_classes=["task-dialog-compact"],
             child=[
-                widgets.Label(label="Edit Task", css_classes=["dialog-title"]),
-                widgets.Box(spacing=12, child=[self._message]),
-                widgets.Box(
-                    spacing=12,
-                    child=[
-                        widgets.Label(label="Time:", css_classes=["input-label"]),
-                        self._time,
-                    ],
-                ),
-                widgets.Box(
-                    spacing=12,
-                    child=[
-                        widgets.Label(label="Date:", css_classes=["input-label"]),
-                        self._date,
-                    ],
-                ),
-                widgets.Box(
-                    css_classes=["dialog-footer"], child=[cancel_btn, save_btn]
-                ),
+                widgets.Label(label="Edit Task", css_classes=["task-dialog-title"]),
+                time_row,
+                self._message,
+                button_row,
             ],
         )
+
+        # Focus message input on creation
+        self._message.grab_focus()
 
     def _save(self):
         msg = self._message.text.strip()

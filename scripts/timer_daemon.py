@@ -1,17 +1,9 @@
 #!/usr/bin/env python3
-"""
-Timer daemon for Ignis Task Menu.
-
-- Reads timers from ~/.local/share/timers/queue.json
-- NO sound playing
-- NO notify-send
-- Cleans up tasks that are too old (expired)
-- Visual notifications handled entirely by Ignis task_popup
-"""
 
 import json
 import os
 import signal
+import sys
 import time
 from pathlib import Path
 
@@ -35,17 +27,21 @@ def load_queue() -> list[dict]:
         with QUEUE_FILE.open("r", encoding="utf-8") as f:
             data = json.load(f)
             return data if isinstance(data, list) else []
-    except Exception:
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"[TimerDaemon] Error loading queue: {e}", file=sys.stderr)
         return []
 
 
 def save_queue(data: list[dict]) -> None:
     """Atomically save queue."""
-    QUEUE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    tmp = QUEUE_FILE.with_suffix(".tmp")
-    with tmp.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
-    tmp.replace(QUEUE_FILE)
+    try:
+        QUEUE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        tmp = QUEUE_FILE.with_suffix(".tmp")
+        with tmp.open("w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+        tmp.replace(QUEUE_FILE)
+    except OSError as e:
+        print(f"[TimerDaemon] Error saving queue: {e}", file=sys.stderr)
 
 
 # === Locking ================================================================
@@ -56,24 +52,30 @@ def acquire_lock() -> bool:
     if LOCK_FILE.exists():
         try:
             old_pid = int(LOCK_FILE.read_text().strip())
-        except Exception:
+        except (ValueError, OSError):
             old_pid = None
 
         if old_pid:
             try:
                 os.kill(old_pid, 0)
-                return False  # Still alive → exits here
+                return False  # Still alive
             except ProcessLookupError:
                 pass  # stale lock
+            except OSError:
+                pass  # Permission denied or other error
 
-    LOCK_FILE.write_text(str(os.getpid()), encoding="utf-8")
-    return True
+    try:
+        LOCK_FILE.write_text(str(os.getpid()), encoding="utf-8")
+        return True
+    except OSError as e:
+        print(f"[TimerDaemon] Error creating lock: {e}", file=sys.stderr)
+        return False
 
 
 def release_lock() -> None:
     try:
-        LOCK_FILE.unlink()
-    except FileNotFoundError:
+        LOCK_FILE.unlink(missing_ok=True)
+    except OSError:
         pass
 
 
@@ -85,22 +87,29 @@ class TimerDaemon:
         self._running = True
 
     def _handle_sigterm(self, *_args):
+        print("[TimerDaemon] Received SIGTERM, shutting down...")
         self._running = False
 
     def _handle_sighup(self, *_args):
-        pass  # queue reloads next loop
+        print("[TimerDaemon] Received SIGHUP, reloading on next cycle...")
 
     def process_once(self) -> int:
+        """Process tasks once and return sleep duration."""
         now = int(time.time())
         queue = load_queue()
 
-        # drop expired timers first
+        # Drop expired timers first
         fresh = []
+        expired_count = 0
         for t in queue:
             fire_at = int(t.get("fire_at", 0) or 0)
             if fire_at and (now - fire_at) > EXPIRE_SECONDS:
+                expired_count += 1
                 continue
             fresh.append(t)
+
+        if expired_count > 0:
+            print(f"[TimerDaemon] Cleaned {expired_count} expired task(s)")
 
         queue = fresh
 
@@ -117,20 +126,27 @@ class TimerDaemon:
             return MAX_SLEEP
 
         next_fire = min(fire_times)
+        time_until = next_fire - now
+
+        # Log upcoming task (only if close)
+        if 0 < time_until <= 60:
+            next_task = next(t for t in queue if t.get("fire_at") == next_fire)
+            msg = next_task.get("message", "Unknown")
+            print(f"[TimerDaemon] Task due in {time_until}s: {msg}")
 
         save_queue(queue)
 
-        # Next sleep time:
-        delta = max(next_fire - now, MIN_SLEEP)
+        # Calculate next sleep
+        delta = max(time_until, MIN_SLEEP)
         delta = min(delta, MAX_SLEEP)
         return delta
 
     def run(self):
         if not acquire_lock():
-            print("[TimerDaemon] Already running, exiting.")
-            return
+            print("[TimerDaemon] Already running, exiting.", file=sys.stderr)
+            sys.exit(1)
 
-        print("[TimerDaemon] Started.")
+        print("[TimerDaemon] Started (PID: {})".format(os.getpid()))
 
         signal.signal(signal.SIGTERM, self._handle_sigterm)
         signal.signal(signal.SIGINT, self._handle_sigterm)
@@ -142,6 +158,9 @@ class TimerDaemon:
             while self._running:
                 sleep_for = self.process_once()
                 time.sleep(sleep_for)
+        except Exception as e:
+            print(f"[TimerDaemon] Fatal error: {e}", file=sys.stderr)
+            raise
         finally:
             release_lock()
             print("[TimerDaemon] Stopped.")
