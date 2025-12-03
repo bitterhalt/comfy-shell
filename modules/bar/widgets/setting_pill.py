@@ -238,7 +238,10 @@ class SystemPopup(widgets.Window):
 
         record_btn = widgets.Button(
             css_classes=["sys-top-btn"],
-            on_click=lambda x: wm.open_window("ignis_RECORDING_OVERLAY"),
+            on_click=lambda x: (
+                wm.open_window("ignis_RECORDING_OVERLAY"),
+                self.set_visible(False),
+            ),
             child=widgets.Icon(
                 image="camera-photo-symbolic",
                 pixel_size=22,
@@ -247,7 +250,7 @@ class SystemPopup(widgets.Window):
 
         lock_btn = widgets.Button(
             css_classes=["sys-top-btn"],
-            on_click=lambda x: utils.exec_sh("hyprlock"),
+            on_click=lambda x: (utils.exec_sh("hyprlock"), self.set_visible(False)),
             child=widgets.Icon(
                 image="system-lock-screen-symbolic",
                 pixel_size=22,
@@ -256,7 +259,10 @@ class SystemPopup(widgets.Window):
 
         power_btn = widgets.Button(
             css_classes=["sys-top-btn"],
-            on_click=lambda x: wm.open_window("ignis_POWER_OVERLAY"),
+            on_click=lambda x: (
+                wm.open_window("ignis_POWER_OVERLAY"),
+                self.set_visible(False),
+            ),
             child=widgets.Icon(
                 image="system-shutdown-symbolic",
                 pixel_size=22,
