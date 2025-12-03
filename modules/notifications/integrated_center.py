@@ -74,9 +74,6 @@ def save_tasks(tasks):
 class IntegratedCenter(widgets.Window):
     """Two-column 'integrated center' with notifications + tasks + weather/media."""
 
-    # ----------------------------------------------------------------------
-    # Lifecycle
-    # ----------------------------------------------------------------------
     def __init__(self):
         # -------------------------------------------------------
         # LEFT: NOTIFICATIONS
@@ -511,22 +508,3 @@ class IntegratedCenter(widgets.Window):
             on_cancel=lambda *_: self._hide_dialog(),
         )
         self._show_dialog(dlg)
-
-
-# ============================================================================
-# Global instance + helpers
-# ============================================================================
-
-integrated_center = IntegratedCenter()
-
-
-def toggle_integrated_center():
-    wm.toggle_window("ignis_INTEGRATED_CENTER")
-
-
-def open_notifications():
-    wm.open_window("ignis_INTEGRATED_CENTER")
-
-
-def open_tasks():
-    wm.open_window("ignis_INTEGRATED_CENTER")

@@ -7,6 +7,7 @@ from modules.bar.bar import create_bar
 from modules.bar.bar_toggle import register_bar
 from modules.bar.widgets.setting_pill import SystemPopup
 from modules.launcher.launcher import AppLauncher
+from modules.notifications.integrated_center import IntegratedCenter
 from modules.notifications.popup import init_notifications
 from modules.notifications.task_popup import init_task_popup
 from modules.osd.workspace_osd import init_workspace_osd, set_bar_visibility
@@ -75,3 +76,4 @@ AppLauncher()
 PowerOverlay()
 RecordingOverlay()
 SystemPopup()
+IntegratedCenter()

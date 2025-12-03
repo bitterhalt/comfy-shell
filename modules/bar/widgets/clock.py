@@ -2,8 +2,9 @@ import datetime
 
 from ignis import utils, widgets
 from ignis.services.notifications import NotificationService
-from modules.notifications.integrated_center import toggle_integrated_center
+from ignis.window_manager import WindowManager
 
+wm = WindowManager.get_default()
 notifications = NotificationService.get_default()
 
 
@@ -28,7 +29,7 @@ def clock():
     clock_button = widgets.Button(
         child=clock_content,
         css_classes=["clock-button"],
-        on_click=lambda *_: toggle_integrated_center(),
+        on_click=lambda x: wm.toggle_window("ignis_INTEGRATED_CENTER"),
     )
 
     def update_time():
