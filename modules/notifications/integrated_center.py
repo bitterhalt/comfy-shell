@@ -20,23 +20,23 @@ from modules.notifications.integrated_center_widgets import (
 from modules.notifications.media import MediaCenterWidget
 
 # ============================================================================
-# globals
+# Globals
 # ============================================================================
 
 notifications = NotificationService.get_default()
 queue_file = Path("~/.local/share/timers/queue.json").expanduser()
 max_notifications = 10
-
 wm = WindowManager.get_default()
 
+
 # ============================================================================
-# task storage (locking)
+# Task storage (locking)
 # ============================================================================
 
 
 @contextmanager
 def _locked_queue_file(mode: str = "r"):
-    """File lock helper."""
+    """File lock helper for the timer/task JSON."""
     queue_file.parent.mkdir(parents=True, exist_ok=True)
     if not queue_file.exists():
         queue_file.write_text("[]")
@@ -72,6 +72,11 @@ def save_tasks(tasks):
 
 
 class IntegratedCenter(widgets.Window):
+    """Two-column 'integrated center' with notifications + tasks + weather/media."""
+
+    # ----------------------------------------------------------------------
+    # Lifecycle
+    # ----------------------------------------------------------------------
     def __init__(self):
         # -------------------------------------------------------
         # LEFT: NOTIFICATIONS
@@ -93,7 +98,7 @@ class IntegratedCenter(widgets.Window):
             ),
         )
 
-        # DND TOGGLE
+        # DND toggle
         dnd_switch = widgets.Switch(
             active=options.notifications.bind("dnd"),
             on_change=lambda _, s: options.notifications.set_dnd(s),
@@ -135,7 +140,7 @@ class IntegratedCenter(widgets.Window):
         # RIGHT: WEATHER + MEDIA + CALENDAR + TASKS
         # -------------------------------------------------------
 
-        # weather
+        # Weather (compact)
         self._weather_icon = widgets.Icon(
             image="weather-clouds-symbolic",
             pixel_size=32,
@@ -153,17 +158,17 @@ class IntegratedCenter(widgets.Window):
 
         weather_compact = widgets.Button(
             css_classes=["weather-compact"],
-            on_click=lambda x: wm.open_window("ignis_WEATHER"),
+            on_click=lambda *_: self._open_weather_popup(),
             child=widgets.Box(
                 spacing=10,
                 child=[self._weather_icon, self._weather_temp, self._weather_desc],
             ),
         )
 
-        # media pill
+        # Media pill
         self._media_pill = MediaCenterWidget()
 
-        # calendar
+        # Calendar
         self._calendar = widgets.Calendar(
             css_classes=["center-calendar"],
             show_day_names=True,
@@ -188,7 +193,7 @@ class IntegratedCenter(widgets.Window):
             child=[self._calendar],
         )
 
-        # next task pill
+        # Next task pill
         self._next_task_title = widgets.Label(
             label="No tasks for today",
             ellipsize="end",
@@ -219,7 +224,7 @@ class IntegratedCenter(widgets.Window):
             ],
         )
 
-        # full task list (hidden initially)
+        # Full task list (hidden initially)
         self._task_list = widgets.Box(vertical=True, css_classes=["content-list"])
         self._task_empty = widgets.Label(
             label="No tasks",
@@ -253,7 +258,6 @@ class IntegratedCenter(widgets.Window):
         # -------------------------------------------------------
         # MAIN LAYOUT
         # -------------------------------------------------------
-
         two_columns = widgets.Box(
             css_classes=["integrated-center"],
             child=[left_column, right_column],
@@ -262,9 +266,9 @@ class IntegratedCenter(widgets.Window):
 
         self._revealer = widgets.Revealer(
             child=two_columns,
-            reveal_child=True,
-            transition_type="none",
-            transition_duration=0,
+            reveal_child=False,
+            transition_type="slide_down",
+            transition_duration=180,
         )
 
         overlay_button = widgets.Button(
@@ -298,20 +302,32 @@ class IntegratedCenter(widgets.Window):
             kb_mode="on_demand",
         )
 
-        # initial loads
+        # Initial loads
         self._load_notifications()
         self._reload_tasks()
         self._update_weather()
 
+        # Signals
         notifications.connect("notified", self._on_notified)
+        self.connect("notify::visible", self._on_visible_change)
 
+        # Periodic refresh
         utils.Poll(30000, lambda *_: self._reload_tasks())
         utils.Poll(600000, lambda *_: self._update_weather())
 
-    # =======================================================================
-    # Calendar toggle
-    # =======================================================================
+    # ----------------------------------------------------------------------
+    # Visibility / reveal animation
+    # ----------------------------------------------------------------------
+    def _on_visible_change(self, *_):
+        """Handle reveal animation when window opens/closes."""
+        if self.visible:
+            utils.Timeout(10, lambda: setattr(self._revealer, "reveal_child", True))
+        else:
+            self._revealer.reveal_child = False
 
+    # ----------------------------------------------------------------------
+    # Calendar / weather helpers
+    # ----------------------------------------------------------------------
     def _toggle_calendar(self):
         self._calendar_expanded = not self._calendar_expanded
         self._calendar_box.visible = self._calendar_expanded
@@ -322,10 +338,14 @@ class IntegratedCenter(widgets.Window):
         if isinstance(icon_widget, widgets.Icon):
             icon_widget.image = icon
 
-    # =======================================================================
-    # Notifications
-    # =======================================================================
+    def _open_weather_popup(self):
+        """Open the weather popup window and close integrated center."""
+        self.visible = False
+        utils.Timeout(200, lambda: wm.open_window("ignis_WEATHER"))
 
+    # ----------------------------------------------------------------------
+    # Notifications
+    # ----------------------------------------------------------------------
     def _clear_notifications(self):
         notifications.clear_all()
         self._notif_list.child = []
@@ -344,16 +364,16 @@ class IntegratedCenter(widgets.Window):
             last.unparent()
         self._notif_empty.visible = len(self._notif_list.child) == 0
 
-    # =======================================================================
+    # ----------------------------------------------------------------------
     # Tasks
-    # =======================================================================
-
+    # ----------------------------------------------------------------------
     def _reload_tasks(self, *_):
+        """Reload tasks from the queue file and update UI."""
         now = int(time.time())
         tasks = [t for t in load_tasks() if t.get("fire_at", 0) > now]
         tasks.sort(key=lambda t: t["fire_at"])
 
-        # full list
+        # Full list
         self._task_list.child = [
             TaskItem(
                 t,
@@ -366,7 +386,7 @@ class IntegratedCenter(widgets.Window):
         ]
         self._task_empty.visible = len(tasks) == 0
 
-        # next task
+        # Next task pill
         if tasks:
             nxt = tasks[0]
             fire = nxt["fire_at"]
@@ -439,10 +459,9 @@ class IntegratedCenter(widgets.Window):
         save_tasks(out)
         self._reload_tasks()
 
-    # =======================================================================
+    # ----------------------------------------------------------------------
     # Weather async updater
-    # =======================================================================
-
+    # ----------------------------------------------------------------------
     def _update_weather(self, *_):
         asyncio.create_task(self._update_weather_async())
         return True
@@ -467,10 +486,9 @@ class IntegratedCenter(widgets.Window):
         )
         self._weather_icon.set_tooltip_text(tooltip)
 
-    # =======================================================================
+    # ----------------------------------------------------------------------
     # Dialog handling
-    # =======================================================================
-
+    # ----------------------------------------------------------------------
     def _show_dialog(self, dialog):
         dialog.hexpand = True
         dialog.vexpand = False

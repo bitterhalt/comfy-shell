@@ -5,6 +5,7 @@ from ignis.command_manager import CommandManager
 from ignis.css_manager import CssInfoPath, CssManager
 from modules.bar.bar import create_bar
 from modules.bar.bar_toggle import register_bar
+from modules.bar.widgets.setting_pill import SystemPopup
 from modules.launcher.launcher import AppLauncher
 from modules.notifications.popup import init_notifications
 from modules.notifications.task_popup import init_task_popup
@@ -73,3 +74,4 @@ WeatherPopup()
 AppLauncher()
 PowerOverlay()
 RecordingOverlay()
+SystemPopup()

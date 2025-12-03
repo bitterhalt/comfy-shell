@@ -9,9 +9,7 @@ from ignis.services.network import (
     WifiAccessPoint,
 )
 from ignis.window_manager import WindowManager
-from modules.bar.widgets.audio_menu_window import (
-    AudioSection,
-)  # reuse your existing audio UI
+from modules.bar.widgets.audio_menu_window import AudioSection
 
 wm = WindowManager.get_default()
 audio = AudioService.get_default()
@@ -19,6 +17,10 @@ net = NetworkService.get_default()
 wifi = net.wifi
 vpn = net.vpn
 ethernet = net.ethernet
+
+
+def exec_async(cmd: str):
+    asyncio.create_task(utils.exec_sh_async(cmd))
 
 
 # ───────────────────────────────────────────────
@@ -250,13 +252,12 @@ class SystemPopup(widgets.Window):
 
         lock_btn = widgets.Button(
             css_classes=["sys-top-btn"],
-            on_click=lambda x: (utils.exec_sh("hyprlock"), self.set_visible(False)),
+            on_click=lambda x: (exec_async("hyprlock"), self.set_visible(False)),
             child=widgets.Icon(
                 image="system-lock-screen-symbolic",
                 pixel_size=22,
             ),
         )
-
         power_btn = widgets.Button(
             css_classes=["sys-top-btn"],
             on_click=lambda x: (
@@ -382,7 +383,7 @@ class SystemPopup(widgets.Window):
             hexpand=True,
             can_focus=False,
             css_classes=["system-menu-overlay"],
-            on_click=lambda *_: toggle_system_popup(),
+            on_click=lambda x: wm.close_window("ignis_SYSTEM_MENU"),
         )
 
         root = widgets.Overlay(
@@ -411,17 +412,3 @@ class SystemPopup(widgets.Window):
             await wifi.devices[0].scan()
         except Exception:
             pass
-
-
-# ───────────────────────────────────────────────
-# SINGLETON HELPERS
-# ───────────────────────────────────────────────
-
-
-def toggle_system_popup() -> None:
-    try:
-        wm.toggle_window("ignis_SYSTEM_MENU")
-    except:
-        # Window doesn't exist yet, create it
-        SystemPopup()
-        wm.toggle_window("ignis_SYSTEM_MENU")

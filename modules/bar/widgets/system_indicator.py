@@ -1,8 +1,9 @@
 from ignis import widgets
 from ignis.services.audio import AudioService
 from ignis.services.network import NetworkService
-from modules.bar.widgets.setting_pill import toggle_system_popup
+from ignis.window_manager import WindowManager
 
+wm = WindowManager.get_default()
 audio = AudioService.get_default()
 net = NetworkService.get_default()
 wifi = net.wifi
@@ -79,5 +80,5 @@ def system_indicator():
     return widgets.Button(
         css_classes=["system-indicator-button"],
         child=inner,
-        on_click=lambda *_: toggle_system_popup(),
+        on_click=lambda x: wm.open_window("ignis_SYSTEM_MENU"),
     )
