@@ -1,8 +1,10 @@
 import asyncio
+import os
 import re
+import shlex
 from pathlib import Path
 
-from gi.repository import Gdk, GioUnix
+from gi.repository import Gdk
 
 from ignis import utils, widgets
 from ignis.menu_model import IgnisMenuItem, IgnisMenuModel, IgnisMenuSeparator
@@ -17,6 +19,9 @@ applications = ApplicationsService.get_default()
 TERMINAL_FORMAT = "foot %command%"
 EMOJI_FILE = Path("~/.local/share/emoji/emoji").expanduser()
 window_manager = WindowManager.get_default()
+
+# Cache for PATH binaries
+_PATH_BINARIES: list[tuple[str, str]] | None = None
 
 
 def is_url(url: str) -> bool:
@@ -69,6 +74,72 @@ def search_emojis(query: str, emojis: list, limit: int = 10):
                 break
 
     return matches
+
+
+def _scan_path_binaries() -> list[tuple[str, str]]:
+    """
+    Scan $PATH and return list of (name, full_path) for executables.
+    Cached via _get_path_binaries().
+    """
+    bins: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    path_env = os.environ.get("PATH", "")
+    for directory in path_env.split(":"):
+        if not directory:
+            continue
+        try:
+            entries = os.listdir(directory)
+        except FileNotFoundError:
+            continue
+        except NotADirectoryError:
+            continue
+
+        for entry in entries:
+            if entry in seen:
+                continue
+            full = os.path.join(directory, entry)
+            if os.path.isfile(full) and os.access(full, os.X_OK):
+                seen.add(entry)
+                bins.append((entry, full))
+    return bins
+
+
+def _get_path_binaries() -> list[tuple[str, str]]:
+    """Get cached PATH binaries, scanning once on first use."""
+    global _PATH_BINARIES
+    if _PATH_BINARIES is None:
+        _PATH_BINARIES = _scan_path_binaries()
+    return _PATH_BINARIES
+
+
+def _fuzzy_score(name: str, query: str) -> int:
+    """
+    Very small fuzzy score:
+    - exact match: 100
+    - prefix match: 80
+    - substring: 60
+    - subsequence: 40
+    - otherwise: 0
+    """
+    n = name.lower()
+    q = query.lower()
+    if not q:
+        return 0
+    if n == q:
+        return 100
+    if n.startswith(q):
+        return 80
+    if q in n:
+        return 60
+
+    # subsequence match
+    i = 0
+    for c in n:
+        if i < len(q) and c == q[i]:
+            i += 1
+    if i == len(q):
+        return 40
+    return 0
 
 
 class EmojiItem(widgets.Button):
@@ -144,6 +215,9 @@ class AppItem(widgets.Button):
         action.launch()
         window_manager.close_window("ignis_LAUNCHER")
 
+    def _launch_action(self, action: ApplicationAction) -> None:
+        self.launch_action(action)
+
     def _sync_menu(self):
         actions = [
             IgnisMenuItem(label="Launch", on_activate=lambda x: self._launch()),
@@ -163,55 +237,88 @@ class AppItem(widgets.Button):
         self._menu.model = IgnisMenuModel(*actions)
 
 
-class SearchWebButton(widgets.Button):
-    """Web search/URL visit button"""
+class BinaryItem(widgets.Button):
+    """Binary result for % bang search — launches directly."""
 
-    def __init__(self, query: str):
-        self._query = query
-
-        browser_desktop_file = utils.exec_sh(
-            "xdg-settings get default-web-browser"
-        ).stdout.replace("\n", "")
-
-        app_info = GioUnix.DesktopAppInfo.new(desktop_id=browser_desktop_file)
-        icon_name = "applications-internet-symbolic"
-        if app_info:
-            icon_string = app_info.get_string("Icon")
-            if icon_string:
-                icon_name = icon_string
-
-        if not query.startswith(("http://", "https://")) and "." in query:
-            query = "https://" + query
-
-        if is_url(query):
-            label = f"Visit {query}"
-            self._url = query
-        else:
-            label = "Search in Google"
-            self._url = f"https://www.google.com/search?q={query.replace(' ', '+')}"
+    def __init__(self, name: str, path: str):
+        self._name = name
+        self._path = path
 
         super().__init__(
-            css_classes=["app-item"],
-            on_click=lambda x: self._launch(),
+            css_classes=["bin-item"],
+            on_click=lambda *_: self._launch(),
             child=widgets.Box(
+                spacing=8,
                 child=[
-                    widgets.Icon(image=icon_name, pixel_size=48),
+                    widgets.Icon(
+                        image="system-run-symbolic",
+                        pixel_size=22,
+                        css_classes=["bin-icon"],
+                    ),
                     widgets.Label(
-                        label=label,
+                        label=name,
                         halign="start",
                         hexpand=True,
-                        css_classes=["app-name"],
+                        ellipsize="end",
+                        max_width_chars=30,
+                        css_classes=["bin-name"],
                     ),
-                ]
+                ],
             ),
         )
 
     def _launch(self):
-        asyncio.create_task(utils.exec_sh_async(f"xdg-open {self._url}"))
+        """Launch binary exactly like dmenu (direct detached exec)."""
+        cmd = f"{shlex.quote(self._path)} &"
+        asyncio.create_task(utils.exec_sh_async(cmd))
+        window_manager.close_window("ignis_LAUNCHER")
+
+
+class SearchWebButton(widgets.Button):
+    """Manual web search / URL open triggered by '@'."""
+
+    def __init__(self, query: str):
+        raw_query = query.strip()
+
+        # Decide URL + label
+        if raw_query.startswith(("http://", "https://")):
+            self._url = raw_query
+            label = f"Visit {raw_query}"
+        elif "." in raw_query and " " not in raw_query:
+            # Looks like a domain
+            self._url = "https://" + raw_query
+            label = f"Visit {self._url}"
+        else:
+            # Fallback to Google search
+            self._url = "https://www.google.com/search?q=" + raw_query.replace(" ", "+")
+            label = f"Search Google for “{raw_query}”"
+
+        icon = "applications-internet-symbolic"
+
+        super().__init__(
+            css_classes=["app-item"],
+            on_click=lambda *_: asyncio.create_task(
+                utils.exec_sh_async(f"xdg-open {shlex.quote(self._url)}")
+            ),
+            child=widgets.Box(
+                spacing=10,
+                child=[
+                    widgets.Icon(image=icon, pixel_size=38),
+                    widgets.Label(
+                        label=label,
+                        halign="start",
+                        hexpand=True,
+                        ellipsize="end",
+                        max_width_chars=35,
+                        css_classes=["app-name"],
+                    ),
+                ],
+            ),
+        )
 
 
 class AppLauncher(widgets.Window):
-    """Simple app launcher with emoji search"""
+    """Simple app launcher with emoji search and % PATH binary search"""
 
     def __init__(self):
         # Load emojis once at startup
@@ -219,7 +326,7 @@ class AppLauncher(widgets.Window):
 
         # Search entry
         self._entry = widgets.Entry(
-            placeholder_text="Search or bang !e emoji",
+            placeholder_text="Search... ",
             css_classes=["launcher-entry"],
             hexpand=True,
             on_change=lambda x: self._search(),
@@ -298,7 +405,7 @@ class AppLauncher(widgets.Window):
             self._results_container.visible = False
 
     def _search(self):
-        """Search for apps or emojis"""
+        """Search for apps, emojis, binaries, web, or math"""
         query = self._entry.text
 
         if not query:
@@ -306,8 +413,8 @@ class AppLauncher(widgets.Window):
             self._results_container.visible = False
             return
 
-        # Check for emoji bang command: !e <query>
-        if query.startswith("!e "):
+        # Emoji bang: !e <query>
+        if query.startswith("!e"):
             emoji_query = query[3:].strip()
             if emoji_query:
                 self._search_emojis(emoji_query)
@@ -316,7 +423,28 @@ class AppLauncher(widgets.Window):
                 self._results_container.visible = False
             return
 
-        # Check for calculator: ends with = or contains math operators
+        # Binary bang: %<query> or % <query>
+        if query.startswith("%"):
+            bin_query = query[1:].strip()
+            if bin_query:
+                self._search_binaries(bin_query)
+            else:
+                self._results.child = []
+                self._results_container.visible = False
+            return
+
+        # Manual web search: @<query>
+        if query.startswith("@"):
+            web_query = query[1:].strip()
+            if web_query:
+                self._results.child = [SearchWebButton(web_query)]
+                self._results_container.visible = True
+            else:
+                self._results.child = []
+                self._results_container.visible = False
+            return
+
+        # Calculator: ends with = or looks like math
         if query.endswith("=") or self._looks_like_math(query):
             self._calculate(query.rstrip("="))
             return
@@ -325,17 +453,42 @@ class AppLauncher(widgets.Window):
         apps = applications.search(applications.apps, query)
 
         if not apps:
-            # No apps found, offer web search
-            self._results.child = [SearchWebButton(query)]
+            # No apps found; do NOT auto web search
+            self._results.child = []
+            self._results_container.visible = False
+            return
+
+        # Show first 5 apps
+        self._results.child = [AppItem(app) for app in apps[:5]]
+        self._results_container.visible = True
+
+    def _search_binaries(self, term: str):
+        """Search binaries in PATH via fuzzy match"""
+        binaries = _get_path_binaries()
+        scored: list[tuple[int, str, str]] = []
+
+        for name, path in binaries:
+            score = _fuzzy_score(name, term)
+            if score > 0:
+                scored.append((score, name, path))
+
+        scored.sort(key=lambda x: x[0], reverse=True)
+        top = scored[:10]
+
+        if not top:
+            self._results.child = [
+                widgets.Label(
+                    label=f"No binaries found for '{term}'",
+                    css_classes=["no-results"],
+                )
+            ]
         else:
-            # Show first 5 apps
-            self._results.child = [AppItem(app) for app in apps[:5]]
+            self._results.child = [BinaryItem(name, path) for _, name, path in top]
 
         self._results_container.visible = True
 
     def _looks_like_math(self, query: str) -> bool:
         """Check if query looks like a math expression"""
-        # Contains math operators and mostly numbers/operators
         has_operators = any(
             op in query for op in ["+", "-", "*", "/", "^", "(", ")", "."]
         )
@@ -349,22 +502,17 @@ class AppLauncher(widgets.Window):
             expression = expression.replace("^", "**")
 
             # Safely evaluate the expression
-            # Only allow basic math operations
             allowed_chars = set("0123456789+-*/().** ")
             if not all(c in allowed_chars for c in expression):
                 raise ValueError("Invalid characters in expression")
 
-            # Evaluate
             result = eval(expression, {"__builtins__": {}}, {})
 
-            # Format result
             if isinstance(result, float):
-                # Remove trailing zeros
                 result_str = f"{result:.10f}".rstrip("0").rstrip(".")
             else:
                 result_str = str(result)
 
-            # Create result button
             result_button = widgets.Button(
                 css_classes=["calc-result"],
                 on_click=lambda x: self._copy_result(result_str),
@@ -399,7 +547,6 @@ class AppLauncher(widgets.Window):
             self._results_container.visible = True
 
         except Exception:
-            # Don't show error, just hide results
             self._results.child = []
             self._results_container.visible = False
 
@@ -431,7 +578,7 @@ class AppLauncher(widgets.Window):
         """Launch/copy first result on Enter"""
         if len(self._results.child) > 0:
             first_item = self._results.child[0]
-            if isinstance(first_item, (AppItem, SearchWebButton)):
+            if isinstance(first_item, (AppItem, SearchWebButton, BinaryItem)):
                 first_item._launch()
             elif isinstance(first_item, EmojiItem):
                 first_item._copy()
@@ -439,7 +586,6 @@ class AppLauncher(widgets.Window):
                 hasattr(first_item, "get_css_classes")
                 and "calc-result" in first_item.get_css_classes()
             ):
-                # Copy calculation result
                 result_label = first_item.child.child[1].child[1]
                 result_text = result_label.label.replace("= ", "")
                 self._copy_result(result_text)

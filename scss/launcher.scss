@@ -33,6 +33,7 @@
 }
 
 .app-item,
+.bin-item,
 .emoji-item {
   all: unset;
   background: transparent;
@@ -42,7 +43,16 @@
   margin: 8px;
 }
 
+.bin-icon {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 2px;
+  margin: 2px;
+}
+
 .app-name,
+.bin-name,
 .emoji-names {
   font-size: 1rem;
   color: $tx-2;
@@ -59,14 +69,16 @@
   color: $tx-3;
   padding: 20px;
 }
-
+.bin-item:hover,
 .app-item:hover,
 .app-item:focus,
+.bin-item:focus,
 .emoji-item:focus {
   border: 1px solid $ui-3;
   background: $ui-2;
   margin: 8px;
 }
+
 /* ═══════════════════════════════════════════════════════════════
    CALCULATOR
    ═══════════════════════════════════════════════════════════════ */
