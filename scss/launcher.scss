@@ -43,17 +43,9 @@
   margin: 8px;
 }
 
-.bin-icon {
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 12px;
-  padding: 2px;
-  margin: 2px;
-}
-
 .app-name,
 .bin-name,
-.emoji-names {
+.emoji-name {
   font-size: 1rem;
   color: $tx-2;
   margin-left: 12px;
