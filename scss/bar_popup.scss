@@ -29,7 +29,8 @@
 .sys-top-btn {
   color: $tx-1;
   background: $bg-2;
-  border: 1px solid $ui-1;
+  // border: 1px solid $ui-1;
+  border: none;
   border-radius: 10px;
   padding: 6px;
   transition:
@@ -64,7 +65,7 @@
   color: $tx-1;
   padding: 8px;
   background-color: $bg-2;
-  border: 1px solid $ui-1;
+  border: none;
   border-radius: 10px;
   transition:
     background-color 0.15s,

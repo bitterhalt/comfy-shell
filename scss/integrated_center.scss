@@ -105,7 +105,7 @@
   padding: 8px 16px;
   margin: 0 12px;
   background-color: $bg-2;
-  border: 1px solid $ui-1;
+  border: none;
   border-radius: 8px;
   transition:
     background-color 0.15s,
@@ -113,7 +113,7 @@
 
   &:hover {
     background-color: $ui-2;
-    border-color: $ui-2;
+    // border-color: $ui-2;
   }
 }
 
@@ -139,7 +139,7 @@
 
 .media-pill {
   background-color: $bg-2;
-  border: 1px solid $ui-1;
+  border: none;
   border-radius: 8px;
   padding: 10px 12px;
   min-width: 248px;
@@ -202,7 +202,7 @@
 .center-calendar {
   all: unset;
   background-color: $bg-2;
-  border: 1px solid $ui-1;
+  border: none;
   border-radius: 10px;
   padding: 8px;
   margin: 12px;
@@ -230,7 +230,7 @@
 
 .next-task-box {
   background-color: $bg-2;
-  border: 1px solid $ui-1;
+  // border: 1px solid $ui-1;
   border-radius: 10px;
   padding: 10px 12px;
   margin: 6px 12px 10px 12px;
@@ -294,13 +294,10 @@
 
 .notif-history-item {
   background-color: $bg-2;
-  border: 1px solid $ui-1;
   border-radius: 10px;
   padding: 12px;
   margin-bottom: 8px;
-  transition:
-    background-color 0.2s,
-    border-color 0.2s;
+  transition: background-color 0.2s;
 
   &:hover {
     background-color: $ui-2;
@@ -338,7 +335,6 @@
 
 .task-item {
   background-color: $bg-2;
-  border: 1px solid $ui-1;
   border-radius: 10px;
   padding: 10px 12px;
   margin-bottom: 8px;
@@ -406,7 +402,6 @@
 
 .task-dialog-compact {
   background-color: $bg-1;
-  border: 1px solid $ui-1;
   border-radius: 12px;
   padding: 20px;
   margin: 40px 16px;
@@ -427,7 +422,6 @@
 
 .task-dialog-time-row {
   background-color: $bg-2;
-  border: 1px solid $ui-1;
   border-radius: 8px;
   padding: 8px 12px;
 }
@@ -480,20 +474,15 @@
 .task-input {
   all: unset;
   background-color: $bg-2;
-  border: 1px solid $ui-1;
   border-radius: 8px;
   padding: 8px 12px;
-  color: $tx-2;
+  color: $tx-1;
   font-size: 14px;
   caret-color: $tx-1;
-  transition:
-    border-color 0.15s,
-    background-color 0.15s;
-
-  &:focus {
-    border-color: $cyan;
-    background-color: $bg-2;
-    outline: none;
+  transition: background-color 0.15s;
+  &:hover {
+    color: $tx-2;
+    background-color: $ui-1;
   }
 }
 
@@ -516,7 +505,7 @@
     transform 0.1s;
 
   &:hover {
-    transform: translateY(-1px);
+    transform: translatey(-1px);
   }
 
   &:active {

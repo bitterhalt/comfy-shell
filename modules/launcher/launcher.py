@@ -5,28 +5,25 @@ import shlex
 from pathlib import Path
 
 from gi.repository import Gdk, Gtk
+
 from ignis import utils, widgets
 from ignis.menu_model import IgnisMenuItem, IgnisMenuModel, IgnisMenuSeparator
 from ignis.services.applications import Application, ApplicationsService
 from ignis.window_manager import WindowManager
 
 applications = ApplicationsService.get_default()
+window_manager = WindowManager.get_default()
 TERMINAL_FORMAT = "foot %command%"
 EMOJI_FILE = Path("~/.local/share/emoji/emoji").expanduser()
-
-window_manager = WindowManager.get_default()
-
-# Cache for PATH binaries
 _PATH_BINARIES = None
 
 
 # =============================================================================
-# FAST PATH SCAN + FUZZY MATCHER
+# FUZZY MATCHER
 # =============================================================================
 
 
 def _scan_path_binaries():
-    """Scan PATH and return list of (name, lower_name, full_path)."""
     bins, seen = [], set()
     for directory in os.environ.get("PATH", "").split(":"):
         if not directory:
@@ -93,7 +90,6 @@ def _fuzzy_score(candidate: str, query: str) -> int:
 
 
 def _highlight(text: str, query: str) -> str:
-    """Return text with first matched substring highlighted using <b>."""
     t = text
     q = query.lower()
     tl = t.lower()
@@ -512,7 +508,7 @@ class AppLauncher(widgets.Window):
     # =========================================================================
 
     def _search_emojis(self, term):
-        matches = search_emojis(term, self._emojis, limit=10)
+        matches = search_emojis(term, self._emojis, limit=8)
         self._results.child = (
             [EmojiItem(c, n) for c, n in matches]
             if matches

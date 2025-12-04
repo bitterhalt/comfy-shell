@@ -28,8 +28,8 @@
 /* Results */
 .launcher-results {
   background: $bg-2;
-  border: 1px solid $ui-1;
   border-radius: 12px;
+  margin: 4px;
 }
 
 .app-item,
@@ -39,7 +39,7 @@
   background: transparent;
   border: 1px solid transparent;
   border-radius: 12px;
-  padding: 4px 8px;
+  padding: 8px;
   margin: 8px;
 }
 
@@ -66,7 +66,6 @@
 .app-item:focus,
 .bin-item:focus,
 .emoji-item:focus {
-  border: 1px solid $ui-3;
   background: $ui-2;
   margin: 8px;
 }
@@ -78,7 +77,6 @@
 .calc-result {
   all: unset;
   background: $bg-2;
-  border: 1px solid transparent;
   border-radius: 8px;
   padding: 12px 16px;
   margin-top: 8px;
