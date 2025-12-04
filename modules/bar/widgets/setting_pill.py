@@ -24,7 +24,7 @@ def exec_async(cmd: str):
 
 
 # ───────────────────────────────────────────────
-# NETWORK ITEM WIDGETS
+# NETWORK LIST ITEMS
 # ───────────────────────────────────────────────
 
 
@@ -36,17 +36,8 @@ class WifiNetworkItem(widgets.Button):
             child=widgets.Box(
                 spacing=8,
                 child=[
-                    widgets.Icon(
-                        image=ap.bind(
-                            "strength",
-                            transform=lambda _v: ap.icon_name,
-                        )
-                    ),
-                    widgets.Label(
-                        label=ap.ssid or "Unknown",
-                        halign="start",
-                        ellipsize="end",
-                    ),
+                    widgets.Icon(image=ap.bind("strength", lambda _v: ap.icon_name)),
+                    widgets.Label(label=ap.ssid or "Unknown", ellipsize="end"),
                     widgets.Icon(
                         image="object-select-symbolic",
                         visible=ap.bind("is_connected"),
@@ -66,19 +57,11 @@ class VpnNetworkItem(widgets.Button):
             child=widgets.Box(
                 spacing=8,
                 child=[
-                    widgets.Icon(
-                        image="network-vpn-symbolic",
-                        pixel_size=18,
-                    ),
-                    widgets.Label(
-                        label=conn.name,
-                        ellipsize="end",
-                        max_width_chars=20,
-                    ),
+                    widgets.Icon(image="network-vpn-symbolic", pixel_size=18),
+                    widgets.Label(label=conn.name, ellipsize="end", max_width_chars=20),
                     widgets.Label(
                         label=conn.bind(
-                            "is_connected",
-                            lambda c: "Disconnect" if c else "Connect",
+                            "is_connected", lambda c: "Disconnect" if c else "Connect"
                         ),
                         hexpand=True,
                         halign="end",
@@ -101,15 +84,10 @@ class EthernetItem(widgets.Button):
                 spacing=8,
                 child=[
                     widgets.Icon(image="network-wired-symbolic"),
-                    widgets.Label(
-                        label=dev.name or "Ethernet",
-                        ellipsize="end",
-                        max_width_chars=20,
-                    ),
+                    widgets.Label(label=dev.name or "Ethernet", ellipsize="end"),
                     widgets.Label(
                         label=dev.bind(
-                            "is_connected",
-                            lambda c: "Disconnect" if c else "Connect",
+                            "is_connected", lambda c: "Disconnect" if c else "Connect"
                         ),
                         hexpand=True,
                         halign="end",
@@ -120,19 +98,32 @@ class EthernetItem(widgets.Button):
 
 
 # ───────────────────────────────────────────────
-# NETWORK + AIRPLANE PILLS
+# GENERIC NETWORK LABEL + TOOLTIP
 # ───────────────────────────────────────────────
 
 
-def _safe_ssid() -> str:
+def _generic_net_label() -> str:
+    if wifi.is_connected:
+        return "wifi"
+    if ethernet.is_connected:
+        return "eth"
+    if vpn.is_connected:
+        return "vpn"
+    return "offline"
+
+
+def _net_tooltip() -> str:
     if wifi.is_connected and wifi.devices:
         try:
             ap = wifi.devices[0].ap
-            if ap and ap.ssid:
-                return ap.ssid
+            return f"SSID: {ap.ssid}\nSignal: {ap.strength}%"
         except Exception:
-            pass
-    return "Wi-Fi"
+            return "Wi-Fi connected"
+    if ethernet.is_connected:
+        return "Ethernet connected"
+    if vpn.is_connected:
+        return f"VPN: {vpn.active_vpn_id}"
+    return "No network"
 
 
 def _primary_net_icon() -> str:
@@ -145,23 +136,20 @@ def _primary_net_icon() -> str:
     return "network-offline-symbolic"
 
 
+# ───────────────────────────────────────────────
+# NETWORK PILL (SITS IN TOP ROW)
+# ───────────────────────────────────────────────
+
+
 class NetworkPill(widgets.Button):
     def __init__(self, revealer: widgets.Revealer):
         self._revealer = revealer
 
-        self._icon = widgets.Icon(
-            image=_primary_net_icon(),
-            pixel_size=18,
-        )
+        self._icon = widgets.Icon(image=_primary_net_icon(), pixel_size=18)
         self._label = widgets.Label(
-            label=_safe_ssid(),
-            ellipsize="end",
-            max_width_chars=18,
+            label=_generic_net_label(), ellipsize="end", max_width_chars=12
         )
-        self._arrow = widgets.Icon(
-            image="go-next-symbolic",
-            pixel_size=12,
-        )
+        self._arrow = widgets.Icon(image="go-next-symbolic", pixel_size=12)
 
         inner = widgets.Box(
             spacing=6,
@@ -174,130 +162,90 @@ class NetworkPill(widgets.Button):
             on_click=lambda *_: self._toggle(),
         )
 
-        # Watch relevant properties
-        watch_props = [
-            (vpn, "is_connected"),
-            (vpn, "active_vpn_id"),
-            (ethernet, "is_connected"),
+        # Tooltip
+        self.set_tooltip_text(_net_tooltip())
+
+        # Update on events
+        for obj, prop in [
             (wifi, "is_connected"),
-            (wifi, "icon_name"),
-        ]
-        for obj, prop in watch_props:
-            sig = f"notify::{prop.replace('_', '-')}"
-            obj.connect(sig, lambda *_: self._refresh())
+            (wifi, "strength"),
+            (ethernet, "is_connected"),
+            (vpn, "is_connected"),
+        ]:
+            obj.connect(f"notify::{prop.replace('_', '-')}", lambda *_: self._refresh())
 
         self._refresh()
 
     def _refresh(self):
         self._icon.image = _primary_net_icon()
-        self._label.label = _safe_ssid()
+        self._label.label = _generic_net_label()
+        self.set_tooltip_text(_net_tooltip())
 
     def _toggle(self):
         self._revealer.reveal_child = not self._revealer.reveal_child
 
 
-class AirplanePill(widgets.Button):
-    """Airplane = toggle wifi.enabled (Ethernet untouched)."""
+# ───────────────────────────────────────────────
+# AIRPLANE BUTTON
+# ───────────────────────────────────────────────
 
+
+class AirplaneButton(widgets.Button):
     def __init__(self):
-        self._icon = widgets.Icon(
-            image="airplane-mode-symbolic",
-            pixel_size=16,
-        )
-        self._label = widgets.Label(label=self._text())
-
-        inner = widgets.Box(
-            spacing=6,
-            child=[self._icon, self._label],
-        )
-
         super().__init__(
-            css_classes=["sys-pill", "sys-pill-secondary"],
-            child=inner,
+            css_classes=["sys-top-btn"],
             on_click=lambda *_: self._toggle(),
+            child=widgets.Icon(image="airplane-mode-symbolic", pixel_size=22),
         )
-
-        wifi.connect("notify::enabled", lambda *_: self._sync())
-
-    def _text(self) -> str:
-        return "Airplane Off" if wifi.enabled else "Airplane On"
-
-    def _sync(self):
-        self._label.label = self._text()
+        self._update()
+        wifi.connect("notify::enabled", lambda *_: self._update())
 
     def _toggle(self):
         wifi.enabled = not wifi.enabled
-        self._sync()
+
+    def _update(self):
+        if wifi.enabled:
+            self.remove_css_class("sys-top-btn-active")
+        else:
+            self.add_css_class("sys-top-btn-active")
 
 
 # ───────────────────────────────────────────────
-# MAIN SYSTEM POPUP
+# SYSTEM POPUP
 # ───────────────────────────────────────────────
 
 
 class SystemPopup(widgets.Window):
     def __init__(self):
 
+        # Top buttons
         record_btn = widgets.Button(
             css_classes=["sys-top-btn"],
             on_click=lambda x: (
                 wm.open_window("ignis_RECORDING_OVERLAY"),
                 self.set_visible(False),
             ),
-            child=widgets.Icon(
-                image="camera-photo-symbolic",
-                pixel_size=22,
-            ),
+            child=widgets.Icon(image="camera-photo-symbolic", pixel_size=22),
         )
+
+        airplane_btn = AirplaneButton()
 
         lock_btn = widgets.Button(
             css_classes=["sys-top-btn"],
             on_click=lambda x: (exec_async("hyprlock"), self.set_visible(False)),
-            child=widgets.Icon(
-                image="system-lock-screen-symbolic",
-                pixel_size=22,
-            ),
+            child=widgets.Icon(image="system-lock-screen-symbolic", pixel_size=22),
         )
+
         power_btn = widgets.Button(
             css_classes=["sys-top-btn"],
             on_click=lambda x: (
                 wm.open_window("ignis_POWER_OVERLAY"),
                 self.set_visible(False),
             ),
-            child=widgets.Icon(
-                image="system-shutdown-symbolic",
-                pixel_size=22,
-            ),
+            child=widgets.Icon(image="system-shutdown-symbolic", pixel_size=22),
         )
 
-        top_row = widgets.Box(
-            spacing=10,
-            css_classes=["sys-top-row"],
-            child=[
-                record_btn,
-                widgets.Box(hexpand=True),  # flexible spacer
-                lock_btn,
-                power_btn,
-            ],
-        )
-        # ── Audio: speaker + mic, stacked ─────────────────────────
-        speaker = AudioSection(
-            stream=audio.speaker,
-            device_type="speaker",
-        )
-        mic = AudioSection(
-            stream=audio.microphone,
-            device_type="microphone",
-        )
-
-        audio_column = widgets.Box(
-            vertical=True,
-            spacing=6,
-            css_classes=["sys-audio-column"],
-            child=[speaker, mic],
-        )
-
-        # ── Network details lists ─────────────────────────────────
+        # NETWORK REVEALER
         wifi_section = widgets.Box(
             vertical=True,
             spacing=4,
@@ -318,8 +266,7 @@ class SystemPopup(widgets.Window):
             vertical=True,
             spacing=4,
             child=ethernet.bind(
-                "devices",
-                transform=lambda devs: [EthernetItem(d) for d in devs],
+                "devices", transform=lambda devs: [EthernetItem(d) for d in devs]
             ),
         )
 
@@ -339,7 +286,6 @@ class SystemPopup(widgets.Window):
             child=[wifi_section, ethernet_section, vpn_section],
         )
 
-        # Collapsed by default
         self._net_revealer = widgets.Revealer(
             child=net_details,
             reveal_child=False,
@@ -347,48 +293,68 @@ class SystemPopup(widgets.Window):
             transition_duration=180,
         )
 
-        # ── Second row pills ──────────────────────────────────────
+        # NETWORK PILL (placed inside top row)
         network_pill = NetworkPill(self._net_revealer)
-        airplane_pill = AirplanePill()
 
-        pills_row = widgets.Box(
-            spacing=8,
-            css_classes=["sys-pills-row"],
-            child=[network_pill, airplane_pill],
+        # TOP ROW WITH WIFI PILL IN CENTER
+        top_row = widgets.Box(
+            spacing=10,
+            css_classes=["sys-top-row"],
+            child=[
+                record_btn,
+                widgets.Box(
+                    hexpand=True,
+                    halign="center",
+                    child=[network_pill],  # wifi pill here
+                ),
+                airplane_btn,
+                lock_btn,
+                power_btn,
+            ],
         )
 
-        # ── Panel content ─────────────────────────────────────────
+        # AUDIO SLIDERS ALWAYS VISIBLE
+        speaker = AudioSection(stream=audio.speaker, device_type="speaker")
+        mic = AudioSection(stream=audio.microphone, device_type="microphone")
+
+        audio_content = widgets.Box(
+            vertical=True,
+            spacing=6,
+            css_classes=["sys-audio-column"],
+            child=[speaker, mic],
+        )
+
+        # MAIN PANEL
         panel = widgets.Box(
             vertical=True,
             spacing=12,
             css_classes=["system-menu"],
             child=[
                 top_row,
-                audio_column,
-                pills_row,
+                audio_content,
                 self._net_revealer,
             ],
         )
 
-        # GNOME-like popup: top-right, click-outside-to-close
-        container = widgets.Box(
-            valign="start",
-            halign="end",
-            css_classes=["system-menu-container"],
-            child=[panel],
-        )
-
+        # OVERLAY CLICK-TO-CLOSE
         overlay_btn = widgets.Button(
             vexpand=True,
             hexpand=True,
             can_focus=False,
             css_classes=["system-menu-overlay"],
-            on_click=lambda x: wm.close_window("ignis_SYSTEM_MENU"),
+            on_click=lambda *_: wm.close_window("ignis_SYSTEM_MENU"),
         )
 
         root = widgets.Overlay(
             child=overlay_btn,
-            overlays=[container],
+            overlays=[
+                widgets.Box(
+                    valign="start",
+                    halign="end",
+                    css_classes=["system-menu-container"],
+                    child=[panel],
+                )
+            ],
         )
 
         super().__init__(

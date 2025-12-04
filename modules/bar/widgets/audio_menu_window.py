@@ -5,7 +5,7 @@ audio = AudioService.get_default()
 
 
 # ───────────────────────────────────────────────────────────────
-#  DEVICE ROW (CHECKMARK + NAME ONLY)
+#  DEVICE ROW
 # ───────────────────────────────────────────────────────────────
 
 
@@ -17,19 +17,19 @@ class AudioDeviceItem(widgets.Button):
             css_classes=["audio-device-item"],
             on_click=lambda *_: setattr(audio, device_type, stream),
             child=widgets.Box(
-                spacing=10,
+                spacing=4,
                 child=[
                     widgets.Icon(
                         image="object-select-symbolic",
                         pixel_size=16,
                         visible=stream.bind("is_default"),
+                        hexpand=False,
                     ),
                     widgets.Label(
                         label=stream.description,
                         ellipsize="end",
-                        max_width_chars=28,
+                        max_width_chars=22,
                         hexpand=True,
-                        halign="start",
                     ),
                 ],
             ),
@@ -37,7 +37,7 @@ class AudioDeviceItem(widgets.Button):
 
 
 # ───────────────────────────────────────────────────────────────
-#  AUDIO SECTION (DYNAMIC ICON + SLIDER + DEVICE LIST)
+#  AUDIO SECTION
 # ───────────────────────────────────────────────────────────────
 
 
@@ -159,5 +159,11 @@ class AudioSection(widgets.Box):
     def _populate_devices(self):
         self._device_list.child = []
         streams = getattr(audio, f"{self.device_type}s", [])
+        current = getattr(audio, self.device_type)
+        streams = sorted(
+            streams, key=lambda s: (0 if s == current else 1, s.description.lower())
+        )
+
         for s in streams:
-            self._device_list.append(AudioDeviceItem(s, self.device_type))
+            item = AudioDeviceItem(s, self.device_type)
+            self._device_list.append(item)

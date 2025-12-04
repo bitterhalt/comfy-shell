@@ -1,0 +1,99 @@
+/* ───────────────────────────────────────────────
+   POPUP MENU
+   ─────────────────────────────────────────────── */
+
+.system-menu-window {
+  background-color: transparent;
+  border: none;
+}
+
+.system-menu-overlay {
+  all: unset;
+  background-color: transparent;
+}
+
+.system-menu-container {
+  margin-top: 10px;
+  margin-right: 10px;
+}
+
+/* Panel body  */
+.system-menu {
+  color: $tx-1;
+  background-color: $bg-1;
+  border-radius: 16px;
+  box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.35);
+  padding: 12px;
+}
+
+.sys-top-btn {
+  color: $tx-1;
+  background: $bg-2;
+  border: 1px solid $ui-1;
+  border-radius: 10px;
+  padding: 6px;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+
+  &:hover {
+    background: $ui-3;
+    border-color: $ui-3;
+  }
+
+  image {
+    opacity: 0.9;
+  }
+}
+.sys-top-btn-active {
+  background-color: $magenta;
+  border: none;
+
+  &:hover {
+    background-color: lighten($magenta, 8%);
+  }
+}
+
+.sys-top-btn-active icon {
+  color: $bg-1;
+}
+
+/* Base pill  */
+.sys-pill {
+  all: unset;
+  color: $tx-1;
+  padding: 8px;
+  background-color: $bg-2;
+  border: 1px solid $ui-1;
+  border-radius: 10px;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+
+.sys-pill:hover {
+  background-color: $ui-2;
+  border-color: $ui-2;
+}
+
+/* Network details list – Wi-Fi / Ethernet / VPN items */
+
+.net-wifi-item,
+.net-ethernet-item,
+.net-vpn-item {
+  color: $tx-1;
+  background-color: $bg-2;
+  border: 1px solid $ui-1;
+  border-radius: 10px;
+  padding: 8px;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+
+.net-wifi-item:hover,
+.net-ethernet-item:hover,
+.net-vpn-item:hover {
+  background-color: $ui-2;
+  border-color: $ui-2;
+}

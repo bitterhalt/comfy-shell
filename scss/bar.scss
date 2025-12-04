@@ -30,18 +30,36 @@
   padding: 2px 6px;
 }
 
-// RIGHT MODULES
+// CENTER MODULES
 .clock,
-.clock-button,
-.audio-widget,
-.network-box {
+.clock-button {
   all: unset;
   padding: 2px 6px;
   margin: 2px 0px;
   border-radius: 6px;
 }
 
-// NOTIFICATION DOT
+// RIGHT MODULES
+
+// Rec-icon
+.recording-icon {
+  all: unset;
+  padding: 2px 6px;
+  margin: 2px 0px;
+  border-radius: 6px;
+  color: $red;
+  animation: blink 2s infinite;
+}
+
+// Audio + network block
+.system-indicator-button {
+  all: unset;
+  padding: 2px 6px;
+  margin: 2px 0px;
+  border-radius: 8px;
+}
+
+// Notification dot
 .clock-notif-dot {
   font-size: 0.6rem;
   line-height: 1;
@@ -56,7 +74,7 @@
   color: $red;
 }
 
-// ANNOYING BLINK
+// Annoying blink
 @keyframes blink {
   0% {
     opacity: 1;
@@ -72,27 +90,18 @@
   }
 }
 
-// REC-ICON
-.recording-icon {
-  all: unset;
-  padding: 2px 6px;
-  margin: 2px 0px;
-  border-radius: 6px;
-  color: $red;
-  animation: blink 2s infinite;
-}
-
-// HOVER
-.ws-btn:hover,
-.clock:hover,
+// Hover
 .audio-widget:hover,
 .clock-button:hover,
+.clock:hover,
+.system-indicator-button:hover,
+.ws-btn:hover,
 .network-box:hover {
   background: $bg-2;
   color: $tx-2;
 }
 
-// TOOLTIP
+// Tooltip
 tooltip,
 .tooltip {
   background: $bg-2;
@@ -107,120 +116,4 @@ tooltip label,
   color: $tx-2;
   font-size: 0.95rem;
   font-weight: 400;
-}
-
-/* ───────────────────────────────────────────────
-   POPUP MENU
-   ─────────────────────────────────────────────── */
-
-.system-menu-window {
-  background-color: transparent;
-  border: none;
-}
-
-.system-menu-overlay {
-  all: unset;
-  background-color: transparent;
-}
-
-.system-menu-container {
-  margin-top: 10px;
-  margin-right: 10px;
-}
-
-/* Panel body  */
-.system-menu {
-  background-color: $bg-1;
-  border-radius: 16px;
-  box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.35);
-  padding: 10px 12px;
-}
-
-.sys-top-row {
-  padding: 4px 6px 0 6px;
-  margin-bottom: 2px;
-}
-
-.sys-top-btn {
-  background: $bg-2;
-  border: 1px solid $ui-1;
-  border-radius: 10px;
-  padding: 6px;
-  transition:
-    background 0.15s,
-    border-color 0.15s;
-
-  &:hover {
-    background: $ui-3;
-    border-color: $ui-3;
-  }
-
-  image {
-    opacity: 0.9;
-  }
-}
-
-/* Pills row: network + airplane  */
-.sys-pills-row {
-  margin-top: 4px;
-}
-
-/* Base pill  */
-.sys-pill {
-  all: unset;
-  padding: 8px 16px;
-  background-color: $bg-2;
-  border: 1px solid $ui-1;
-  border-radius: 8px;
-  transition:
-    background-color 0.15s,
-    border-color 0.15s;
-}
-
-.sys-pill:hover {
-  background-color: $ui-2;
-  border-color: $ui-2;
-}
-
-/* Network details list – Wi-Fi / Ethernet / VPN items */
-
-.net-wifi-item,
-.net-ethernet-item,
-.net-vpn-item {
-  background-color: $bg-2;
-  border: 1px solid $ui-1;
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin-top: 4px;
-  transition:
-    background-color 0.15s,
-    border-color 0.15s;
-}
-
-.net-wifi-item:hover,
-.net-ethernet-item:hover,
-.net-vpn-item:hover {
-  background-color: $ui-2;
-  border-color: $ui-2;
-}
-
-/* ───────────────────────────────────────────────
-   BAR CLUSTER (volume + mic + network)
-   ─────────────────────────────────────────────── */
-
-.system-indicator-button {
-  all: unset;
-  padding: 2px 6px;
-  margin: 2px 0px;
-  border-radius: 8px;
-  background-color: transparent;
-  transition: background-color 0.15s;
-}
-
-.system-indicator-button:hover {
-  background-color: $bg-2;
-}
-
-.system-indicator icon {
-  color: $tx-1;
 }
