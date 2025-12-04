@@ -1,10 +1,10 @@
 import asyncio
+import html
 import os
 import shlex
 from pathlib import Path
 
 from gi.repository import Gdk, Gtk
-
 from ignis import utils, widgets
 from ignis.menu_model import IgnisMenuItem, IgnisMenuModel, IgnisMenuSeparator
 from ignis.services.applications import Application, ApplicationsService
@@ -20,12 +20,14 @@ window_manager = WindowManager.get_default()
 _PATH_BINARIES = None
 
 
-# ───────────────────────────────────────────────────────────────
-# PATH BINARY HELPERS
-# ───────────────────────────────────────────────────────────────
+# =============================================================================
+# FAST PATH SCAN + FUZZY MATCHER
+# =============================================================================
+
+
 def _scan_path_binaries():
-    bins = []
-    seen = set()
+    """Scan PATH and return list of (name, lower_name, full_path)."""
+    bins, seen = [], set()
     for directory in os.environ.get("PATH", "").split(":"):
         if not directory:
             continue
@@ -37,8 +39,8 @@ def _scan_path_binaries():
                     and os.path.isfile(full)
                     and os.access(full, os.X_OK)
                 ):
-                    bins.append((entry, full))
                     seen.add(entry)
+                    bins.append((entry, entry.lower(), full))
         except Exception:
             continue
     return bins
@@ -51,28 +53,67 @@ def _get_path_binaries():
     return _PATH_BINARIES
 
 
-def _fuzzy_score(name, query):
-    n, q = name.lower(), query.lower()
+def _fuzzy_score(candidate: str, query: str) -> int:
+    """Fast fuzzy scoring with subsequence + gap penalty."""
+    n = candidate  # lowercase already
+    q = query.lower()
+
     if not q:
         return 0
     if n == q:
-        return 100
+        return 1000
     if n.startswith(q):
-        return 80
+        return 800
     if q in n:
-        return 60
+        return 600
 
-    # subsequence
+    # subsequence match
     i = 0
-    for c in n:
+    last_pos = -1
+    gaps = 0
+
+    for idx, c in enumerate(n):
         if i < len(q) and c == q[i]:
+            if last_pos >= 0:
+                gaps += idx - last_pos - 1
+            last_pos = idx
             i += 1
-    return 40 if i == len(q) else 0
+            if i == len(q):
+                break
+
+    if i == len(q):
+        return max(400 - gaps, 50)
+
+    return 0
 
 
-# ───────────────────────────────────────────────────────────────
-# EMOJI LOADING
-# ───────────────────────────────────────────────────────────────
+# =============================================================================
+# MATCH HIGHLIGHTING
+# =============================================================================
+
+
+def _highlight(text: str, query: str) -> str:
+    """Return text with first matched substring highlighted using <b>."""
+    t = text
+    q = query.lower()
+    tl = t.lower()
+    idx = tl.find(q)
+
+    if idx == -1:
+        return html.escape(t)
+
+    end = idx + len(query)
+    before = html.escape(t[:idx])
+    match = html.escape(t[idx:end])
+    after = html.escape(t[end:])
+    return f"{before}<b>{match}</b>{after}"
+
+
+# =============================================================================
+# EMOJI SEARCH
+# =============================================================================
+
+
 def load_emojis():
     out = []
     try:
@@ -86,35 +127,37 @@ def load_emojis():
     return out
 
 
-def search_emojis(query, emojis, limit=20):
+def search_emojis(query, emojis, limit=10):
     q = query.lower()
-    results = []
+    res = []
     for emoji_char, name in emojis:
         if q in name.lower():
-            results.append((emoji_char, name))
-            if len(results) >= limit:
+            res.append((emoji_char, name))
+            if len(res) >= limit:
                 break
-    return results
+    return res
 
 
-# ───────────────────────────────────────────────────────────────
+# =============================================================================
 # RESULT ITEM WIDGETS
-# ───────────────────────────────────────────────────────────────
+# =============================================================================
+
+
 class EmojiItem(widgets.Button):
-    def __init__(self, emoji_char, name):
-        self._emoji = emoji_char
+    def __init__(self, char, name):
+        self._emoji = char
         super().__init__(
             css_classes=["emoji-item"],
             on_click=lambda *_: self._copy(),
             child=widgets.Box(
                 spacing=12,
                 child=[
-                    widgets.Label(label=emoji_char, css_classes=["emoji-char"]),
+                    widgets.Label(label=char, css_classes=["emoji-char"]),
                     widgets.Label(
-                        label=name,
+                        label=html.escape(name),
+                        use_markup=True,
                         ellipsize="end",
                         hexpand=True,
-                        css_classes=["emoji-name"],
                     ),
                 ],
             ),
@@ -126,7 +169,7 @@ class EmojiItem(widgets.Button):
 
 
 class AppItem(widgets.Button):
-    def __init__(self, app: Application):
+    def __init__(self, app: Application, query: str):
         self._app = app
         pop = widgets.PopoverMenu()
 
@@ -137,12 +180,12 @@ class AppItem(widgets.Button):
             child=widgets.Box(
                 spacing=12,
                 child=[
-                    widgets.Icon(image=app.icon, pixel_size=38),
+                    widgets.Icon(image=app.icon, pixel_size=30),
                     widgets.Label(
-                        label=app.name,
+                        label=_highlight(app.name, query),
+                        use_markup=True,
                         ellipsize="end",
                         hexpand=True,
-                        css_classes=["app-name"],
                     ),
                     pop,
                 ],
@@ -161,15 +204,15 @@ class AppItem(widgets.Button):
         actions = [IgnisMenuItem("Launch", on_activate=lambda *_: self._launch())]
         if self._app.actions:
             actions.append(IgnisMenuSeparator())
-            for act in self._app.actions:
+            for a in self._app.actions:
                 actions.append(
-                    IgnisMenuItem(act.name, on_activate=lambda *_a, a=act: a.launch())
+                    IgnisMenuItem(a.name, on_activate=lambda *_a, act=a: act.launch())
                 )
         self._menu.model = IgnisMenuModel(*actions)
 
 
 class BinaryItem(widgets.Button):
-    def __init__(self, name, path):
+    def __init__(self, name, path, query: str):
         self._path = path
         super().__init__(
             css_classes=["bin-item"],
@@ -179,10 +222,10 @@ class BinaryItem(widgets.Button):
                 child=[
                     widgets.Icon(image="system-run-symbolic", pixel_size=22),
                     widgets.Label(
-                        label=name,
+                        label=_highlight(name, query),
+                        use_markup=True,
                         ellipsize="end",
                         hexpand=True,
-                        css_classes=["bin-name"],
                     ),
                 ],
             ),
@@ -195,9 +238,7 @@ class BinaryItem(widgets.Button):
 
 class SearchWebButton(widgets.Button):
     def __init__(self, query):
-        raw = query.strip()
-        url = "https://www.google.com/search?q=" + raw.replace(" ", "+")
-
+        url = "https://www.google.com/search?q=" + query.replace(" ", "+")
         self._url = url
 
         super().__init__(
@@ -210,10 +251,11 @@ class SearchWebButton(widgets.Button):
                 child=[
                     widgets.Icon(
                         image="applications-internet-symbolic",
-                        pixel_size=32,
+                        pixel_size=28,
                     ),
                     widgets.Label(
-                        label=f"Search Web for “{raw}”",
+                        label=f"Search Web for “{html.escape(query)}”",
+                        use_markup=True,
                         ellipsize="end",
                         hexpand=True,
                     ),
@@ -222,9 +264,11 @@ class SearchWebButton(widgets.Button):
         )
 
 
-# ───────────────────────────────────────────────────────────────
+# =============================================================================
 # MAIN LAUNCHER WINDOW
-# ───────────────────────────────────────────────────────────────
+# =============================================================================
+
+
 class AppLauncher(widgets.Window):
     def __init__(self):
         # Modes
@@ -233,12 +277,19 @@ class AppLauncher(widgets.Window):
         self._emoji_mode = False
         self._web_mode = False
 
-        # Entry
+        # FAST app index
+        self._app_index = [(app.name.lower(), app) for app in applications.apps]
+
+        # Debounce state
+        self._search_task = None
+        self._last_results_key = None
+
+        # Entry box
         self._entry = widgets.Entry(
-            placeholder_text="Search…",
+            placeholder_text="Search...",
             css_classes=["launcher-entry"],
             hexpand=True,
-            on_change=lambda *_: self._search(),
+            on_change=lambda *_: self._debounced_search(),
             on_accept=lambda *_: self._launch_first(),
         )
 
@@ -256,10 +307,11 @@ class AppLauncher(widgets.Window):
         self._results_container = widgets.Box(
             vertical=True,
             visible=False,
-            style="margin-top: 1rem;",
+            style="margin-top: 0.7rem;",
             child=[self._results],
         )
 
+        # Full layout
         main = widgets.Box(
             vertical=True,
             valign="start",
@@ -271,8 +323,8 @@ class AppLauncher(widgets.Window):
         overlay = widgets.Button(
             vexpand=True,
             hexpand=True,
-            css_classes=["launcher-overlay"],
             can_focus=False,
+            css_classes=["launcher-overlay"],
             on_click=lambda *_: self._close(),
         )
 
@@ -290,9 +342,10 @@ class AppLauncher(widgets.Window):
 
         self._setup_keyboard_controller()
 
-    # ─────────────────────────────────────
-    # Keyboard Controller
-    # ─────────────────────────────────────
+    # =========================================================================
+    # Keyboard toggles (Ctrl+B/E/W)
+    # =========================================================================
+
     def _setup_keyboard_controller(self):
         keyc = Gtk.EventControllerKey()
         keyc.connect("key-pressed", self._on_key_pressed)
@@ -301,129 +354,189 @@ class AppLauncher(widgets.Window):
     def _on_key_pressed(self, controller, keyval, keycode, state):
         ctrl = state & Gdk.ModifierType.CONTROL_MASK
 
-        # Ctrl+B → Binary mode
         if ctrl and keyval == Gdk.KEY_b:
-            self._binary_mode = not self._binary_mode
-            self._emoji_mode = False
-            self._web_mode = False
-            self._entry.placeholder_text = (
-                "Binary mode…" if self._binary_mode else "Search…"
-            )
-            self._search()
-            return True
-
-        # Ctrl+E → Emoji mode
+            return self._toggle_mode("binary")
         if ctrl and keyval == Gdk.KEY_e:
-            self._emoji_mode = not self._emoji_mode
-            self._binary_mode = False
-            self._web_mode = False
-            self._entry.placeholder_text = (
-                "Emoji mode…" if self._emoji_mode else "Search…"
-            )
-            self._search()
-            return True
-
-        # Ctrl+W → Web mode
+            return self._toggle_mode("emoji")
         if ctrl and keyval == Gdk.KEY_w:
-            self._web_mode = not self._web_mode
-            self._binary_mode = False
-            self._emoji_mode = False
-            self._entry.placeholder_text = "Web mode…" if self._web_mode else "Search…"
-            self._search()
-            return True
+            return self._toggle_mode("web")
 
         return False
 
-    # ─────────────────────────────────────
-    # Window Lifecycle
-    # ─────────────────────────────────────
+    def _toggle_mode(self, mode: str) -> bool:
+        """
+        Toggle behavior:
+        - Press Ctrl+B once  -> enable binary mode
+        - Press Ctrl+B again -> return to normal app mode
+        (same for emoji/web)
+        """
+        # Are we *already* in this mode and only this mode?
+        already_single_mode = (
+            (
+                mode == "binary"
+                and self._binary_mode
+                and not self._emoji_mode
+                and not self._web_mode
+            )
+            or (
+                mode == "emoji"
+                and self._emoji_mode
+                and not self._binary_mode
+                and not self._web_mode
+            )
+            or (
+                mode == "web"
+                and self._web_mode
+                and not self._binary_mode
+                and not self._emoji_mode
+            )
+        )
+
+        if already_single_mode:
+            # Turn ALL modes off → back to normal app search
+            self._binary_mode = False
+            self._emoji_mode = False
+            self._web_mode = False
+            self._entry.placeholder_text = "Search..."
+        else:
+            # Enable only this mode, disable others
+            self._binary_mode = mode == "binary"
+            self._emoji_mode = mode == "emoji"
+            self._web_mode = mode == "web"
+            self._entry.placeholder_text = {
+                "binary": "Binary mode...",
+                "emoji": "Emoji mode...",
+                "web": "Web mode...",
+            }.get(mode, "Search...")
+
+        # Force re-search even if query is same
+        self._last_results_key = None
+        self._debounced_search()
+        return True
+
+    # =========================================================================
+    # Debounced search (40ms)
+    # =========================================================================
+
+    def _debounced_search(self):
+        if self._search_task:
+            self._search_task.cancel()
+
+        async def run():
+            await asyncio.sleep(0.04)
+            self._search()
+
+        self._search_task = asyncio.create_task(run())
+
+    # =========================================================================
+    # Window lifecycle
+    # =========================================================================
+
     def _on_open(self, *_):
         if self.visible:
             self._entry.text = ""
+            self._results.child = []
+            self._results_container.visible = False
             self._entry.grab_focus()
-            self._results.child = []
-            self._results_container.visible = False
 
-    # ─────────────────────────────────────
-    # Search Engine
-    # ─────────────────────────────────────
+    # =========================================================================
+    # Search engine
+    # =========================================================================
+
     def _search(self):
-        query = self._entry.text.strip()
-        if not query:
+        q = self._entry.text.strip()
+        key = f"{q}|{self._binary_mode}|{self._emoji_mode}|{self._web_mode}"
+
+        if key == self._last_results_key:
+            return
+        self._last_results_key = key
+
+        if not q:
             self._results.child = []
             self._results_container.visible = False
             return
 
-        # Modes override everything else
+        # Modes
         if self._binary_mode:
-            return self._search_binaries(query)
-
+            return self._search_binaries(q)
         if self._emoji_mode:
-            return self._search_emojis(query)
-
+            return self._search_emojis(q)
         if self._web_mode:
-            return self._search_web(query)
+            return self._search_web(q)
 
-        # Calculator (auto mode)
-        if query.endswith("=") or self._looks_like_math(query):
-            return self._calculate(query.rstrip("="))
+        # Calculator
+        if q.endswith("=") or self._looks_like_math(q):
+            return self._calculate(q.rstrip("="))
 
-        # Normal app search
-        apps = applications.search(applications.apps, query)
-        if not apps:
-            self._results.child = []
-            self._results_container.visible = False
-            return
-
-        self._results.child = [AppItem(a) for a in apps[:6]]
-        self._results_container.visible = True
-
-    # ─────────────────────────────────────
-    # Search Paths
-    # ─────────────────────────────────────
-    def _search_binaries(self, term):
-        results = []
-        for name, path in _get_path_binaries():
-            score = _fuzzy_score(name, term)
-            if score > 0:
-                results.append((score, name, path))
-
-        results.sort(key=lambda x: x[0], reverse=True)
+        # FAST substring app search
+        ql = q.lower()
+        results = [app for name, app in self._app_index if ql in name][:6]
 
         if not results:
-            self._results.child = [
+            self._results.child = []
+            self._results_container.visible = False
+            return
+
+        self._results.child = [AppItem(app, q) for app in results]
+        self._results_container.visible = True
+
+    # =========================================================================
+    # Binary search
+    # =========================================================================
+
+    def _search_binaries(self, term):
+        scored = []
+        term_l = term.lower()
+        for name, lower_name, path in _get_path_binaries():
+            s = _fuzzy_score(lower_name, term_l)
+            if s > 0:
+                scored.append((s, name, path))
+
+        scored.sort(key=lambda x: x[0], reverse=True)
+
+        self._results.child = (
+            [BinaryItem(name, path, term) for _, name, path in scored[:10]]
+            if scored
+            else [
                 widgets.Label(
-                    label=f"No binaries found for '{term}'",
+                    label=f"No binaries for '{html.escape(term)}'",
+                    use_markup=True,
                     css_classes=["no-results"],
                 )
             ]
-        else:
-            self._results.child = [
-                BinaryItem(name, path) for _, name, path in results[:10]
-            ]
-
+        )
         self._results_container.visible = True
+
+    # =========================================================================
+    # Emoji search
+    # =========================================================================
 
     def _search_emojis(self, term):
-        matches = search_emojis(term, self._emojis, limit=8)
-        if matches:
-            self._results.child = [EmojiItem(char, name) for char, name in matches]
-        else:
-            self._results.child = [
+        matches = search_emojis(term, self._emojis, limit=10)
+        self._results.child = (
+            [EmojiItem(c, n) for c, n in matches]
+            if matches
+            else [
                 widgets.Label(
-                    label=f"No emojis for '{term}'", css_classes=["no-results"]
+                    label=f"No emojis for '{html.escape(term)}'",
+                    use_markup=True,
                 )
             ]
+        )
         self._results_container.visible = True
 
+    # =========================================================================
+    # Web
+    # =========================================================================
+
     def _search_web(self, term):
-        """Always one button: Google search."""
         self._results.child = [SearchWebButton(term)]
         self._results_container.visible = True
 
-    # ─────────────────────────────────────
+    # =========================================================================
     # Calculator
-    # ─────────────────────────────────────
+    # =========================================================================
+
     def _looks_like_math(self, text):
         return any(c.isdigit() for c in text) and any(op in text for op in "+-*/()^.")
 
@@ -438,48 +551,44 @@ class AppLauncher(widgets.Window):
             if isinstance(result, float):
                 result = f"{result:.10f}".rstrip("0").rstrip(".")
 
-            self._results.child = [
-                widgets.Button(
-                    css_classes=["calc-result"],
-                    on_click=lambda *_: self._copy_result(str(result)),
-                    child=widgets.Box(
-                        spacing=12,
-                        child=[
-                            widgets.Label(label="🔢", css_classes=["calc-icon"]),
-                            widgets.Box(
-                                vertical=True,
-                                spacing=4,
-                                child=[
-                                    widgets.Label(
-                                        label=expression,
-                                        css_classes=["calc-expression"],
-                                        halign="start",
-                                    ),
-                                    widgets.Label(
-                                        label=f"= {result}",
-                                        css_classes=["calc-answer"],
-                                        halign="start",
-                                    ),
-                                ],
-                            ),
-                        ],
-                    ),
-                )
-            ]
+            btn = widgets.Button(
+                css_classes=["calc-result"],
+                on_click=lambda *_: self._copy_result(str(result)),
+                child=widgets.Box(
+                    spacing=12,
+                    child=[
+                        widgets.Label(label="🔢"),
+                        widgets.Box(
+                            vertical=True,
+                            child=[
+                                widgets.Label(
+                                    label=html.escape(expression),
+                                    use_markup=True,
+                                ),
+                                widgets.Label(
+                                    label=f"= {html.escape(str(result))}",
+                                    use_markup=True,
+                                ),
+                            ],
+                        ),
+                    ],
+                ),
+            )
+
+            self._results.child = [btn]
             self._results_container.visible = True
 
         except Exception:
-            self._results.child = [
-                widgets.Label(label="Invalid expression", css_classes=["calc-error"])
-            ]
+            self._results.child = [widgets.Label(label="Invalid expression")]
             self._results_container.visible = True
+
+    # =========================================================================
+    # Helpers
+    # =========================================================================
 
     def _copy_result(self, value):
         Gdk.Display.get_default().get_clipboard().set(value)
 
-    # ─────────────────────────────────────
-    # Launch First Result (Enter)
-    # ─────────────────────────────────────
     def _launch_first(self):
         if not self._results.child:
             return
@@ -492,8 +601,7 @@ class AppLauncher(widgets.Window):
             item._copy()
         elif "calc-result" in item.get_css_classes():
             label = item.child.child[1].child[1]
-            text = label.label.replace("= ", "")
-            self._copy_result(text)
+            self._copy_result(label.label.replace("= ", ""))
 
     def _close(self):
         self.visible = False
