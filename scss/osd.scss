@@ -3,7 +3,8 @@
    ═══════════════════════════════════════════════════════════════ */
 
 .vol-window {
-  margin-top: 8px;
+  margin: 8px;
+  padding: 8px;
 }
 
 .vol-container {
@@ -11,6 +12,7 @@
   padding: 16px;
   border-radius: 8px;
   min-width: 260px;
+  box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.35);
 }
 
 .vol-icon {
@@ -52,14 +54,16 @@
     Symbols Nerd Font Mono;
   background: transparent;
   border: none;
-  margin-top: 20px;
+  padding: 8px;
 }
 
 .workspace-osd {
   background: $osd-bg;
   border: none;
   border-radius: 8px;
+  margin-top: 20px;
   padding: 16px;
+  box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.35);
 }
 
 .workspace-osd-icon {

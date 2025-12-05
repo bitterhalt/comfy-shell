@@ -18,11 +18,11 @@ wm = WindowManager.get_default()
 
 @dataclass
 class ClientEntry:
-    sortkey: int  # 0 normal, 1 special
-    sort_ws: int  # workspace id or 9999 for special
-    address: str  # hypr address
-    ws_label: str  # "[1]" or "[⭐]special"
-    description: str  # "class - title"
+    sortkey: int
+    sort_ws: int
+    address: str
+    ws_label: str
+    description: str
 
 
 def _fetch_clients(reverse: bool = False) -> List[ClientEntry]:
