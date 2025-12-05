@@ -1,0 +1,36 @@
+.winlist-window {
+  background: transparent;
+  border: none;
+}
+
+.winlist-overlay {
+  all: unset;
+  background-color: transparent;
+}
+
+.winlist-panel {
+  background-color: $bg-1;
+  padding: 10px;
+  border-radius: 12px;
+  margin-top: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.winlist-row {
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+
+.winlist-row:hover,
+.winlist-row:focus-visible {
+  background-color: $ui-2;
+}
+
+.winlist-badge {
+  min-width: 64px;
+  color: $accent;
+}
+
+.winlist-title {
+  color: $tx-1;
+}
