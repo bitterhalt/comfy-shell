@@ -5,6 +5,7 @@ import shlex
 from pathlib import Path
 
 from gi.repository import Gdk, Gtk
+
 from ignis import utils, widgets
 from ignis.menu_model import IgnisMenuItem, IgnisMenuModel, IgnisMenuSeparator
 from ignis.services.applications import Application, ApplicationsService
@@ -12,6 +13,8 @@ from ignis.window_manager import WindowManager
 
 applications = ApplicationsService.get_default()
 window_manager = WindowManager.get_default()
+
+MATCH_COLOR = "#24837B"  # ★ TODO: add in style ★
 TERMINAL_FORMAT = "foot %command%"
 EMOJI_FILE = Path("~/.local/share/emoji/emoji").expanduser()
 _PATH_BINARIES = None
@@ -89,6 +92,12 @@ def _fuzzy_score(candidate: str, query: str) -> int:
 
 
 def _highlight(text: str, query: str) -> str:
+    """Return text with matched substring wrapped in colored span."""
+    import html
+
+    if not query:
+        return html.escape(text)
+
     t = text
     q = query.lower()
     tl = t.lower()
@@ -98,10 +107,16 @@ def _highlight(text: str, query: str) -> str:
         return html.escape(t)
 
     end = idx + len(query)
+
     before = html.escape(t[:idx])
     match = html.escape(t[idx:end])
     after = html.escape(t[end:])
-    return f"{before}<b>{match}</b>{after}"
+
+    return (
+        f"{before}"
+        f'<span foreground="{MATCH_COLOR}" weight="bold">{match}</span>'
+        f"{after}"
+    )
 
 
 # =============================================================================
