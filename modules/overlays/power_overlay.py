@@ -1,7 +1,6 @@
 import asyncio
 
 from gi.repository import Gdk
-
 from ignis import utils, widgets
 from ignis.window_manager import WindowManager
 
@@ -189,7 +188,7 @@ class PowerOverlay(widgets.Window):
                         pixel_size=48,
                     ),
                     widgets.Label(
-                        label="[L]ogout",
+                        label="[E]xit",
                         css_classes=["power-overlay-label"],
                     ),
                 ],
@@ -369,7 +368,7 @@ class PowerOverlay(widgets.Window):
         confirm_dialog(
             "Logout",
             "Are you sure you want to log out?",
-            on_confirm=lambda: exec_async("hyprctl dispatch exit 0"),
+            on_confirm=lambda: exec_async("loginctl terminate-user $USER"),
         )
 
     def _suspend(self):
