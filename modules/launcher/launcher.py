@@ -5,7 +5,6 @@ import shlex
 from pathlib import Path
 
 from gi.repository import Gdk, Gtk
-
 from ignis import utils, widgets
 from ignis.menu_model import IgnisMenuItem, IgnisMenuModel, IgnisMenuSeparator
 from ignis.services.applications import Application, ApplicationsService
@@ -239,21 +238,18 @@ class SearchWebButton(widgets.Button):
 
         super().__init__(
             css_classes=["app-item"],
-            on_click=lambda *_: asyncio.create_task(
-                utils.exec_sh_async(f"xdg-open {shlex.quote(url)}")
+            on_click=lambda *_: (
+                asyncio.create_task(
+                    utils.exec_sh_async(f"xdg-open {shlex.quote(url)}")
+                ),
+                window_manager.close_window("ignis_LAUNCHER"),
             ),
             child=widgets.Box(
                 spacing=10,
                 child=[
-                    widgets.Icon(
-                        image="applications-internet-symbolic",
-                        pixel_size=28,
-                    ),
+                    widgets.Icon(image="applications-internet-symbolic", pixel_size=28),
                     widgets.Label(
-                        label=f"Search Web for “{html.escape(query)}”",
-                        use_markup=True,
-                        ellipsize="end",
-                        hexpand=True,
+                        label=f"Search Web for “{query}”", ellipsize="end", hexpand=True
                     ),
                 ],
             ),
@@ -281,14 +277,16 @@ class AppLauncher(widgets.Window):
         self._last_results_key = None
 
         # Entry box
+
         self._entry = widgets.Entry(
             placeholder_text="Search...",
             css_classes=["launcher-entry"],
             hexpand=True,
-            on_change=lambda *_: self._debounced_search(),
+            on_change=lambda *_: (
+                self._search() if self._binary_mode else self._debounced_search()
+            ),
             on_accept=lambda *_: self._launch_first(),
         )
-
         search_box = widgets.Box(
             css_classes=["launcher-search-box"],
             spacing=8,
