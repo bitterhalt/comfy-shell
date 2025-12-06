@@ -22,7 +22,6 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 
 ### 🔸 Bar
 
-- Workspaces (supports Hyprland & Niri)
 - Clock
 - Power menu
 - Network & system indicators
@@ -65,10 +64,13 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 <summary><b>Weather</b></summary><br>
 <img src="assets/screenshots/weather.png" width="80%" />
 </details>
-
 <details>
 <summary><b>Quick settings</b></summary><br>
 <img src="assets/screenshots/quick_settings.png" width="80%" />
+</details>
+<details>
+<summary><b>Window-list</b></summary><br>
+<img src="assets/screenshots/winmenu.png" width="80%" />
 </details>
 
 ## TODO
@@ -79,5 +81,5 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 - [ ] add some settings to control ignis, just simple things like restart etc.
 - [ ] add bluetooth in panel, easy but I don't have any bt devices atm :D
 - [ ] cleanup the code and make syntax more consistenta
-- [ ] add small time stamps to notifications
+- [x] add small time stamps to notifications
 - [ ] Parts of of notications are super ugly -> fix when rainy day
