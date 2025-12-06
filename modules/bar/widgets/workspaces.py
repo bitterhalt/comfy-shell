@@ -7,30 +7,21 @@ niri = NiriService.get_default()
 
 
 def hypr_btn(ws: HyprlandWorkspace):
-    # Use the workspace name, not the ID, to avoid showing large negative numbers.
     label_text = ws.name
 
-    # 1. Check for standard numeric workspaces (e.g., '1', '2', '10')
     if label_text.isdigit():
-        # Do nothing, keep the numeric label as is
         pass
 
-    # 2. Check for special workspaces (e.g., 'special:scratchpad')
-    # NOTE: This logic applies *after* filtering has occurred in workspaces()
     elif label_text.startswith("special:"):
-        # Extracts the actual name (e.g., 'scratchpad') and takes the first letter ('S')
         clean_name = label_text.split(":")[-1]
         label_text = clean_name[0].upper()
 
-    # 3. Handle any other custom named workspace
     else:
-        # Take the first letter and capitalize it
         label_text = label_text[0].upper()
 
     btn = widgets.Button(
         css_classes=["ws-btn"],
         on_click=lambda *_: ws.switch_to(),
-        # Use the cleaned-up label_text
         child=widgets.Label(label=label_text),
     )
     if ws.id == hypr.active_workspace.id:
@@ -80,10 +71,7 @@ def workspaces(monitor_name: str):
                 transform=lambda ws, active: [
                     workspace_button(w)
                     for w in ws
-                    # STRICT FILTER: Only show ID >= 1 OR the specific special workspace(s).
-                    if w.id >= 1
-                    or w.name
-                    == "special:scratchpad"  # <--- ONLY show scratchpad special
+                    if w.id >= 1 or w.name == "special:scratchpad"
                 ],
             ),
         )

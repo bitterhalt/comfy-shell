@@ -218,7 +218,6 @@ class AirplaneButton(widgets.Button):
 class SystemPopup(widgets.Window):
     def __init__(self):
 
-        # Top buttons
         record_btn = widgets.Button(
             css_classes=["sys-top-btn"],
             on_click=lambda x: (
@@ -293,7 +292,7 @@ class SystemPopup(widgets.Window):
             transition_duration=180,
         )
 
-        # NETWORK PILL (placed inside top row)
+        # NETWORK PILL
         network_pill = NetworkPill(self._net_revealer)
 
         # TOP ROW WITH WIFI PILL IN CENTER
@@ -305,7 +304,7 @@ class SystemPopup(widgets.Window):
                 widgets.Box(
                     hexpand=True,
                     halign="center",
-                    child=[network_pill],  # wifi pill here
+                    child=[network_pill],
                 ),
                 airplane_btn,
                 lock_btn,
@@ -313,7 +312,7 @@ class SystemPopup(widgets.Window):
             ],
         )
 
-        # AUDIO SLIDERS ALWAYS VISIBLE
+        # AUDIO SLIDERS
         speaker = AudioSection(stream=audio.speaker, device_type="speaker")
         mic = AudioSection(stream=audio.microphone, device_type="microphone")
 
