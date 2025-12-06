@@ -61,7 +61,7 @@
 
 // Notification dot
 .clock-notif-dot {
-  font-size: 0.6rem;
+  font-size: 10px;
   line-height: 1;
   margin-left: -2px;
 }
@@ -114,6 +114,6 @@ tooltip,
 tooltip label,
 .tooltip label {
   color: $tx-2;
-  font-size: 0.95rem;
+  font-size: 15px;
   font-weight: 400;
 }

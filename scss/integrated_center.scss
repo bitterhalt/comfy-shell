@@ -121,7 +121,7 @@
   font-size: 17px;
   font-weight: 600;
   color: $tx-1;
-  min-width: 3rem;
+  min-width: 48px;
 }
 
 .weather-desc-compact {
@@ -130,50 +130,54 @@
 }
 
 /* ───────────────────────────────────────────────────────────────
-   MEDIA WIDGET (MPRIS pill)
+   MEDIA WIDGET (MPRIS pill) - Now in left column
    ─────────────────────────────────────────────────────────────── */
 
 .media-center-wrapper {
-  margin: 8px 12px 12px 12px;
+  padding: 0 12px;
+  margin-bottom: 8px;
 }
 
 .media-pill {
   background-color: $bg-2;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 12px;
-  min-width: 248px;
-  transition:
-    background-color 0.15s,
-    border-color 0.15s;
+  border-radius: 10px;
+  padding: 12px;
+  min-width: 366px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: $ui-2;
+  }
 }
 
-.media-pill:hover {
-  background-color: $ui-2;
-  border-color: $ui-2;
-}
-
-.media-pill-icon {
-  color: $tx-2;
+.media-pill-art {
+  border-radius: 6px;
+  min-width: 56px;
+  min-height: 56px;
 }
 
 .media-pill-title {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
   color: $tx-2;
+}
+
+.media-pill-artist {
+  font-size: 13px;
+  color: $tx-3;
+  margin-top: 2px;
 }
 
 .media-pill-button {
   all: unset;
-  padding: 4px;
-  border-radius: 6px;
+  padding: 6px;
+  border-radius: 8px;
   transition: background-color 0.15s;
 
   &:hover {
     background-color: $ui-3;
   }
 }
-
 /* ───────────────────────────────────────────────────────────────
    CALENDAR (hidden behind expander)
    ─────────────────────────────────────────────────────────────── */

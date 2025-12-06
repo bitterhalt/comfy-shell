@@ -34,7 +34,8 @@
 
 .app-item,
 .bin-item,
-.emoji-item {
+.emoji-item,
+.setting-item {
   all: unset;
   background: transparent;
   border: 1px solid transparent;
@@ -65,9 +66,27 @@
 .app-item:hover,
 .app-item:focus,
 .bin-item:focus,
-.emoji-item:focus {
+.emoji-item:focus,
+.setting-item:hover,
+.setting-item:focus {
   background: $ui-2;
   margin: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SETTINGS MODE
+   ═══════════════════════════════════════════════════════════════ */
+
+.setting-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: $tx-2;
+}
+
+.setting-path {
+  font-size: 13px;
+  color: $tx-3;
+  margin-top: 2px;
 }
 
 /* ═══════════════════════════════════════════════════════════════

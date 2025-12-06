@@ -6,52 +6,52 @@ from ignis.services.mpris import MprisPlayer, MprisService
 mpris = MprisService.get_default()
 
 
-PLAYER_ICONS = {
-    "spotify": "spotify-symbolic",
-    "firefox": "firefox-browser-symbolic",
-    "chrome": "chrome-symbolic",
-    "chromium": "chromium-symbolic",
-    "zen": "zen-browser-symbolic",
-    None: "folder-music-symbolic",
-}
-
-
-def player_icon(player: MprisPlayer):
-    """Return best-matching icon."""
-    desktop = (player.desktop_entry or "").lower()
-
-    for key in ["spotify", "firefox", "chrome", "chromium", "zen"]:
-        if key in desktop:
-            return PLAYER_ICONS[key]
-
-    return PLAYER_ICONS[None]
-
-
 class MediaPill(widgets.Box):
-    """Tiny pill media controller for notification center."""
+    """Media controller pill for notification center - now with album art."""
 
     def __init__(self, player: MprisPlayer):
         super().__init__(
-            spacing=8,
+            spacing=12,
             css_classes=["media-pill"],
             halign="fill",
             valign="center",
         )
 
-        icon = widgets.Icon(
-            image=player_icon(player),
-            pixel_size=22,
-            css_classes=["media-pill-icon"],
+        # Album art (left side)
+        album_art = widgets.Icon(
+            image=player.bind(
+                "art_url",
+                lambda url: url if url else "folder-music-symbolic",
+            ),
+            pixel_size=56,
+            css_classes=["media-pill-art"],
         )
 
+        # Text column (title + artist)
         title = widgets.Label(
             label=player.bind("title", lambda t: t or "Unknown"),
             ellipsize="end",
-            max_width_chars=22,
+            max_width_chars=30,
             css_classes=["media-pill-title"],
             halign="start",
         )
 
+        artist = widgets.Label(
+            label=player.bind("artist", lambda a: a or "Unknown Artist"),
+            ellipsize="end",
+            max_width_chars=30,
+            css_classes=["media-pill-artist"],
+            halign="start",
+        )
+
+        text_box = widgets.Box(
+            vertical=True,
+            spacing=2,
+            hexpand=True,
+            child=[title, artist],
+        )
+
+        # Play/pause button (right side)
         play_btn = widgets.Button(
             child=widgets.Icon(
                 image=player.bind(
@@ -62,13 +62,13 @@ class MediaPill(widgets.Box):
                         else "media-playback-start-symbolic"
                     ),
                 ),
-                pixel_size=18,
+                pixel_size=20,
             ),
             css_classes=["media-pill-button"],
             on_click=lambda *_: asyncio.create_task(player.play_pause_async()),
         )
 
-        self.child = [icon, title, play_btn]
+        self.child = [album_art, text_box, play_btn]
 
 
 class MediaCenterWidget(widgets.Box):

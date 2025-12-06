@@ -76,8 +76,11 @@ class IntegratedCenter(widgets.Window):
 
     def __init__(self):
         # -------------------------------------------------------
-        # LEFT: NOTIFICATIONS
+        # LEFT: NOTIFICATIONS + MEDIA
         # -------------------------------------------------------
+        # Media pill (now in left column)
+        self._media_pill = MediaCenterWidget()
+
         self._notif_list = widgets.Box(vertical=True, css_classes=["content-list"])
         self._notif_empty = widgets.Label(
             label="No notifications",
@@ -91,7 +94,8 @@ class IntegratedCenter(widgets.Window):
             vscrollbar_policy="automatic",
             child=widgets.Box(
                 vertical=True,
-                child=[self._notif_list, self._notif_empty],
+                valign="start",
+                child=[self._media_pill, self._notif_list, self._notif_empty],
             ),
         )
 
@@ -134,7 +138,7 @@ class IntegratedCenter(widgets.Window):
         )
 
         # -------------------------------------------------------
-        # RIGHT: WEATHER + MEDIA + CALENDAR + TASKS
+        # RIGHT: WEATHER + CALENDAR + TASKS
         # -------------------------------------------------------
 
         # Weather (compact)
@@ -161,9 +165,6 @@ class IntegratedCenter(widgets.Window):
                 child=[self._weather_icon, self._weather_temp, self._weather_desc],
             ),
         )
-
-        # Media pill
-        self._media_pill = MediaCenterWidget()
 
         # Calendar
         self._calendar = widgets.Calendar(
@@ -244,7 +245,6 @@ class IntegratedCenter(widgets.Window):
             css_classes=["right-column"],
             child=[
                 weather_compact,
-                self._media_pill,
                 self._calendar_expander_button,
                 self._calendar_box,
                 next_task_box,

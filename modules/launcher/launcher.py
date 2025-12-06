@@ -5,16 +5,27 @@ import shlex
 from pathlib import Path
 
 from gi.repository import Gdk, Gtk
-
 from ignis import utils, widgets
 from ignis.menu_model import IgnisMenuItem, IgnisMenuModel, IgnisMenuSeparator
 from ignis.services.applications import Application, ApplicationsService
 from ignis.window_manager import WindowManager
 
+# Import mode helpers
+from modules.launcher.launcher_modes import (
+    MODE_BINARY,
+    MODE_EMOJI,
+    MODE_NORMAL,
+    MODE_PLACEHOLDERS,
+    MODE_SETTINGS,
+    MODE_SHORTCUTS,
+    MODE_WEB,
+)
+from modules.launcher.launcher_settings import search_settings
+
 applications = ApplicationsService.get_default()
 window_manager = WindowManager.get_default()
 
-MATCH_COLOR = "#24837B"  # ★ TODO: add in style ★
+MATCH_COLOR = "#24837B"
 TERMINAL_FORMAT = "foot %command%"
 EMOJI_FILE = Path("~/.local/share/emoji/emoji").expanduser()
 _PATH_BINARIES = None
@@ -54,7 +65,7 @@ def _get_path_binaries():
 
 def _fuzzy_score(candidate: str, query: str) -> int:
     """Fast fuzzy scoring with subsequence + gap penalty."""
-    n = candidate  # lowercase already
+    n = candidate
     q = query.lower()
 
     if not q:
@@ -66,7 +77,6 @@ def _fuzzy_score(candidate: str, query: str) -> int:
     if q in n:
         return 600
 
-    # subsequence match
     i = 0
     last_pos = -1
     gaps = 0
@@ -93,8 +103,6 @@ def _fuzzy_score(candidate: str, query: str) -> int:
 
 def _highlight(text: str, query: str) -> str:
     """Return text with matched substring wrapped in colored span."""
-    import html
-
     if not query:
         return html.escape(text)
 
@@ -107,7 +115,6 @@ def _highlight(text: str, query: str) -> str:
         return html.escape(t)
 
     end = idx + len(query)
-
     before = html.escape(t[:idx])
     match = html.escape(t[idx:end])
     after = html.escape(t[end:])
@@ -278,30 +285,32 @@ class SearchWebButton(widgets.Button):
 
 class AppLauncher(widgets.Window):
     def __init__(self):
-        # Modes
-        self._emojis = load_emojis()
-        self._binary_mode = False
-        self._emoji_mode = False
-        self._web_mode = False
+        # Current mode
+        self._mode = MODE_NORMAL
 
-        # FAST app index
+        # Emoji data
+        self._emojis = load_emojis()
+
+        # App index
         self._app_index = [(app.name.lower(), app) for app in applications.apps]
 
         # Debounce state
         self._search_task = None
         self._last_results_key = None
 
-        # Entry box
-
+        # Entry
         self._entry = widgets.Entry(
-            placeholder_text="Search...",
+            placeholder_text=MODE_PLACEHOLDERS[MODE_NORMAL],
             css_classes=["launcher-entry"],
             hexpand=True,
             on_change=lambda *_: (
-                self._search() if self._binary_mode else self._debounced_search()
+                self._search()
+                if self._mode == MODE_BINARY
+                else self._debounced_search()
             ),
             on_accept=lambda *_: self._launch_first(),
         )
+
         search_box = widgets.Box(
             css_classes=["launcher-search-box"],
             spacing=8,
@@ -320,7 +329,7 @@ class AppLauncher(widgets.Window):
             child=[self._results],
         )
 
-        # Full layout
+        # Layout
         main = widgets.Box(
             vertical=True,
             valign="start",
@@ -352,7 +361,7 @@ class AppLauncher(widgets.Window):
         self._setup_keyboard_controller()
 
     # =========================================================================
-    # Keyboard toggles (Ctrl+B/E/W)
+    # Keyboard
     # =========================================================================
 
     def _setup_keyboard_controller(self):
@@ -363,68 +372,41 @@ class AppLauncher(widgets.Window):
     def _on_key_pressed(self, controller, keyval, keycode, state):
         ctrl = state & Gdk.ModifierType.CONTROL_MASK
 
-        if ctrl and keyval == Gdk.KEY_b:
-            return self._toggle_mode("binary")
-        if ctrl and keyval == Gdk.KEY_e:
-            return self._toggle_mode("emoji")
-        if ctrl and keyval == Gdk.KEY_w:
-            return self._toggle_mode("web")
+        if not ctrl:
+            return False
+
+        keyname = Gdk.keyval_name(keyval)
+        if not keyname:
+            return False
+
+        key = keyname.lower()
+        if key in MODE_SHORTCUTS:
+            return self._toggle_mode(MODE_SHORTCUTS[key])
 
         return False
 
     def _toggle_mode(self, mode: str) -> bool:
-        """
-        Toggle behavior:
-        - Press Ctrl+B once  -> enable binary mode
-        - Press Ctrl+B again -> return to normal app mode
-        (same for emoji/web)
-        """
-        # Are we *already* in this mode and only this mode?
-        already_single_mode = (
-            (
-                mode == "binary"
-                and self._binary_mode
-                and not self._emoji_mode
-                and not self._web_mode
-            )
-            or (
-                mode == "emoji"
-                and self._emoji_mode
-                and not self._binary_mode
-                and not self._web_mode
-            )
-            or (
-                mode == "web"
-                and self._web_mode
-                and not self._binary_mode
-                and not self._emoji_mode
-            )
-        )
-
-        if already_single_mode:
-            # Turn ALL modes off → back to normal app search
-            self._binary_mode = False
-            self._emoji_mode = False
-            self._web_mode = False
-            self._entry.placeholder_text = "Search..."
+        """Toggle between modes"""
+        if self._mode == mode:
+            # Already in this mode -> return to normal
+            self._mode = MODE_NORMAL
         else:
-            # Enable only this mode, disable others
-            self._binary_mode = mode == "binary"
-            self._emoji_mode = mode == "emoji"
-            self._web_mode = mode == "web"
-            self._entry.placeholder_text = {
-                "binary": "Binary mode...",
-                "emoji": "Emoji mode...",
-                "web": "Web mode...",
-            }.get(mode, "Search...")
+            # Switch to new mode
+            self._mode = mode
 
-        # Force re-search even if query is same
+        self._entry.placeholder_text = MODE_PLACEHOLDERS[self._mode]
         self._last_results_key = None
-        self._debounced_search()
+
+        # For settings mode, show all items immediately
+        if self._mode == MODE_SETTINGS:
+            self._search_settings_mode("")
+        else:
+            self._debounced_search()
+
         return True
 
     # =========================================================================
-    # Debounced search (40ms)
+    # Search
     # =========================================================================
 
     def _debounced_search(self):
@@ -437,24 +419,9 @@ class AppLauncher(widgets.Window):
 
         self._search_task = asyncio.create_task(run())
 
-    # =========================================================================
-    # Window lifecycle
-    # =========================================================================
-
-    def _on_open(self, *_):
-        if self.visible:
-            self._entry.text = ""
-            self._results.child = []
-            self._results_container.visible = False
-            self._entry.grab_focus()
-
-    # =========================================================================
-    # Search engine
-    # =========================================================================
-
     def _search(self):
         q = self._entry.text.strip()
-        key = f"{q}|{self._binary_mode}|{self._emoji_mode}|{self._web_mode}"
+        key = f"{q}|{self._mode}"
 
         if key == self._last_results_key:
             return
@@ -465,19 +432,21 @@ class AppLauncher(widgets.Window):
             self._results_container.visible = False
             return
 
-        # Modes
-        if self._binary_mode:
+        # Route to mode
+        if self._mode == MODE_BINARY:
             return self._search_binaries(q)
-        if self._emoji_mode:
+        if self._mode == MODE_EMOJI:
             return self._search_emojis(q)
-        if self._web_mode:
+        if self._mode == MODE_WEB:
             return self._search_web(q)
+        if self._mode == MODE_SETTINGS:
+            return self._search_settings_mode(q)
 
         # Calculator
         if q.endswith("=") or self._looks_like_math(q):
             return self._calculate(q.rstrip("="))
 
-        # FAST substring app search
+        # Normal app search
         ql = q.lower()
         results = [app for name, app in self._app_index if ql in name][:6]
 
@@ -490,7 +459,7 @@ class AppLauncher(widgets.Window):
         self._results_container.visible = True
 
     # =========================================================================
-    # Binary search
+    # Mode searches
     # =========================================================================
 
     def _search_binaries(self, term):
@@ -516,10 +485,6 @@ class AppLauncher(widgets.Window):
         )
         self._results_container.visible = True
 
-    # =========================================================================
-    # Emoji search
-    # =========================================================================
-
     def _search_emojis(self, term):
         matches = search_emojis(term, self._emojis, limit=8)
         self._results.child = (
@@ -534,12 +499,24 @@ class AppLauncher(widgets.Window):
         )
         self._results_container.visible = True
 
-    # =========================================================================
-    # Web
-    # =========================================================================
-
     def _search_web(self, term):
         self._results.child = [SearchWebButton(term)]
+        self._results_container.visible = True
+
+    def _search_settings_mode(self, term):
+        """Search settings/config files"""
+        results = search_settings(term)
+        self._results.child = (
+            results
+            if results
+            else [
+                widgets.Label(
+                    label=f"No settings for '{html.escape(term)}'",
+                    use_markup=True,
+                    css_classes=["no-results"],
+                )
+            ]
+        )
         self._results_container.visible = True
 
     # =========================================================================
@@ -614,3 +591,12 @@ class AppLauncher(widgets.Window):
 
     def _close(self):
         self.visible = False
+
+    def _on_open(self, *_):
+        if self.visible:
+            self._entry.text = ""
+            self._results.child = []
+            self._results_container.visible = False
+            self._mode = MODE_NORMAL
+            self._entry.placeholder_text = MODE_PLACEHOLDERS[MODE_NORMAL]
+            self._entry.grab_focus()
