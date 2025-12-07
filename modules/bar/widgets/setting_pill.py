@@ -2,6 +2,7 @@ import asyncio
 
 from ignis import utils, widgets
 from ignis.services.audio import AudioService
+from ignis.services.bluetooth import BluetoothService
 from ignis.services.network import (
     EthernetDevice,
     NetworkService,
@@ -17,10 +18,61 @@ net = NetworkService.get_default()
 wifi = net.wifi
 vpn = net.vpn
 ethernet = net.ethernet
+bluetooth = BluetoothService.get_default()
 
 
 def exec_async(cmd: str):
     asyncio.create_task(utils.exec_sh_async(cmd))
+
+
+# ───────────────────────────────────────────────
+# BLUETOOTH BUTTON
+# ───────────────────────────────────────────────
+
+
+class BluetoothButton(widgets.Button):
+    def __init__(self):
+        self._icon = widgets.Icon(
+            image="bluetooth-symbolic",
+            pixel_size=22,
+        )
+
+        super().__init__(
+            css_classes=["sys-top-btn"],
+            child=self._icon,
+            on_click=lambda *_: exec_async("blueman-manager"),
+            on_right_click=lambda *_: self._toggle(),
+        )
+
+        self._update()
+        bluetooth.connect("notify::powered", lambda *_: self._update())
+        bluetooth.connect("notify::connected-devices", lambda *_: self._update())
+
+    def _toggle(self):
+        bluetooth.powered = not bluetooth.powered
+
+    def _update(self):
+        powered = bluetooth.powered
+        devices = bluetooth.connected_devices
+
+        if powered:
+            self.remove_css_class("sys-top-btn-active")
+
+            if devices:
+                dev = devices[0]
+                self._icon.image = dev.icon_name or "bluetooth-symbolic"
+                self.set_tooltip_text(f"Bluetooth: ON\n" f"Connected to: {dev.name}")
+            else:
+                self._icon.image = "bluetooth-symbolic"
+                self.set_tooltip_text("Bluetooth: ON\n" "No devices connected")
+        else:
+            self.add_css_class("sys-top-btn-active")
+            self._icon.image = "bluetooth-disabled-symbolic"
+            self.set_tooltip_text(
+                "Bluetooth: OFF\n"
+                "Click to enable\n"
+                "Right-click: open Blueman Manager"
+            )
 
 
 # ───────────────────────────────────────────────
@@ -160,15 +212,16 @@ class NetworkPill(widgets.Button):
             css_classes=["sys-pill", "sys-pill-primary"],
             child=inner,
             on_click=lambda *_: self._toggle(),
+            on_right_click=lambda *_: self._toggle_airplane(),
         )
 
         # Tooltip
-        self.set_tooltip_text(_net_tooltip())
+        self._update_tooltip()
 
-        # Update on events
         for obj, prop in [
             (wifi, "is_connected"),
             (wifi, "strength"),
+            (wifi, "enabled"),
             (ethernet, "is_connected"),
             (vpn, "is_connected"),
         ]:
@@ -179,35 +232,22 @@ class NetworkPill(widgets.Button):
     def _refresh(self):
         self._icon.image = _primary_net_icon()
         self._label.label = _generic_net_label()
-        self.set_tooltip_text(_net_tooltip())
+        self._update_tooltip()
+
+    def _update_tooltip(self):
+        base_tooltip = _net_tooltip()
+        airplane_status = (
+            "Airplane mode: ON" if not wifi.enabled else "Airplane mode: OFF"
+        )
+        self.set_tooltip_text(
+            f"{base_tooltip}\n\n{airplane_status}\nRight-click to toggle airplane mode"
+        )
 
     def _toggle(self):
         self._revealer.reveal_child = not self._revealer.reveal_child
 
-
-# ───────────────────────────────────────────────
-# AIRPLANE BUTTON
-# ───────────────────────────────────────────────
-
-
-class AirplaneButton(widgets.Button):
-    def __init__(self):
-        super().__init__(
-            css_classes=["sys-top-btn"],
-            on_click=lambda *_: self._toggle(),
-            child=widgets.Icon(image="airplane-mode-symbolic", pixel_size=22),
-        )
-        self._update()
-        wifi.connect("notify::enabled", lambda *_: self._update())
-
-    def _toggle(self):
+    def _toggle_airplane(self):
         wifi.enabled = not wifi.enabled
-
-    def _update(self):
-        if wifi.enabled:
-            self.remove_css_class("sys-top-btn-active")
-        else:
-            self.add_css_class("sys-top-btn-active")
 
 
 # ───────────────────────────────────────────────
@@ -227,7 +267,7 @@ class SystemPopup(widgets.Window):
             child=widgets.Icon(image="camera-photo-symbolic", pixel_size=22),
         )
 
-        airplane_btn = AirplaneButton()
+        bluetooth_btn = BluetoothButton()
 
         lock_btn = widgets.Button(
             css_classes=["sys-top-btn"],
@@ -306,7 +346,7 @@ class SystemPopup(widgets.Window):
                     halign="center",
                     child=[network_pill],
                 ),
-                airplane_btn,
+                bluetooth_btn,
                 lock_btn,
                 power_btn,
             ],

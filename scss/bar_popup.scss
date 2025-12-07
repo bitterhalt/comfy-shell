@@ -38,7 +38,6 @@
 
   &:hover {
     background: $ui-3;
-    border-color: $ui-3;
   }
 
   image {
@@ -46,11 +45,10 @@
   }
 }
 .sys-top-btn-active {
-  background-color: $magenta;
   border: none;
 
   &:hover {
-    background-color: lighten($magenta, 8%);
+    background: $ui-3;
   }
 }
 
@@ -73,7 +71,6 @@
 
 .sys-pill:hover {
   background-color: $ui-2;
-  border-color: $ui-2;
 }
 
 /* Network details list – Wi-Fi / Ethernet / VPN items */
@@ -94,5 +91,4 @@
 .net-ethernet-item:hover,
 .net-vpn-item:hover {
   background-color: $ui-2;
-  border-color: $ui-2;
 }
