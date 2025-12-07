@@ -75,7 +75,6 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 > _02.12.27_
 
 - [x] adapt new window_manager.api --> Mostly done, I think 👍🏻
-- [ ] add some settings to control ignis, just simple things like restart etc.
 - [x] add bluetooth in panel
 - [ ] cleanup the code and make syntax more consistenta
 - [x] add small time stamps to notifications
