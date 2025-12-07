@@ -25,24 +25,22 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 - Clock
 - Power menu
 - Network & system indicators
-- Record indicator etc
+- Record indicator
 - Weather
-- Notifications
 
 ### 🔸 OSD
 
 - Audio
 - Workspaces on barless mode
-- Submaps (Hyprland)
 - Power menu
-- Notifications
+- Build-in Notifications
 
 ### 🔸 Launcher
 
 - App runner with fuzzy search
 - Calculator
 - Emoji support
-- Websearch (WIP)
+- Websearch
 
 ### 🔸 Extra Integrations
 
@@ -82,4 +80,4 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 - [ ] add bluetooth in panel, easy but I don't have any bt devices atm :D
 - [ ] cleanup the code and make syntax more consistenta
 - [x] add small time stamps to notifications
-- [ ] Parts of of notications are super ugly -> fix when rainy day
+- [x] Parts of of notications are super ugly -> fix when rainy day

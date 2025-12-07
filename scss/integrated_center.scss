@@ -170,6 +170,7 @@
 
 .media-pill-button {
   all: unset;
+  color: $tx-1;
   padding: 6px;
   border-radius: 8px;
   transition: background-color 0.15s;
@@ -326,12 +327,16 @@
 .notif-timestamp {
   font-size: 11px;
   color: $tx-3;
-  opacity: 0.8;
+  opacity: 0.9;
   margin-top: 1px;
   margin-bottom: 2px;
   font-weight: 400;
 }
 
+.notif-history-close {
+  color: $tx-3;
+}
+.notif-history-close:hover,
 .notif-history-item:hover .notif-timestamp {
   opacity: 0.8;
 }

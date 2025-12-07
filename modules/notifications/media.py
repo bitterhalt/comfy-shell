@@ -17,7 +17,6 @@ class MediaPill(widgets.Box):
             valign="center",
         )
 
-        # Album art (left side)
         album_art = widgets.Icon(
             image=player.bind(
                 "art_url",
@@ -27,7 +26,6 @@ class MediaPill(widgets.Box):
             css_classes=["media-pill-art"],
         )
 
-        # Text column (title + artist)
         title = widgets.Label(
             label=player.bind("title", lambda t: t or "Unknown"),
             ellipsize="end",
@@ -51,7 +49,6 @@ class MediaPill(widgets.Box):
             child=[title, artist],
         )
 
-        # Play/pause button (right side)
         play_btn = widgets.Button(
             child=widgets.Icon(
                 image=player.bind(
@@ -62,7 +59,7 @@ class MediaPill(widgets.Box):
                         else "media-playback-start-symbolic"
                     ),
                 ),
-                pixel_size=20,
+                pixel_size=18,
             ),
             css_classes=["media-pill-button"],
             on_click=lambda *_: asyncio.create_task(player.play_pause_async()),
@@ -83,7 +80,6 @@ class MediaCenterWidget(widgets.Box):
 
         self._current_player = None
 
-        # Connect to service signals
         mpris.connect("player_added", self._on_player_added)
         mpris.connect("notify::players", lambda *_: self._refresh())
 
@@ -91,13 +87,11 @@ class MediaCenterWidget(widgets.Box):
 
     def _on_player_added(self, service, player: MprisPlayer):
         """Handle new player added."""
-        # Connect to this player's closed signal
         player.connect("closed", lambda *_: self._on_player_closed(player))
         self._refresh()
 
     def _on_player_closed(self, closed_player: MprisPlayer):
         """Handle player closed."""
-        # If the closed player was our current one, clear and refresh
         if self._current_player == closed_player:
             self._current_player = None
             self._refresh()
@@ -112,10 +106,8 @@ class MediaCenterWidget(widgets.Box):
             self._current_player = None
             return
 
-        # Pick the first player
         player = players[0]
 
-        # If already showing the correct pill, do nothing
         if self._current_player == player:
             return
 
