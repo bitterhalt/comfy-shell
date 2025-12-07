@@ -271,7 +271,7 @@ class SearchWebButton(widgets.Button):
                 child=[
                     widgets.Icon(image="applications-internet-symbolic", pixel_size=28),
                     widgets.Label(
-                        label=f"Search Web for “{query}”", ellipsize="end", hexpand=True
+                        label=f"Search Web for {query}", ellipsize="end", hexpand=True
                     ),
                 ],
             ),
@@ -285,20 +285,15 @@ class SearchWebButton(widgets.Button):
 
 class AppLauncher(widgets.Window):
     def __init__(self):
-        # Current mode
         self._mode = MODE_NORMAL
 
-        # Emoji data
         self._emojis = load_emojis()
 
-        # App index
         self._app_index = [(app.name.lower(), app) for app in applications.apps]
 
-        # Debounce state
         self._search_task = None
         self._last_results_key = None
 
-        # Entry
         self._entry = widgets.Entry(
             placeholder_text=MODE_PLACEHOLDERS[MODE_NORMAL],
             css_classes=["launcher-entry"],
@@ -320,7 +315,6 @@ class AppLauncher(widgets.Window):
             ],
         )
 
-        # Results
         self._results = widgets.Box(vertical=True, css_classes=["launcher-results"])
         self._results_container = widgets.Box(
             vertical=True,
@@ -329,7 +323,6 @@ class AppLauncher(widgets.Window):
             child=[self._results],
         )
 
-        # Layout
         main = widgets.Box(
             vertical=True,
             valign="start",
@@ -370,38 +363,65 @@ class AppLauncher(widgets.Window):
         self.add_controller(keyc)
 
     def _on_key_pressed(self, controller, keyval, keycode, state):
-        ctrl = state & Gdk.ModifierType.CONTROL_MASK
+        alt = state & Gdk.ModifierType.ALT_MASK
 
-        if not ctrl:
-            return False
+        if alt and keyval == Gdk.KEY_Left:
+            return self._cycle_mode(-1)
+        elif alt and keyval == Gdk.KEY_Right:
+            return self._cycle_mode(1)
 
-        keyname = Gdk.keyval_name(keyval)
-        if not keyname:
-            return False
+        if alt:
+            keyname = Gdk.keyval_name(keyval)
+            if not keyname:
+                return False
 
-        key = keyname.lower()
-        if key in MODE_SHORTCUTS:
-            return self._toggle_mode(MODE_SHORTCUTS[key])
+            key = keyname.lower()
+            if key in MODE_SHORTCUTS:
+                return self._toggle_mode(MODE_SHORTCUTS[key])
 
         return False
 
     def _toggle_mode(self, mode: str) -> bool:
         """Toggle between modes"""
         if self._mode == mode:
-            # Already in this mode -> return to normal
             self._mode = MODE_NORMAL
         else:
-            # Switch to new mode
             self._mode = mode
 
         self._entry.placeholder_text = MODE_PLACEHOLDERS[self._mode]
         self._last_results_key = None
 
-        # For settings mode, show all items immediately
         if self._mode == MODE_SETTINGS:
             self._search_settings_mode("")
         else:
             self._debounced_search()
+
+        return True
+
+    def _cycle_mode(self, direction: int) -> bool:
+        """Cycle through modes with Alt+Left/Right"""
+        mode_order = [MODE_NORMAL, MODE_BINARY, MODE_EMOJI, MODE_WEB, MODE_SETTINGS]
+
+        try:
+            current_idx = mode_order.index(self._mode)
+        except ValueError:
+            current_idx = 0
+
+        new_idx = (current_idx + direction) % len(mode_order)
+        new_mode = mode_order[new_idx]
+
+        self._mode = new_mode
+        self._entry.placeholder_text = MODE_PLACEHOLDERS[self._mode]
+        self._last_results_key = None
+
+        if self._mode == MODE_SETTINGS:
+            self._search_settings_mode("")
+        else:
+            if self._entry.text.strip():
+                self._debounced_search()
+            else:
+                self._results.child = []
+                self._results_container.visible = False
 
         return True
 
