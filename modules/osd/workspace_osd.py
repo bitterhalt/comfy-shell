@@ -1,8 +1,3 @@
-"""
-Workspace OSD - Shows workspace changes when bar is hidden
-Monitors Hyprland workspace events and displays minimal OSD
-"""
-
 from ignis import utils, widgets
 from ignis.services.hyprland import HyprlandService
 from ignis.services.niri import NiriService

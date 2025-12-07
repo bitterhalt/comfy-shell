@@ -88,3 +88,44 @@
   font-weight: 600;
   color: $tx-2;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   MEDIA OSD
+   ═══════════════════════════════════════════════════════════════ */
+
+.media-osd-window {
+  background: transparent;
+  border: none;
+  padding: 8px;
+}
+
+.media-osd {
+  background: $osd-bg;
+  border: none;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.35);
+  min-width: 400px;
+}
+
+.media-osd-art {
+  min-width: 80px;
+  min-height: 80px;
+}
+
+.media-osd-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: $tx-2;
+}
+
+.media-osd-artist {
+  font-size: 14px;
+  color: $tx-3;
+  margin-top: 2px;
+}
+
+.media-osd-status-icon {
+  color: $tx-1;
+}

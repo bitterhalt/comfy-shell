@@ -31,16 +31,15 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 ### 🔸 OSD
 
 - Audio
+- Simple Media OSD with artwork
 - Workspaces on barless mode
-- Power menu
 - Build-in Notifications
 
 ### 🔸 Launcher
 
-- App runner with fuzzy search
-- Calculator
-- Emoji support
-- Websearch
+- Power Menu
+- Screenshot Menu
+- App runner wired with: Calculator, Emojis, Websearch
 
 ### 🔸 Extra Integrations
 
