@@ -70,8 +70,8 @@ class BluetoothButton(widgets.Button):
             self._icon.image = "bluetooth-disabled-symbolic"
             self.set_tooltip_text(
                 "Bluetooth: OFF\n"
-                "Click to enable\n"
-                "Right-click: open Blueman Manager"
+                "Click open Blueman Manager\n"
+                "Right-click: to enable"
             )
 
 
