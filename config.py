@@ -11,6 +11,7 @@ from modules.launcher.window_switcher import WindowSwitcher
 from modules.notifications.integrated_center import IntegratedCenter
 from modules.notifications.popup import init_notifications
 from modules.notifications.task_popup import init_task_popup
+from modules.osd.time_osd import TimeOsdWindow
 from modules.osd.workspace_osd import init_workspace_osd, set_bar_visibility
 from modules.overlays.power_overlay import PowerOverlay
 from modules.overlays.recording_overlay import RecordingOverlay
@@ -79,3 +80,4 @@ RecordingOverlay()
 SystemPopup()
 IntegratedCenter()
 WindowSwitcher()
+TimeOsdWindow()
