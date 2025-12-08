@@ -89,6 +89,14 @@ class WeatherPopup(widgets.Window):
             child=[popup_box],
         )
 
+        # Revealer for slide animation (similar to integrated_center)
+        self._revealer = widgets.Revealer(
+            child=centered,
+            reveal_child=False,
+            transition_type="slide_down",
+            transition_duration=180,
+        )
+
         overlay_btn = widgets.Button(
             vexpand=True,
             hexpand=True,
@@ -99,7 +107,7 @@ class WeatherPopup(widgets.Window):
 
         root_overlay = widgets.Overlay(
             child=overlay_btn,
-            overlays=[centered],
+            overlays=[self._revealer],
         )
 
         super().__init__(
@@ -117,6 +125,9 @@ class WeatherPopup(widgets.Window):
         self._last_data: Optional[dict] = None
         self._update_task = None
 
+        # Handle visibility changes for reveal animation
+        self.connect("notify::visible", self._on_visible_change)
+
         utils.Poll(CACHE_TTL * 1000, lambda *_: self._update_weather())
 
     # ──────────────────────────────────────────────────────────
@@ -131,6 +142,16 @@ class WeatherPopup(widgets.Window):
 
     def get_last_data(self):
         return self._last_data
+
+    # ──────────────────────────────────────────────────────────
+    # ANIMATION HANDLERS
+    # ──────────────────────────────────────────────────────────
+    def _on_visible_change(self, *_):
+        """Handle reveal animation when window opens/closes"""
+        if self.visible:
+            utils.Timeout(10, lambda: setattr(self._revealer, "reveal_child", True))
+        else:
+            self._revealer.reveal_child = False
 
     # ──────────────────────────────────────────────────────────
     # DATA UPDATES
