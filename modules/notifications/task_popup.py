@@ -5,7 +5,7 @@ from pathlib import Path
 from ignis import utils, widgets
 
 # Import locking functions from integrated_center
-from modules.notifications.integrated_center import load_tasks, save_tasks
+from modules.notifications.integrated_center_tasks import load_tasks, save_tasks
 
 QUEUE_FILE = Path("~/.local/share/timers/queue.json").expanduser()
 

@@ -1,103 +1,32 @@
-import asyncio
-import fcntl
-import json
-import time
-from contextlib import contextmanager
-from datetime import datetime, timedelta
-from pathlib import Path
+"""
+Integrated notification and task center
+Refactored into modular components
+"""
 
 from ignis import utils, widgets
 from ignis.options import options
-from ignis.services.notifications import NotificationService
 from ignis.window_manager import WindowManager
-from modules.notifications.integrated_center_widgets import (
-    AddTaskDialog,
-    EditTaskDialog,
-    NotificationHistoryItem,
-    TaskItem,
-    format_time_until,
-)
+from modules.notifications.integrated_center_notifications import NotificationList
+from modules.notifications.integrated_center_tasks import TaskList
+from modules.notifications.integrated_center_weather import WeatherPill
 from modules.notifications.media import MediaCenterWidget
 
-# ============================================================================
-# Globals
-# ============================================================================
-
-notifications = NotificationService.get_default()
-queue_file = Path("~/.local/share/timers/queue.json").expanduser()
-max_notifications = 10
 wm = WindowManager.get_default()
 
 
-# ============================================================================
-# Task storage (locking)
-# ============================================================================
-
-
-@contextmanager
-def _locked_queue_file(mode: str = "r"):
-    """File lock helper for the timer/task JSON."""
-    queue_file.parent.mkdir(parents=True, exist_ok=True)
-    if not queue_file.exists():
-        queue_file.write_text("[]")
-
-    with open(queue_file, mode, encoding="utf-8") as f:
-        try:
-            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-            yield f
-        finally:
-            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-
-
-def load_tasks():
-    try:
-        with _locked_queue_file("r") as f:
-            txt = f.read()
-            return json.loads(txt) if txt.strip() else []
-    except Exception:
-        return []
-
-
-def save_tasks(tasks):
-    try:
-        with _locked_queue_file("w") as f:
-            json.dump(tasks, f, indent=2)
-    except Exception:
-        pass
-
-
-# ============================================================================
-# Integrated Center Window
-# ============================================================================
-
-
 class IntegratedCenter(widgets.Window):
-    """Two-column 'integrated center' with notifications + tasks + weather/media."""
+    """Two-column integrated center with notifications + tasks + weather/media"""
 
     def __init__(self):
         # -------------------------------------------------------
-        # LEFT: NOTIFICATIONS + MEDIA
+        # LEFT COLUMN: NOTIFICATIONS + MEDIA
         # -------------------------------------------------------
-        # Media pill (now in left column)
+
+        # Media pill
         self._media_pill = MediaCenterWidget()
 
-        self._notif_list = widgets.Box(vertical=True, css_classes=["content-list"])
-        self._notif_empty = widgets.Label(
-            label="No notifications",
-            css_classes=["empty-state"],
-            vexpand=True,
-            valign="center",
-        )
-
-        notif_scroll = widgets.Scroll(
-            vexpand=True,
-            vscrollbar_policy="automatic",
-            child=widgets.Box(
-                vertical=True,
-                valign="start",
-                child=[self._media_pill, self._notif_list, self._notif_empty],
-            ),
-        )
+        # Notification list
+        self._notification_list = NotificationList()
 
         # DND toggle
         dnd_switch = widgets.Switch(
@@ -116,17 +45,19 @@ class IntegratedCenter(widgets.Window):
             ],
         )
 
+        # Clear button
         clear_btn = widgets.Button(
             child=widgets.Label(label="Clear All"),
             css_classes=["header-action-btn"],
-            on_click=lambda *_: self._clear_notifications(),
+            on_click=lambda *_: self._notification_list.clear_all(),
         )
 
         left_column = widgets.Box(
             vertical=True,
             css_classes=["left-column"],
             child=[
-                notif_scroll,
+                self._media_pill,
+                self._notification_list.scroll,
                 widgets.Box(
                     spacing=8,
                     halign="fill",
@@ -138,33 +69,11 @@ class IntegratedCenter(widgets.Window):
         )
 
         # -------------------------------------------------------
-        # RIGHT: WEATHER + CALENDAR + TASKS
+        # RIGHT COLUMN: WEATHER + CALENDAR + TASKS
         # -------------------------------------------------------
 
-        # Weather (compact)
-        self._weather_icon = widgets.Icon(
-            image="weather-clouds-symbolic",
-            pixel_size=32,
-        )
-        self._weather_temp = widgets.Label(
-            label="--°",
-            css_classes=["weather-temp-compact"],
-        )
-        self._weather_desc = widgets.Label(
-            label="…",
-            css_classes=["weather-desc-compact"],
-            ellipsize="end",
-            max_width_chars=20,
-        )
-
-        weather_compact = widgets.Button(
-            css_classes=["weather-compact"],
-            on_click=lambda *_: self._open_weather_popup(),
-            child=widgets.Box(
-                spacing=10,
-                child=[self._weather_icon, self._weather_temp, self._weather_desc],
-            ),
-        )
+        # Weather pill
+        self._weather_pill = WeatherPill()
 
         # Calendar
         self._calendar = widgets.Calendar(
@@ -191,76 +100,32 @@ class IntegratedCenter(widgets.Window):
             child=[self._calendar],
         )
 
-        # Next task pill
-        self._next_task_title = widgets.Label(
-            label="No tasks for today",
-            ellipsize="end",
-            max_width_chars=30,
-            css_classes=["next-task-title"],
-        )
-        self._next_task_meta = widgets.Label(
-            label="",
-            visible=False,
-            css_classes=["next-task-meta"],
-        )
-
-        next_task_box = widgets.Box(
-            spacing=8,
-            css_classes=["next-task-box"],
-            child=[
-                widgets.Box(
-                    vertical=True,
-                    hexpand=True,
-                    css_classes=["next-task-text-column"],
-                    child=[self._next_task_title, self._next_task_meta],
-                ),
-                widgets.Button(
-                    child=widgets.Label(label="Add Task"),
-                    css_classes=["add-task-btn"],
-                    on_click=lambda *_: self._open_add_dialog(),
-                ),
-            ],
-        )
-
-        # Full task list (hidden initially)
-        self._task_list = widgets.Box(vertical=True, css_classes=["content-list"])
-        self._task_empty = widgets.Label(
-            label="No tasks",
-            css_classes=["empty-state"],
-            valign="center",
-        )
-
-        self._task_scroll = widgets.Scroll(
-            vexpand=True,
-            vscrollbar_policy="automatic",
-            visible=False,
-            child=widgets.Box(
-                vertical=True,
-                child=[self._task_list, self._task_empty],
-            ),
-        )
+        # Task list
+        self._task_list = TaskList(on_show_dialog=self._show_dialog)
 
         right_column = widgets.Box(
             vertical=True,
             css_classes=["right-column"],
             child=[
-                weather_compact,
+                self._weather_pill.button,
                 self._calendar_expander_button,
                 self._calendar_box,
-                next_task_box,
-                self._task_scroll,
+                self._task_list.next_task_box,
+                self._task_list.scroll,
             ],
         )
 
         # -------------------------------------------------------
         # MAIN LAYOUT
         # -------------------------------------------------------
+
         two_columns = widgets.Box(
             css_classes=["integrated-center"],
             child=[left_column, right_column],
         )
         self._main_content = two_columns
 
+        # Revealer for slide animation
         self._revealer = widgets.Revealer(
             child=two_columns,
             reveal_child=False,
@@ -268,6 +133,7 @@ class IntegratedCenter(widgets.Window):
             transition_duration=180,
         )
 
+        # Overlay button
         overlay_button = widgets.Button(
             vexpand=True,
             hexpand=True,
@@ -299,212 +165,32 @@ class IntegratedCenter(widgets.Window):
             kb_mode="on_demand",
         )
 
-        # Initial loads
-        self._load_notifications()
-        self._reload_tasks()
-        self._update_weather()
-
-        # Signals
-        notifications.connect("notified", self._on_notified)
+        # Handle visibility changes for reveal animation
         self.connect("notify::visible", self._on_visible_change)
 
-        # Periodic refresh
-        utils.Poll(30000, lambda *_: self._reload_tasks())
-        utils.Poll(600000, lambda *_: self._update_weather())
-
-    # ----------------------------------------------------------------------
-    # Visibility / reveal animation
-    # ----------------------------------------------------------------------
     def _on_visible_change(self, *_):
-        """Handle reveal animation when window opens/closes."""
+        """Handle reveal animation when window opens/closes"""
         if self.visible:
             utils.Timeout(10, lambda: setattr(self._revealer, "reveal_child", True))
         else:
             self._revealer.reveal_child = False
 
-    # ----------------------------------------------------------------------
-    # Calendar / weather helpers
-    # ----------------------------------------------------------------------
     def _toggle_calendar(self):
+        """Toggle calendar visibility"""
         self._calendar_expanded = not self._calendar_expanded
         self._calendar_box.visible = self._calendar_expanded
-        self._task_scroll.visible = self._calendar_expanded
+        self._task_list.scroll.visible = self._calendar_expanded
 
         icon = "pan-up-symbolic" if self._calendar_expanded else "pan-down-symbolic"
         icon_widget = self._calendar_expander_button.child
         if isinstance(icon_widget, widgets.Icon):
             icon_widget.image = icon
 
-    def _open_weather_popup(self):
-        """Open the weather popup window and close integrated center."""
-        self.visible = False
-        utils.Timeout(200, lambda: wm.open_window("ignis_WEATHER"))
-
-    # ----------------------------------------------------------------------
-    # Notifications
-    # ----------------------------------------------------------------------
-    def _clear_notifications(self):
-        notifications.clear_all()
-        self._notif_list.child = []
-        self._notif_empty.visible = True
-
-    def _load_notifications(self):
-        items = notifications.notifications[:max_notifications]
-        self._notif_list.child = [NotificationHistoryItem(n) for n in items]
-        self._notif_empty.visible = len(items) == 0
-
-    def _on_notified(self, _, nt):
-        self._notif_list.prepend(NotificationHistoryItem(nt))
-        if len(self._notif_list.child) > max_notifications:
-            last = self._notif_list.child[-1]
-            last.visible = False
-            last.unparent()
-        self._notif_empty.visible = len(self._notif_list.child) == 0
-
-    # ----------------------------------------------------------------------
-    # Tasks
-    # ----------------------------------------------------------------------
-    def _reload_tasks(self, *_):
-        """Reload tasks from the queue file and update UI."""
-        now = int(time.time())
-        tasks = [t for t in load_tasks() if t.get("fire_at", 0) > now]
-        tasks.sort(key=lambda t: t["fire_at"])
-
-        # Full list
-        self._task_list.child = [
-            TaskItem(
-                t,
-                self._delete_task,
-                self._complete_task,
-                self._open_edit_dialog,
-                self._snooze_task,
-            )
-            for t in tasks
-        ]
-        self._task_empty.visible = len(tasks) == 0
-
-        # Next task pill
-        if tasks:
-            nxt = tasks[0]
-            fire = nxt["fire_at"]
-            fire_dt = datetime.fromtimestamp(fire)
-
-            today = datetime.now().date()
-            tomorrow = today + timedelta(days=1)
-
-            if fire_dt.date() == today:
-                day = "Today"
-            elif fire_dt.date() == tomorrow:
-                day = "Tomorrow"
-            else:
-                day = fire_dt.strftime("%d.%m")
-
-            time_label = fire_dt.strftime("%H:%M")
-            remain = format_time_until(fire)
-
-            self._next_task_title.label = nxt.get("message", "")
-            self._next_task_meta.label = f"{day} • {time_label} • {remain}"
-            self._next_task_meta.visible = True
-        else:
-            self._next_task_title.label = "No tasks for today"
-            self._next_task_meta.visible = False
-
-        return True
-
-    def _add_task_and_refresh(self, task):
-        tasks = load_tasks()
-        tasks.append(task)
-        save_tasks(tasks)
-        self._hide_dialog()
-        self._reload_tasks()
-
-    def _update_task(self, old, new):
-        tasks = load_tasks()
-        out = []
-        replaced = False
-        for t in tasks:
-            if not replaced and t == old:
-                out.append(new)
-                replaced = True
-            else:
-                out.append(t)
-        save_tasks(out)
-        self._hide_dialog()
-        self._reload_tasks()
-
-    def _delete_task(self, task):
-        tasks = load_tasks()
-        save_tasks([t for t in tasks if t != task])
-        self._reload_tasks()
-
-    def _complete_task(self, task):
-        self._delete_task(task)
-
-    def _snooze_task(self, task, minutes=5):
-        now = int(time.time())
-        tasks = load_tasks()
-        out = []
-        used = False
-        for t in tasks:
-            if not used and t == task:
-                nt = dict(t)
-                nt["fire_at"] = now + minutes * 60
-                out.append(nt)
-                used = True
-            else:
-                out.append(t)
-        save_tasks(out)
-        self._reload_tasks()
-
-    # ----------------------------------------------------------------------
-    # Weather async updater
-    # ----------------------------------------------------------------------
-    def _update_weather(self, *_):
-        asyncio.create_task(self._update_weather_async())
-        return True
-
-    async def _update_weather_async(self):
-        from modules.weather.weather_data import fetch_weather_async
-
-        data = await fetch_weather_async()
-        if not data:
-            return
-
-        self._weather_icon.image = data["icon"]
-        self._weather_temp.label = f"{data['temp']}°"
-        self._weather_desc.label = data["desc"]
-
-        tooltip = (
-            f"{data['city']}\n"
-            f"Feels like {data['feels_like']}°C\n"
-            f"Humidity: {data['humidity']}%\n"
-            f"Wind: {data['wind']:.1f} m/s\n"
-            "\nClick to open weather details"
-        )
-        self._weather_icon.set_tooltip_text(tooltip)
-
-    # ----------------------------------------------------------------------
-    # Dialog handling
-    # ----------------------------------------------------------------------
     def _show_dialog(self, dialog):
-        dialog.hexpand = True
-        dialog.vexpand = False
-        self._revealer.child = dialog
-
-    def _hide_dialog(self):
-        self._revealer.child = self._main_content
-
-    def _open_add_dialog(self):
-        dlg = AddTaskDialog(
-            on_add=self._add_task_and_refresh,
-            on_cancel=lambda *_: self._hide_dialog(),
-        )
-        self._show_dialog(dlg)
-
-    def _open_edit_dialog(self, task):
-        dlg = EditTaskDialog(
-            task,
-            on_save=lambda new: self._update_task(task, new),
-            on_cancel=lambda *_: self._hide_dialog(),
-        )
-        self._show_dialog(dlg)
+        """Show a dialog (task add/edit) or return to main content"""
+        if dialog is None:
+            self._revealer.child = self._main_content
+        else:
+            dialog.hexpand = True
+            dialog.vexpand = False
+            self._revealer.child = dialog
