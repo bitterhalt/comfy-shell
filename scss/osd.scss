@@ -92,7 +92,10 @@
 /* ═══════════════════════════════════════════════════════════════
    MEDIA OSD
    ═══════════════════════════════════════════════════════════════ */
-
+.media-osd-header {
+  color: $tx-1;
+  padding-bottom: 4px;
+}
 .media-osd-window {
   background: transparent;
   border: none;
@@ -125,7 +128,10 @@
   color: $tx-3;
   margin-top: 2px;
 }
-
-.media-osd-status-icon {
+.media-osd-app-icon {
+  border-radius: 6px;
   color: $tx-1;
+}
+.media-osd-status-icon {
+  color: $tx-3;
 }
