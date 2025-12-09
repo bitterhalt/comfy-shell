@@ -19,6 +19,7 @@ ICON_BASE = config.weather.icon_base_path
 API_KEY = config.weather.api_key
 CITY_ID = config.weather.city_id
 
+
 # ───────────────────────────────────────────────
 # ICON PATH
 # ───────────────────────────────────────────────
@@ -68,7 +69,7 @@ def _save_cache(data: Dict[str, Any]):
 
 
 def _build_url(endpoint: str) -> Optional[str]:
-    if not API_KEY:  # Changed from os.getenv
+    if not API_KEY:
         return None
     base = "https://api.openweathermap.org/data/2.5"
     return f"{base}/{endpoint}?id={CITY_ID}&units=metric&appid={API_KEY}"
@@ -160,7 +161,9 @@ async def fetch_weather_async() -> Optional[Dict[str, Any]]:
         desc = weather0["description"].title()
         icon_code = weather0["icon"]
 
-        # Forecast
+        # ───────────────────────────────────────────────
+        # HOURLY FORECAST (4 entries)
+        # ───────────────────────────────────────────────
         forecast_list = fc_json["list"][:4]
         forecast = []
         for entry in forecast_list:
@@ -174,7 +177,7 @@ async def fetch_weather_async() -> Optional[Dict[str, Any]]:
                 }
             )
 
-        # Get current date for moon calculation
+        # Current date for moon phase
         current_date = datetime.now()
 
         data = {
@@ -190,9 +193,44 @@ async def fetch_weather_async() -> Optional[Dict[str, Any]]:
             "icon_code": icon_code,
             "forecast": forecast,
             "moon_icon": moon_icon_for(current_date),
-            "moon_tooltip": moon_tooltip(current_date),  # ← ADDED: Moon tooltip
+            "moon_tooltip": moon_tooltip(current_date),
         }
 
+        # ───────────────────────────────────────────────
+        # WEEKLY FORECAST (ADD BELOW)  ⭐
+        # ───────────────────────────────────────────────
+
+        daily_map = {}
+        for entry in fc_json["list"]:
+            dt = datetime.fromtimestamp(entry["dt"])
+            date_key = dt.date()
+            daily_map.setdefault(date_key, []).append(entry)
+
+        weekly = []
+        today = datetime.now().date()
+
+        for date_key, items in daily_map.items():
+            if date_key == today:
+                continue
+
+            # choose entry closest to 12:00
+            best = min(
+                items, key=lambda e: abs(datetime.fromtimestamp(e["dt"]).hour - 12)
+            )
+            w0 = best["weather"][0]
+
+            weekly.append(
+                {
+                    "day": date_key.strftime("%a"),
+                    "temp": round(best["main"]["temp"]),
+                    "icon": _map_icon(w0["icon"]),
+                }
+            )
+
+        weekly = weekly[:5]
+        data["weekly"] = weekly  # ← Added weekly forecast ⭐
+
+        # Save cache
         _save_cache({"timestamp": int(time.time()), "data": data})
         return data
 
