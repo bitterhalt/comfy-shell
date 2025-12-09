@@ -150,7 +150,15 @@ class WeatherPopup(widgets.Window):
 
         root_overlay = widgets.Overlay(
             child=overlay_btn,
-            overlays=[self._revealer],
+            overlays=[
+                widgets.Box(
+                    valign="start",
+                    halign="center",
+                    hexpand=False,
+                    css_classes=["weather-container"],
+                    child=[self._revealer],
+                )
+            ],
         )
 
         super().__init__(
@@ -189,11 +197,16 @@ class WeatherPopup(widgets.Window):
     # ───────────────────────────────────────────────
     # Animation handlers
     # ───────────────────────────────────────────────
+
     def _on_visible_change(self, *_):
+        """Handle reveal animation when window opens/closes"""
         if self.visible:
             utils.Timeout(10, lambda: setattr(self._revealer, "reveal_child", True))
         else:
             self._revealer.reveal_child = False
+            self._weekly_revealer.reveal_child = False
+            self._weekly_arrow.set_css_classes(["weekly-arrow"])  # remove rotation
+            self._weekly_toggle.child.child[0].label = "Show weekly forecast"
 
     # ───────────────────────────────────────────────
     # Weekly toggle with rotating arrow
