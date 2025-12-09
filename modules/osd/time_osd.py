@@ -1,7 +1,9 @@
 import datetime
 
 from ignis import utils, widgets
+from settings import config
 
+TIMEOUT = config.ui.time_osd_timeout
 _time_osd_window = None
 
 
@@ -49,7 +51,9 @@ class TimeOsdWindow(widgets.Window):
             if self._timeout:
                 self._timeout.cancel()
 
-            self._timeout = utils.Timeout(8000, lambda: setattr(self, "visible", False))
+            self._timeout = utils.Timeout(
+                TIMEOUT, lambda: setattr(self, "visible", False)
+            )
 
         else:
             if self._timeout:

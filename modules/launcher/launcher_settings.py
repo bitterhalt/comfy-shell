@@ -4,6 +4,7 @@ import os
 
 from ignis import utils, widgets
 from ignis.window_manager import WindowManager
+from settings import config
 
 wm = WindowManager.get_default()
 
@@ -11,9 +12,9 @@ wm = WindowManager.get_default()
 # SETTINGS CONFIGURATION
 # ═══════════════════════════════════════════════════════════════
 
-TERMINAL = os.getenv("TERMINAL", "foot")
-EDITOR = os.getenv("EDITOR", "nvim")
-FILE_OPENER = os.getenv("FILE_OPENER", "vopen")
+TERMINAL = config.terminal
+EDITOR = config.editor
+FILE_OPENER = config.file_opener
 
 SETTINGS = [
     {

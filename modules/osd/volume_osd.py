@@ -1,7 +1,9 @@
 from ignis import utils, widgets
 from ignis.services.audio import AudioService
+from settings import config
 
 audio = AudioService.get_default()
+TIMEOUT = config.ui.volume_osd_timeout
 
 # Global OSD window instance
 _osd_window = None
@@ -52,7 +54,7 @@ class VolumeOSD(widgets.Window):
         self.visible = True
         self._hide_delayed()
 
-    @utils.debounce(2000)
+    @utils.debounce(TIMEOUT)
     def _hide_delayed(self):
         """Hide after delay"""
         self.visible = False

@@ -1,40 +1,23 @@
-# weather_data.py
-#
-# Fetches OpenWeather data
-# Produces clean dict for weather_window.py
-# Loads your custom SVG icons
-# Exposes:
-#   fetch_weather_async()
-#   format_time_hm()
-#   icon_path()
-#   (moon handled separately)
-
 import asyncio
 import json
-import os
 import time
 from datetime import datetime
-from pathlib import Path
 from typing import Any, Dict, Optional
 
 from ignis import utils
+from settings import config
 
 from .moon import moon_icon_for, moon_tooltip
 
 # ───────────────────────────────────────────────
 # CONFIG
 # ───────────────────────────────────────────────
-
-DEFAULT_CITY_ID = "643492"
-API_KEY_ENV = "OPEN_WEATHER_APIKEY"
-
-CACHE_FILE = Path(os.path.expanduser("~/.cache/ignis/weather_cache.json"))
-CACHE_TTL = 600
-
-USE_12H = os.getenv("IGNIS_WEATHER_12H", "").lower() in ("1", "true", "yes", "on")
-
-ICON_BASE = os.path.expanduser("~/.config/ignis/assets/icons/weather")
-
+CACHE_FILE = config.paths.weather_cache
+CACHE_TTL = config.weather.cache_ttl
+USE_12H = config.weather.use_12h_format
+ICON_BASE = config.weather.icon_base_path
+API_KEY = config.weather.api_key
+CITY_ID = config.weather.city_id
 
 # ───────────────────────────────────────────────
 # ICON PATH
@@ -85,12 +68,10 @@ def _save_cache(data: Dict[str, Any]):
 
 
 def _build_url(endpoint: str) -> Optional[str]:
-    api_key = os.getenv(API_KEY_ENV, "").strip()
-    if not api_key:
+    if not API_KEY:  # Changed from os.getenv
         return None
-    city_id = os.getenv("OPEN_WEATHER_CITY_ID", DEFAULT_CITY_ID).strip()
     base = "https://api.openweathermap.org/data/2.5"
-    return f"{base}/{endpoint}?id={city_id}&units=metric&appid={api_key}"
+    return f"{base}/{endpoint}?id={CITY_ID}&units=metric&appid={API_KEY}"
 
 
 async def _curl_json_async(url: str) -> Optional[dict]:

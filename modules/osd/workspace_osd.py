@@ -1,7 +1,9 @@
 from ignis import utils, widgets
 from ignis.services.hyprland import HyprlandService
 from ignis.services.niri import NiriService
+from settings import config
 
+TIMEOUT = config.ui.workspace_osd_timeout
 hypr = HyprlandService.get_default()
 niri = NiriService.get_default()
 
@@ -67,7 +69,7 @@ class WorkspaceOSD(widgets.Window):
         self.visible = True
         self._hide_delayed()
 
-    @utils.debounce(1500)
+    @utils.debounce(TIMEOUT)
     def _hide_delayed(self):
         """Hide after delay"""
         self.visible = False

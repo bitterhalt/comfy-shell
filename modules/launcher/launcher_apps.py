@@ -8,12 +8,13 @@ from ignis import widgets
 from ignis.menu_model import IgnisMenuItem, IgnisMenuModel, IgnisMenuSeparator
 from ignis.services.applications import Application, ApplicationsService
 from ignis.window_manager import WindowManager
+from settings import config
 
 applications = ApplicationsService.get_default()
 window_manager = WindowManager.get_default()
 
-TERMINAL_FORMAT = "foot %command%"
-MATCH_COLOR = "#24837B"
+TERMINAL_FORMAT = config.terminal_format
+MATCH_COLOR = config.match_color
 
 
 def highlight(text: str, query: str) -> str:

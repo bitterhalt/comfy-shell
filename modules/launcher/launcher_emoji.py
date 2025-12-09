@@ -3,15 +3,16 @@ Emoji search mode - Search and copy emojis
 """
 
 import html
-from pathlib import Path
 
 from gi.repository import Gdk
+
 from ignis import widgets
 from ignis.window_manager import WindowManager
+from settings import config
 
 window_manager = WindowManager.get_default()
 
-EMOJI_FILE = Path("~/.local/share/emoji/emoji").expanduser()
+EMOJI_FILE = config.paths.emoji_file
 
 
 def load_emojis():

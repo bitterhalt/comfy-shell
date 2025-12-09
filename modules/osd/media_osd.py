@@ -1,6 +1,8 @@
 from ignis import utils, widgets
 from ignis.services.mpris import MprisService
+from settings import config
 
+TIMEOUT = config.ui.media_osd_timeout
 mpris = MprisService.get_default()
 _media_osd_window = None
 
@@ -185,7 +187,9 @@ class MediaOsdWindow(widgets.Window):
             if self._timeout:
                 self._timeout.cancel()
 
-            self._timeout = utils.Timeout(5000, lambda: setattr(self, "visible", False))
+            self._timeout = utils.Timeout(
+                TIMEOUT, lambda: setattr(self, "visible", False)
+            )
         else:
             if self._timeout:
                 self._timeout.cancel()
