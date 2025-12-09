@@ -9,14 +9,9 @@ from modules.osd.workspace_osd import set_bar_visibility
 _bar_windows = []
 
 
-def register_bar(bar_window):
-    """
-    Register a bar window for toggling
-    Call this after creating each bar
-
-    Args:
-        bar_window: The bar window widget
-    """
+# modules/bar/bar_toggle.py
+def register_bar(bar_window) -> None:
+    """Register a bar window for toggling"""
     _bar_windows.append(bar_window)
 
 

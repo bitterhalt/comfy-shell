@@ -162,7 +162,7 @@ async def fetch_weather_async() -> Optional[Dict[str, Any]]:
         icon_code = weather0["icon"]
 
         # ───────────────────────────────────────────────
-        # HOURLY FORECAST (4 entries)
+        # HOURLY FORECAST
         # ───────────────────────────────────────────────
         forecast_list = fc_json["list"][:4]
         forecast = []
@@ -197,7 +197,7 @@ async def fetch_weather_async() -> Optional[Dict[str, Any]]:
         }
 
         # ───────────────────────────────────────────────
-        # WEEKLY FORECAST (ADD BELOW)  ⭐
+        # WEEKLY FORECAST
         # ───────────────────────────────────────────────
 
         daily_map = {}
@@ -213,7 +213,6 @@ async def fetch_weather_async() -> Optional[Dict[str, Any]]:
             if date_key == today:
                 continue
 
-            # choose entry closest to 12:00
             best = min(
                 items, key=lambda e: abs(datetime.fromtimestamp(e["dt"]).hour - 12)
             )

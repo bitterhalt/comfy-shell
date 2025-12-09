@@ -1,15 +1,17 @@
 import asyncio
-import os
 from datetime import datetime
 
 from ignis import utils
 from ignis.services.recorder import RecorderConfig, RecorderService
+from settings import config
 
 recorder = RecorderService.get_default()
 
 
 async def _start_recording_task(source: str, file_path: str, **kwargs):
-    rec_config = RecorderConfig(source=source, path=file_path, **kwargs)
+    # Ensure file_path is a string (convert Path to str if needed)
+    file_path_str = str(file_path) if not isinstance(file_path, str) else file_path
+    rec_config = RecorderConfig(source=source, path=file_path_str, **kwargs)
     await recorder.start_recording(config=rec_config)
 
 
@@ -23,15 +25,19 @@ def record_screen():
         return
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file_path = os.path.expanduser(f"~/Videos/Captures/recording_{timestamp}.mp4")
+    file_path = (
+        config.paths.recordings_dir
+        / f"recording_{timestamp}.{config.recorder.video_format}"
+    )
 
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    # Ensure directory exists
+    config.paths.recordings_dir.mkdir(parents=True, exist_ok=True)
 
     asyncio.create_task(
         _start_recording_task(
             source="screen",
-            file_path=file_path,
-            audio_devices=["default_output"],
+            file_path=str(file_path),
+            audio_devices=[config.recorder.audio_device],
         )
     )
 
@@ -53,15 +59,19 @@ async def _record_region_async():
         return
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file_path = os.path.expanduser(f"~/Videos/Captures/region_{timestamp}.mp4")
+    file_path = (
+        config.paths.recordings_dir
+        / f"region_{timestamp}.{config.recorder.video_format}"
+    )
 
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    # Ensure directory exists
+    config.paths.recordings_dir.mkdir(parents=True, exist_ok=True)
 
     await _start_recording_task(
         source="region",
-        file_path=file_path,
+        file_path=str(file_path),
         region=region,
-        audio_devices=["default_output"],
+        audio_devices=[config.recorder.audio_device],
     )
 
 

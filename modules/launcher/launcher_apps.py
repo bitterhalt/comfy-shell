@@ -71,7 +71,7 @@ class AppItem(widgets.Button):
         app.connect("notify::is-pinned", lambda *_: self._sync_menu())
 
     def _launch(self):
-        self._app.launch(terminal_format=TERMINAL_FORMAT)
+        self._app.launch(TERMINAL_FORMAT)
         window_manager.close_window("ignis_LAUNCHER")
 
     def _sync_menu(self):

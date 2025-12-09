@@ -1,4 +1,5 @@
 import os
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -64,17 +65,58 @@ class WeatherConfig:
         )
     )
 
+    def __post_init__(self):
+        """Validate weather configuration"""
+        if not self.api_key:
+            warnings.warn(
+                "Weather API key not set. Set OPEN_WEATHER_APIKEY environment variable. "
+                "Weather widgets will not work properly.",
+                UserWarning,
+            )
+
+        # Verify icon directory exists
+        icon_path = Path(self.icon_base_path)
+        if not icon_path.exists():
+            warnings.warn(
+                f"Weather icon directory not found: {self.icon_base_path}. "
+                f"Weather icons may not display correctly.",
+                UserWarning,
+            )
+
 
 @dataclass
 class UIConfig:
     """UI and appearance settings"""
 
-    # OSD settings
-    osd_timeout: int = 2000  # milliseconds
+    # OSD timeouts (milliseconds)
+    osd_timeout: int = 2000
     volume_osd_timeout: int = 2000
     media_osd_timeout: int = 5000
     time_osd_timeout: int = 8000
     workspace_osd_timeout: int = 1500
+
+
+@dataclass
+class RecorderConfig:
+    """Recording settings"""
+
+    output_dir: Path = field(
+        default_factory=lambda: Path.home() / "Videos" / "Captures"
+    )
+    audio_device: str = "default_output"
+    video_format: str = "mp4"
+
+    def __post_init__(self):
+        """Ensure recording directory exists"""
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
+
+@dataclass
+class BatteryConfig:
+    """Battery widget thresholds"""
+
+    critical_threshold: int = 15  # percentage
+    warning_threshold: int = 30  # percentage
 
 
 @dataclass
@@ -84,19 +126,22 @@ class AppConfig:
     paths: PathConfig = field(default_factory=PathConfig)
     weather: WeatherConfig = field(default_factory=WeatherConfig)
     ui: UIConfig = field(default_factory=UIConfig)
+    recorder: RecorderConfig = field(default_factory=RecorderConfig)
+    battery: BatteryConfig = field(default_factory=BatteryConfig)
 
-    # Terminal and editor
+    # Application defaults
     terminal: str = field(default_factory=lambda: os.getenv("TERMINAL", "foot"))
     editor: str = field(default_factory=lambda: os.getenv("EDITOR", "nvim"))
     file_opener: str = field(default_factory=lambda: os.getenv("FILE_OPENER", "vopen"))
 
-    # Launher match color
-    match_color: str = "#24837B"
+    # Color configuration
+    match_color: str = "#24837B"  # Launcher search highlight color
 
     # Terminal command format for applications
     terminal_format: str = field(init=False)
 
     def __post_init__(self):
+        """Initialize derived configuration"""
         self.terminal_format = f"{self.terminal} %command%"
 
 

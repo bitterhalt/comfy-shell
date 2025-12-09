@@ -7,7 +7,6 @@ import json
 import time
 from contextlib import contextmanager
 from datetime import datetime, timedelta
-from pathlib import Path
 
 from ignis import utils, widgets
 from modules.notifications.integrated_center_widgets import (
@@ -16,8 +15,9 @@ from modules.notifications.integrated_center_widgets import (
     TaskItem,
     format_time_until,
 )
+from settings import config
 
-QUEUE_FILE = Path("~/.local/share/timers/queue.json").expanduser()
+QUEUE_FILE = config.paths.timer_queue
 
 
 # ============================================================================

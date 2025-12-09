@@ -1,13 +1,13 @@
 import time
 from datetime import datetime
-from pathlib import Path
 
 from ignis import utils, widgets
 
 # Import locking functions from integrated_center
 from modules.notifications.integrated_center_tasks import load_tasks, save_tasks
+from settings import config
 
-QUEUE_FILE = Path("~/.local/share/timers/queue.json").expanduser()
+QUEUE_FILE = config.paths.timer_queue
 
 
 class TaskPopup(widgets.Revealer):

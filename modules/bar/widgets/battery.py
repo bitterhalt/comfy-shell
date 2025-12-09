@@ -1,12 +1,12 @@
 from ignis import widgets
 from ignis.services.upower import UPowerService
+from settings import config
 
 upower = UPowerService.get_default()
 
 
 def battery_widget():
     """Battery indicator with icon and percentage"""
-    # Get the first battery device from the devices list
     batteries = [dev for dev in upower.devices if dev.type == "battery"]
 
     if not batteries:
@@ -16,7 +16,7 @@ def battery_widget():
 
     icon = widgets.Icon(
         image=battery.icon_name,
-        pixel_size=18,
+        pixel_size=22,
     )
 
     label = widgets.Label(
@@ -62,17 +62,14 @@ def battery_widget():
 
     # Add warning class for low battery
     def update_warning(*_):
-        if battery.percentage < 15:
+        if battery.percentage < config.battery.critical_threshold:
             container.add_css_class("critical")
             container.remove_css_class("warning")
-        elif battery.percentage < 30:
+        elif battery.percentage < config.battery.warning_threshold:
             container.add_css_class("warning")
             container.remove_css_class("critical")
-        else:
-            container.remove_css_class("warning")
-            container.remove_css_class("critical")
 
-    battery.connect("notify::percentage", update_warning)
-    update_warning()
+        battery.connect("notify::percentage", update_warning)
+        update_warning()
 
     return container

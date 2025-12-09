@@ -40,13 +40,13 @@
 }
 
 .weather-city {
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 600;
   color: $tx-1;
 }
 
 .weather-temp {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: $tx-1;
   margin-left: 8px;
@@ -54,7 +54,7 @@
 
 .weather-desc {
   padding-top: 8px;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   color: $tx-1;
 }
@@ -89,17 +89,53 @@
 }
 
 .weather-forecast-temp {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: $tx-1;
 }
 
+.weather-weekly-toggle {
+  font-size: 12px;
+  color: $tx-1;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
+.weekly-arrow {
+  color: $tx-1;
+  transition: transform 200ms ease;
+}
+.weather-weekly-day {
+  color: $tx-3;
+}
+.weather-weekly-temp {
+  color: $tx-1;
+}
+
+.weekly-arrow.rotated {
+  transform: rotate(180deg);
+}
+
+.weather-weekly-toggle-btn {
+  padding: 4px 8px;
+  border-radius: 8px;
+  margin-bottom: -6px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+.weather-weekly-toggle {
+  font-size: 12px;
+  color: $tx-1;
+}
 /* ───────────────────────────────────────────────
    MOON EMOJI (Top-Right Accent)
    ─────────────────────────────────────────────── */
 
 .weather-moon-emoji {
-  font-size: 40px;
+  font-size: 30px;
   margin-left: 12px;
   margin-right: 4px;
   opacity: 0.9;
