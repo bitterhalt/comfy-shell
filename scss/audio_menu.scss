@@ -67,7 +67,7 @@
 
 .audio-device-item {
   color: $tx-1;
-  border: 1px solid transparent;
+  border: unset;
   border-radius: 8px;
   padding: 6px 10px;
   transition:
@@ -90,7 +90,7 @@
 }
 
 .audio-menu-expand-btn {
-  background: transparent;
+  background: unset;
   border-radius: 6px;
   padding: 4px;
   &:hover {
@@ -112,7 +112,7 @@
 
 .settings-icon-btn {
   padding: 3px;
-  background: none;
+  background: unset;
   &:hover {
     color: $tx-3;
   }

@@ -1,6 +1,6 @@
 .task-popup-window {
-  background: transparent;
-  border: none;
+  background: unset;
+  border: unset;
 }
 
 .task-popup-box {
@@ -38,7 +38,7 @@
 
 .task-popup-close {
   all: unset;
-  background: transparent;
+  background: unset;
   border-radius: 6px;
   padding: 6px;
   min-width: 28px;

@@ -3,13 +3,13 @@
    ─────────────────────────────────────────────── */
 
 .system-menu-window {
-  background-color: transparent;
+  background-color: unset;
   border: none;
 }
 
 .system-menu-overlay {
   all: unset;
-  background-color: transparent;
+  background-color: unset;
 }
 
 .system-menu-container {
@@ -62,7 +62,7 @@
   color: $tx-1;
   padding: 8px;
   background-color: $bg-2;
-  border: none;
+  border: unset;
   border-radius: 10px;
   transition:
     background-color 0.15s,

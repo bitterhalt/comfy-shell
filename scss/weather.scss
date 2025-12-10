@@ -1,25 +1,25 @@
 /* Window/overlay */
 
 .weather-window {
-  background: transparent;
-  border: none;
+  background: unset;
+  border: unset;
 }
 
 .weather-overlay {
-  background: transparent;
-  border: none;
+  background: unset;
+  border: unset;
 }
 
 /* Container to center panel (same offset as .center-container) */
 .weather-container {
   margin-top: 10px;
-  border: none;
+  border: unset;
 }
 
 /* Main popup panel – copy of .integrated-center, but height relaxed */
 .weather-popup {
   background: $bg-1;
-  border: none;
+  border: unset;
   border-radius: 16px;
   min-width: 448px;
   margin: 8px;

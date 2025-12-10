@@ -1,11 +1,11 @@
 /* In scss/notifications.scss */
 .notification-window {
-  background: transparent;
+  background: unset;
   border: none;
 
   /* Ensure window is only as big as its content */
   & > * {
-    background: transparent;
+    background: unset;
   }
 }
 
@@ -85,7 +85,7 @@
 /* Close button */
 .notif-close {
   all: unset;
-  background: transparent;
+  background: unset;
   border-radius: 8px;
   padding: 4px;
   transition: background 0.2s;
