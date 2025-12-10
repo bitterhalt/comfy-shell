@@ -9,11 +9,12 @@ import shlex
 
 from ignis import utils, widgets
 from ignis.window_manager import WindowManager
+from settings import config
 
 window_manager = WindowManager.get_default()
 
 _PATH_BINARIES = None
-MATCH_COLOR = "#24837B"
+MATCH_COLOR = config.match_color
 
 
 def _scan_path_binaries():
@@ -44,7 +45,6 @@ def get_path_binaries():
 
 
 def fuzzy_score(candidate: str, query: str) -> int:
-    """Fast fuzzy scoring with subsequence + gap penalty."""
     n = candidate
     q = query.lower()
 
@@ -77,7 +77,6 @@ def fuzzy_score(candidate: str, query: str) -> int:
 
 
 def highlight(text: str, query: str) -> str:
-    """Return text with matched substring wrapped in colored span."""
     if not query:
         return html.escape(text)
 
@@ -127,15 +126,16 @@ class BinaryItem(widgets.Button):
 
 
 def search_binaries(term: str) -> list:
-    """Search for binaries matching the term"""
     scored = []
     term_l = term.lower()
+
     for name, lower_name, path in get_path_binaries():
         s = fuzzy_score(lower_name, term_l)
         if s > 0:
             scored.append((s, name, path))
 
-    scored.sort(key=lambda x: x[0], reverse=True)
+    # ⭐ NEW: stable sorting (fixes flicker / jumping)
+    scored.sort(key=lambda x: (-x[0], x[1]))
 
     return (
         [BinaryItem(name, path, term) for _, name, path in scored[:10]]
