@@ -7,6 +7,7 @@ from gi.repository import Gdk, Gtk
 
 from ignis import widgets
 from ignis.window_manager import WindowManager
+from settings import config
 
 wm = WindowManager.get_default()
 
@@ -160,6 +161,7 @@ class WindowSwitcher(widgets.Window):
         )
 
         super().__init__(
+            monitor=config.ui.primary_monitor,
             visible=False,
             anchor=["top", "bottom", "left", "right"],
             namespace="ignis_WINDOW_SWITCHER",

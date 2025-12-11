@@ -1,5 +1,6 @@
 from ignis import utils, widgets
 from ignis.services.notifications import Notification, NotificationService
+from settings import config
 
 notifications = NotificationService.get_default()
 
@@ -8,7 +9,6 @@ class NotificationWidget(widgets.Box):
     """Individual notification widget with close button and actions"""
 
     def __init__(self, notification: Notification):
-        # Determine urgency CSS class first
         urgency_class = "notif-box"
         title_class = "notif-title"
         body_class = "notif-body"
@@ -20,7 +20,6 @@ class NotificationWidget(widgets.Box):
             title_class = "notif-title-critical"
             body_class = "notif-body-critical"
 
-        # Icon if available, otherwise colored dot
         if notification.icon:
             icon_widget = widgets.Icon(
                 image=notification.icon,
@@ -38,7 +37,6 @@ class NotificationWidget(widgets.Box):
                 valign="start",
             )
 
-        # Summary and body labels with urgency-specific classes
         summary = widgets.Label(
             ellipsize="end",
             label=notification.summary,
@@ -55,7 +53,6 @@ class NotificationWidget(widgets.Box):
             visible=notification.body != "",
         )
 
-        # Close button
         close_btn = widgets.Button(
             child=widgets.Icon(image="window-close-symbolic", pixel_size=20),
             halign="end",
@@ -65,19 +62,16 @@ class NotificationWidget(widgets.Box):
             on_click=lambda x: notification.close(),
         )
 
-        # Text container
         text_box = widgets.Box(
             vertical=True,
             style="margin-left: 0.75rem;",
             child=[summary, body],
         )
 
-        # Main content box
         content = widgets.Box(
             child=[icon_widget, text_box, close_btn],
         )
 
-        # Action buttons (if any)
         action_box = widgets.Box(
             child=[
                 widgets.Button(
@@ -151,14 +145,11 @@ class NotificationPopup(widgets.Window):
         popup = Popup(notification)
         self._notif_box.prepend(popup)
 
-        # Show window only if we have actual content
         if not self.visible:
             self.visible = True
 
-        # Reveal after adding to DOM
         utils.Timeout(10, popup.set_reveal_child, True)
 
-        # Hide window when notification closes
         notification.connect("closed", lambda x: self._check_if_empty())
         notification.connect("dismissed", lambda x: self._check_if_empty())
 
@@ -176,9 +167,6 @@ class NotificationPopup(widgets.Window):
             self.visible = False
 
 
-def init_notifications(primary_monitor: int = 0):
-    """
-    Initialize notification popups on primary monitor only
-    Args: primary_monitor: Monitor to show notifications on (default: 0 for primary only)
-    """
-    return NotificationPopup(primary_monitor)
+def init_notifications():
+    monitor = config.ui.bar_monitor
+    return NotificationPopup(monitor)

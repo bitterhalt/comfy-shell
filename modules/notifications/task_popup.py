@@ -232,11 +232,5 @@ def init_task_popup():
     global _task_popup_window
 
     if _task_popup_window is None:
-        # Create for primary monitor (monitor 0)
-        _task_popup_window = TaskPopupWindow(0)
-
-
-def show_task_popup(task):
-    """Manually show a task popup (for testing)"""
-    if _task_popup_window:
-        _task_popup_window._show_popup(task)
+        monitor = config.ui.primary_monitor
+        _task_popup_window = TaskPopupWindow(monitor)

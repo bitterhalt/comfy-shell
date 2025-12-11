@@ -1,4 +1,5 @@
 from ignis import utils, widgets
+from settings import config
 
 from .widgets.battery import battery_widget
 from .widgets.clock import clock
@@ -14,7 +15,7 @@ from .widgets.workspaces import workspaces
 
 def left_section(monitor_name: str):
     return widgets.Box(
-        spacing=12,
+        spacing=18,
         child=[
             workspaces(monitor_name),
             window_title(monitor_name),
@@ -24,7 +25,7 @@ def left_section(monitor_name: str):
 
 def center_section():
     return widgets.Box(
-        spacing=2,
+        spacing=12,
         child=[clock()],
     )
 
@@ -70,18 +71,9 @@ class Bar(widgets.Window):
 # ───────────────────────────────────────────────
 
 
-def init_bars(primary_monitor: int = 0):
-    """
-    Initialize bars on all monitors
-    Args: primary_monitor: Monitor to create bar on (default: 0 for primary monitor only)
-    """
-
-    # Import bar_toggle functions
-    from modules.bar.bar_toggle import register_bar
-
-    # Only create bar on primary monitor
+def init_bars():
+    primary_monitor = config.ui.bar_monitor
     bar = Bar(primary_monitor)
-    register_bar(bar)
 
     # Attach visibility listener for barless mode
     def _on_visible_changed(window, *_):

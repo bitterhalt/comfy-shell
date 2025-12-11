@@ -3,6 +3,7 @@ import asyncio
 from ignis import utils, widgets
 from ignis.services.recorder import RecorderService
 from ignis.window_manager import WindowManager
+from settings import config
 
 wm = WindowManager.get_default()
 recorder = RecorderService.get_default()
@@ -29,7 +30,7 @@ class RecordingOverlay(widgets.Window):
 
         self._screenshot_btn = widgets.Button(
             css_classes=["overlay-btn"],
-            on_click=lambda *_: self._take_screenshot(),
+            on_click=lambda x: self._take_screenshot(),
             can_focus=True,
             child=widgets.Box(
                 vertical=True,
@@ -51,7 +52,7 @@ class RecordingOverlay(widgets.Window):
 
         self._screenshot_region_btn = widgets.Button(
             css_classes=["overlay-btn"],
-            on_click=lambda *_: self._screenshot_region(),
+            on_click=lambda x: self._screenshot_region(),
             can_focus=True,
             child=widgets.Box(
                 vertical=True,
@@ -73,7 +74,7 @@ class RecordingOverlay(widgets.Window):
 
         self._record_screen_btn = widgets.Button(
             css_classes=["overlay-btn"],
-            on_click=lambda *_: self._record_screen(),
+            on_click=lambda x: self._record_screen(),
             can_focus=True,
             child=widgets.Box(
                 vertical=True,
@@ -95,7 +96,7 @@ class RecordingOverlay(widgets.Window):
 
         self._record_region_btn = widgets.Button(
             css_classes=["overlay-btn"],
-            on_click=lambda *_: self._record_region(),
+            on_click=lambda x: self._record_region(),
             can_focus=True,
             child=widgets.Box(
                 vertical=True,
@@ -131,7 +132,7 @@ class RecordingOverlay(widgets.Window):
             hexpand=True,
             can_focus=False,
             css_classes=["overlay-background"],
-            on_click=lambda *_: self.toggle(),
+            on_click=lambda x: self.toggle(),
         )
 
         root_overlay = widgets.Overlay(
@@ -140,6 +141,7 @@ class RecordingOverlay(widgets.Window):
         )
 
         super().__init__(
+            monitor=config.ui.primary_monitor,
             visible=False,
             anchor=["top", "bottom", "left", "right"],
             namespace="ignis_RECORDING_OVERLAY",
@@ -151,8 +153,8 @@ class RecordingOverlay(widgets.Window):
         )
 
         # Connect to recorder signals
-        recorder.connect("recording_started", lambda *_: self._update_recording_state())
-        recorder.connect("recording_stopped", lambda *_: self._update_recording_state())
+        recorder.connect("recording_started", lambda x: self._update_recording_state())
+        recorder.connect("recording_stopped", lambda x: self._update_recording_state())
 
         # Initial state
         self._update_recording_state()

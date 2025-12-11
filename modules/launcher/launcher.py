@@ -93,7 +93,7 @@ class AppLauncher(widgets.Window):
         )
 
         super().__init__(
-            monitor=config.ui.primary_monitor,
+            monitor=config.ui.launcher_monitor,
             visible=False,
             anchor=["top", "bottom", "left", "right"],
             namespace="ignis_LAUNCHER",

@@ -10,6 +10,7 @@ from modules.notifications.integrated_center_notifications import NotificationLi
 from modules.notifications.integrated_center_tasks import TaskList
 from modules.notifications.integrated_center_weather import WeatherPill
 from modules.notifications.media import MediaCenterWidget
+from settings import config
 
 wm = WindowManager.get_default()
 
@@ -155,6 +156,7 @@ class IntegratedCenter(widgets.Window):
         )
 
         super().__init__(
+            monitor=config.ui.integrated_center_monitor,
             visible=False,
             popup=True,
             anchor=["top", "bottom", "left", "right"],

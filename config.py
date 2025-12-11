@@ -41,16 +41,9 @@ css.apply_css(
     )
 )
 
-# ═══════════════════════════════════════════════════════════════
-# MONITOR CONFIGURATION
-# ═══════════════════════════════════════════════════════════════
 
 # Use primary monitor from settings
 PRIMARY_MONITOR = config.ui.primary_monitor
-
-# ═══════════════════════════════════════════════════════════════
-# INITIALIZATION ORDER
-# ═══════════════════════════════════════════════════════════════
 
 # Initialize notifications FIRST (must be before bars)
 NotificationPopup(PRIMARY_MONITOR)
@@ -82,11 +75,8 @@ def _on_visible_changed(window, *_):
 
 bar.connect("notify::visible", _on_visible_changed)
 
-# Initialize OSD windows (only on primary monitor)
 TimeOsdWindow()
 MediaOsdWindow()
-
-# Initialize other windows (these are monitor-independent)
 WeatherPopup()
 AppLauncher()
 PowerOverlay()

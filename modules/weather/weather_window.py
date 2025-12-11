@@ -4,6 +4,7 @@ from typing import List, Optional
 
 from ignis import utils, widgets
 from ignis.window_manager import WindowManager
+from settings import config
 
 from .weather_data import fetch_weather_async, format_time_hm, icon_path
 
@@ -57,7 +58,7 @@ class WeatherPopup(widgets.Window):
 
         # Toggle button row
         self._weekly_toggle = widgets.Button(
-            on_click=lambda *_: self._toggle_weekly(),
+            on_click=lambda x: self._toggle_weekly(),
             child=widgets.Box(
                 spacing=6,
                 halign="center",
@@ -145,7 +146,7 @@ class WeatherPopup(widgets.Window):
             hexpand=True,
             can_focus=False,
             css_classes=["weather-overlay"],
-            on_click=lambda *_: wm.close_window("ignis_WEATHER"),
+            on_click=lambda x: wm.close_window("ignis_WEATHER"),
         )
 
         root_overlay = widgets.Overlay(
@@ -162,6 +163,7 @@ class WeatherPopup(widgets.Window):
         )
 
         super().__init__(
+            monitor=config.ui.weather_monitor,
             visible=False,
             anchor=["top", "left", "right", "bottom"],
             namespace="ignis_WEATHER",

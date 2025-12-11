@@ -11,6 +11,7 @@ from ignis.services.network import (
 )
 from ignis.window_manager import WindowManager
 from modules.bar.widgets.audio_menu_window import AudioSection
+from settings import config
 
 wm = WindowManager.get_default()
 audio = AudioService.get_default()
@@ -397,6 +398,7 @@ class SystemPopup(widgets.Window):
         )
 
         super().__init__(
+            monitor=config.ui.primary_monitor,
             visible=False,
             anchor=["top", "bottom", "left", "right"],
             namespace="ignis_SYSTEM_MENU",
