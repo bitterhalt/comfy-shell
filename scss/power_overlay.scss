@@ -15,7 +15,7 @@
 .power-overlay {
   background: $bg-1;
   border: 1px solid $ui-1;
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 32px;
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
 }
@@ -25,7 +25,7 @@
   color: $tx-1;
   background: $bg-2;
   border: 1px solid $ui-1;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 24px 20px;
   min-width: 140px;
   transition:
@@ -56,7 +56,7 @@
   color: $tx-2;
   background: $bg-2;
   border: 1px solid $ui-1;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 24px 20px;
   min-width: 140px;
   transition:
@@ -117,7 +117,7 @@
 .confirm-dialog-content {
   background: $bg-1;
   border: 1px solid $ui-1;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 24px;
   min-width: 320px;
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);

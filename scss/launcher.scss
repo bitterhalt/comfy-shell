@@ -2,7 +2,7 @@
 
 .launcher {
   background: $bg-1;
-  border-radius: 12px;
+  border-radius: 8px;
   margin-top: 320px;
   padding: 12px;
   border: unset;
@@ -15,7 +15,7 @@
   padding: 12px 16px;
   background: $bg-2;
   min-width: 380px;
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 /* Search text NOTE: FIX HOVER? */
@@ -28,7 +28,7 @@
 /* Results */
 .launcher-results {
   background: $bg-2;
-  border-radius: 12px;
+  border-radius: 8px;
   margin: 4px;
 }
 
@@ -39,7 +39,7 @@
   all: unset;
   background: unset;
   border: unset;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 8px;
   margin: 8px;
 }

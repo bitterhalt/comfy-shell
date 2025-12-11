@@ -105,7 +105,7 @@
 .media-osd {
   background: $osd-bg;
   border: none;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 20px;
   margin-top: 20px;
   box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.35);
@@ -129,7 +129,7 @@
   margin-top: 2px;
 }
 .media-osd-app-icon {
-  border-radius: 6px;
+  border-radius: 8px;
   color: $tx-1;
 }
 .media-osd-status-icon {

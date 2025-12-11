@@ -109,7 +109,7 @@ class BinaryItem(widgets.Button):
             child=widgets.Box(
                 spacing=10,
                 child=[
-                    widgets.Icon(image="system-run-symbolic", pixel_size=22),
+                    widgets.Icon(image="system-run-symbolic", pixel_size=30),
                     widgets.Label(
                         label=highlight(name, query),
                         use_markup=True,
@@ -134,7 +134,6 @@ def search_binaries(term: str) -> list:
         if s > 0:
             scored.append((s, name, path))
 
-    # ⭐ NEW: stable sorting (fixes flicker / jumping)
     scored.sort(key=lambda x: (-x[0], x[1]))
 
     return (
