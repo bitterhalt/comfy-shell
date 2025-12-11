@@ -19,6 +19,7 @@ from modules.overlays.recording_overlay import RecordingOverlay
 from modules.recorder.recorder import register_recorder_commands
 from modules.weather.weather_window import WeatherPopup
 from settings import config
+from utils.volume_osd_watcher import init_volume_osd_watcher
 
 css = CssManager.get_default()
 
@@ -59,6 +60,9 @@ init_task_popup()
 
 # Initialize workspace OSD
 init_workspace_osd()
+
+# Initialize volume_osd_watcher
+init_volume_osd_watcher()
 
 # Initialize bar with visibility listener for barless mode
 bar = Bar(PRIMARY_MONITOR)
