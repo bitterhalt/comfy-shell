@@ -15,6 +15,7 @@ wm = WindowManager.get_default()
 TERMINAL = config.terminal
 EDITOR = config.editor
 FILE_OPENER = config.file_opener
+MATCH_COLOR = config.match_color
 
 SETTINGS = [
     {
@@ -104,7 +105,7 @@ class SettingItem(widgets.Button):
 
         return (
             f"{before}"
-            f'<span foreground="#24837B" weight="bold">{match}</span>'
+            f'<span foreground="{MATCH_COLOR}" weight="600">{match}</span>'
             f"{after}"
         )
 

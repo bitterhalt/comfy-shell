@@ -1,7 +1,3 @@
-"""
-Binary search mode - Search for executables in PATH
-"""
-
 import asyncio
 import html
 import os
@@ -95,7 +91,7 @@ def highlight(text: str, query: str) -> str:
 
     return (
         f"{before}"
-        f'<span foreground="{MATCH_COLOR}" weight="bold">{match}</span>'
+        f'<span foreground="{MATCH_COLOR}" weight="600">{match}</span>'
         f"{after}"
     )
 
@@ -103,21 +99,30 @@ def highlight(text: str, query: str) -> str:
 class BinaryItem(widgets.Button):
     def __init__(self, name, path, query: str):
         self._path = path
+
+        label = widgets.Label(
+            label=highlight(name, query),
+            use_markup=True,
+            ellipsize="end",
+            hexpand=True,
+            style="line-height: 1.2;",
+        )
+        label.min_width_chars = 4
+
+        row = widgets.Box(
+            spacing=10,
+            child=[
+                widgets.Icon(image="system-run-symbolic", pixel_size=28),
+                label,
+            ],
+        )
+
+        row.set_height_request(32)
+
         super().__init__(
             css_classes=["bin-item"],
             on_click=lambda *_: self._launch(),
-            child=widgets.Box(
-                spacing=10,
-                child=[
-                    widgets.Icon(image="system-run-symbolic", pixel_size=30),
-                    widgets.Label(
-                        label=highlight(name, query),
-                        use_markup=True,
-                        ellipsize="end",
-                        hexpand=True,
-                    ),
-                ],
-            ),
+            child=row,
         )
 
     def _launch(self):

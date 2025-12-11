@@ -1,10 +1,7 @@
-"""
-Calculator mode - Evaluate math expressions
-"""
-
 import html
 
 from gi.repository import Gdk
+
 from ignis import widgets
 
 

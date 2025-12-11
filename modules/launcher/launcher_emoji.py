@@ -1,7 +1,3 @@
-"""
-Emoji search mode - Search and copy emojis
-"""
-
 import html
 
 from gi.repository import Gdk

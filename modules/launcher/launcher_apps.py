@@ -1,7 +1,3 @@
-"""
-Application search mode - Search and launch applications
-"""
-
 import html
 
 from ignis import widgets
@@ -37,7 +33,7 @@ def highlight(text: str, query: str) -> str:
 
     return (
         f"{before}"
-        f'<span foreground="{MATCH_COLOR}" weight="bold">{match}</span>'
+        f'<span foreground="{MATCH_COLOR}" weight="600">{match}</span>'
         f"{after}"
     )
 
