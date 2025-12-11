@@ -150,10 +150,9 @@
   }
 }
 
-.media-pill-art {
+.media-pill-icon {
   border-radius: 8px;
-  min-width: 56px;
-  min-height: 56px;
+  padding: 4px;
 }
 
 .media-pill-title {
@@ -186,7 +185,7 @@
 .calendar-expander {
   all: unset;
   background-color: rgba($tx-1, 0.06);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 4px;
   margin: 8px 12px 4px 12px;
   transition: background-color 0.15s;

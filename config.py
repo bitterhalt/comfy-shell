@@ -13,13 +13,15 @@ from modules.notifications.popup import NotificationPopup
 from modules.notifications.task_popup import init_task_popup
 from modules.osd.media_osd import MediaOsdWindow
 from modules.osd.time_osd import TimeOsdWindow
+from modules.osd.volume_osd import VolumeOSD
 from modules.osd.workspace_osd import init_workspace_osd, set_bar_visibility
 from modules.overlays.power_overlay import PowerOverlay
 from modules.overlays.recording_overlay import RecordingOverlay
 from modules.recorder.recorder import register_recorder_commands
 from modules.weather.weather_window import WeatherPopup
 from settings import config
-from utils.volume_osd_watcher import init_volume_osd_watcher
+
+# from utils.volume_osd_watcher import init_volume_osd_watcher
 
 css = CssManager.get_default()
 
@@ -54,9 +56,6 @@ init_task_popup()
 # Initialize workspace OSD
 init_workspace_osd()
 
-# Initialize volume_osd_watcher
-init_volume_osd_watcher()
-
 # Initialize bar with visibility listener for barless mode
 bar = Bar(PRIMARY_MONITOR)
 register_bar(bar)
@@ -76,6 +75,7 @@ def _on_visible_changed(window, *_):
 bar.connect("notify::visible", _on_visible_changed)
 
 TimeOsdWindow()
+VolumeOSD()
 MediaOsdWindow()
 WeatherPopup()
 AppLauncher()

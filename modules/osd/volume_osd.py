@@ -35,13 +35,14 @@ class VolumeOSD(widgets.Window):
 
         content = widgets.Box(
             css_classes=["vol-container"],
+            spacing=12,
             child=[icon, slider],
         )
 
         super().__init__(
             monitor=config.ui.primary_monitor,
             layer="overlay",
-            anchor=["top"],  # 'center' is NOT supported by Ignis
+            anchor=["top"],
             namespace="ignis_VOLUME_OSD",
             visible=False,
             css_classes=["vol-window"],

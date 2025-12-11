@@ -12,7 +12,7 @@ _media_osd_window = None
 
 PLAYER_ICONS = {
     "spotify": "spotify-symbolic",
-    "firefox": "firefox-browser-symbolic",
+    "firefox": "firefox",
     "zen": "zen-browser",
     "chromium": "chromium-browser-symbolic",
     "chrome": "chrome-symbolic",

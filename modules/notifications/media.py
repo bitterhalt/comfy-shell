@@ -5,10 +5,51 @@ from ignis.services.mpris import MprisPlayer, MprisService
 
 mpris = MprisService.get_default()
 
+# ────────────────────────────────────────────────────────────────
+# PLAYER ICON + NAME MAPPING
+# ────────────────────────────────────────────────────────────────
+
+PLAYER_ICONS = {
+    "spotify": "spotify-symbolic",
+    "firefox": "firefox",
+    "zen": "zen-browser",
+    "chromium": "chromium-browser-symbolic",
+    "chrome": "chrome-symbolic",
+    "vlc": "vlc-symbolic",
+    "mpv": "mpv-symbolic",
+    "rhythmbox": "rhythmbox-symbolic",
+    None: "folder-music-symbolic",
+}
+
+
+def get_player_icon(player) -> str:
+    """Get icon name for player (same logic as OSD)"""
+    if not player:
+        return PLAYER_ICONS[None]
+
+    entry = player.desktop_entry
+
+    # Direct match
+    if entry in PLAYER_ICONS:
+        return PLAYER_ICONS[entry]
+
+    # Detect chrome/chromium via track_id
+    if player.track_id:
+        tid = player.track_id.lower()
+        if "chromium" in tid:
+            return PLAYER_ICONS["chromium"]
+        if "chrome" in tid:
+            return PLAYER_ICONS["chrome"]
+
+    return PLAYER_ICONS[None]
+
+
+# ────────────────────────────────────────────────────────────────
+# MEDIA PILL
+# ────────────────────────────────────────────────────────────────
+
 
 class MediaPill(widgets.Box):
-    """Media controller pill for notification center - now with album art."""
-
     def __init__(self, player: MprisPlayer):
         super().__init__(
             spacing=12,
@@ -17,15 +58,17 @@ class MediaPill(widgets.Box):
             valign="center",
         )
 
-        album_art = widgets.Icon(
-            image=player.bind(
-                "art_url",
-                lambda url: url if url else "folder-music-symbolic",
-            ),
-            pixel_size=56,
-            css_classes=["media-pill-art"],
+        # ── ICON ──
+        self._icon = widgets.Icon(
+            image=get_player_icon(player),
+            pixel_size=28,
+            css_classes=["media-pill-icon"],
         )
 
+        player.connect("notify::desktop-entry", lambda *_: self._update_icon(player))
+        player.connect("notify::track-id", lambda *_: self._update_icon(player))
+
+        # ── TITLE & ARTIST ──
         title = widgets.Label(
             label=player.bind("title", lambda t: t or "Unknown"),
             ellipsize="end",
@@ -49,6 +92,7 @@ class MediaPill(widgets.Box):
             child=[title, artist],
         )
 
+        # ── PLAY/PAUSE BUTTON ──
         play_btn = widgets.Button(
             child=widgets.Icon(
                 image=player.bind(
@@ -65,7 +109,11 @@ class MediaPill(widgets.Box):
             on_click=lambda *_: asyncio.create_task(player.play_pause_async()),
         )
 
-        self.child = [album_art, text_box, play_btn]
+        self.child = [self._icon, text_box, play_btn]
+
+    def _update_icon(self, player):
+        """Update icon when player changes"""
+        self._icon.image = get_player_icon(player)
 
 
 class MediaCenterWidget(widgets.Box):
