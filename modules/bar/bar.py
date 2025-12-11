@@ -1,5 +1,4 @@
 from ignis import utils, widgets
-from modules.bar.widgets.volume_osd_watcher import init_volume_osd_watcher
 
 from .widgets.battery import battery_widget
 from .widgets.clock import clock
@@ -35,30 +34,65 @@ def right_section():
         spacing=12,
         child=[
             recording_indicator(),
-            system_indicator(),  # unified clickable module for audio and network
+            system_indicator(),
             battery_widget(),
         ],
     )
 
 
 # ───────────────────────────────────────────────
-# BAR WINDOW
+# BAR WINDOW CLASS
 # ───────────────────────────────────────────────
 
 
-def create_bar(monitor_id: int = 0):
-    monitor_name = utils.get_monitor(monitor_id).get_connector()
-    init_volume_osd_watcher()
+class Bar(widgets.Window):
+    """Bar window for a specific monitor"""
 
-    return widgets.Window(
-        namespace=f"ignis_bar_{monitor_id}",
-        monitor=monitor_id,
-        anchor=["left", "top", "right"],
-        exclusivity="exclusive",
-        child=widgets.CenterBox(
-            css_classes=["bar"],
-            start_widget=left_section(monitor_name),
-            center_widget=center_section(),
-            end_widget=right_section(),
-        ),
-    )
+    def __init__(self, monitor_id: int = 0):
+        monitor_name = utils.get_monitor(monitor_id).get_connector()
+
+        super().__init__(
+            namespace=f"ignis_bar_{monitor_id}",
+            monitor=monitor_id,
+            anchor=["left", "top", "right"],
+            exclusivity="exclusive",
+            child=widgets.CenterBox(
+                css_classes=["bar"],
+                start_widget=left_section(monitor_name),
+                center_widget=center_section(),
+                end_widget=right_section(),
+            ),
+        )
+
+
+# ───────────────────────────────────────────────
+# INITIALIZATION FUNCTION
+# ───────────────────────────────────────────────
+
+
+def init_bars(primary_monitor: int = 0):
+    """
+    Initialize bars on all monitors
+    Args: primary_monitor: Monitor to create bar on (default: 0 for primary monitor only)
+    """
+
+    # Import bar_toggle functions
+    from modules.bar.bar_toggle import register_bar
+
+    # Only create bar on primary monitor
+    bar = Bar(primary_monitor)
+    register_bar(bar)
+
+    # Attach visibility listener for barless mode
+    def _on_visible_changed(window, *_):
+        from modules.osd.workspace_osd import _osd_window, set_bar_visibility
+
+        set_bar_visibility(window.visible)
+
+        # Show workspace OSD when bar hides
+        if not window.visible and _osd_window:
+            _osd_window.show_osd()
+
+    bar.connect("notify::visible", _on_visible_changed)
+
+    return bar

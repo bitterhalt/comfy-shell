@@ -5,63 +5,71 @@ from settings import config
 audio = AudioService.get_default()
 TIMEOUT = config.ui.volume_osd_timeout
 
-# Global OSD window instance
 _osd_window = None
 
 
 class VolumeOSD(widgets.Window):
-    """On-screen display for volume changes"""
+    """On-screen display for volume changes."""
 
     def __init__(self):
+        self._timeout = None
+
         speaker = audio.speaker
 
-        # Icon that updates with volume state
         icon = widgets.Icon(
             pixel_size=26,
-            style="margin-right: 0.5rem;",
             image=speaker.bind("icon_name"),
+            css_classes=["vol-icon"],
         )
 
-        # Volume slider (read-only display)
         slider = widgets.Scale(
             min=0,
             max=100,
             value=speaker.bind(
                 "volume", lambda v: 0 if speaker.is_muted else int(v or 0)
             ),
-            sensitive=False,  # Read-only
+            sensitive=False,
             hexpand=True,
             css_classes=["vol-track"],
         )
 
-        # Container box
         content = widgets.Box(
             css_classes=["vol-container"],
             child=[icon, slider],
         )
 
         super().__init__(
+            monitor=config.ui.primary_monitor,
             layer="overlay",
-            anchor=["top"],
-            namespace="ignis_OSD",
+            anchor=["top"],  # 'center' is NOT supported by Ignis
+            namespace="ignis_VOLUME_OSD",
             visible=False,
             css_classes=["vol-window"],
             child=content,
         )
 
-    def show_osd(self):
-        """Show the OSD temporarily"""
-        self.visible = True
-        self._hide_delayed()
+        # React when Ignis toggles visibility
+        self.connect("notify::visible", self._on_visible_changed)
 
-    @utils.debounce(TIMEOUT)
-    def _hide_delayed(self):
-        """Hide after delay"""
-        self.visible = False
+    # ---------------------------------------------------------------
+
+    def _on_visible_changed(self, *_):
+        if self.get_visible():
+            if self._timeout:
+                self._timeout.cancel()
+
+            self._timeout = utils.Timeout(TIMEOUT, lambda: self.set_visible(False))
+        else:
+            if self._timeout:
+                self._timeout.cancel()
+                self._timeout = None
+
+    def show_osd(self):
+        self.set_visible(True)
 
 
 def show_volume_osd():
-    """Show the volume OSD (creates window on first call)"""
+    """External API for triggering the Volume OSD."""
     global _osd_window
 
     if _osd_window is None:

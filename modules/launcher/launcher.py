@@ -1,6 +1,7 @@
 import asyncio
 
 from gi.repository import Gdk, Gtk
+
 from ignis import widgets
 from ignis.window_manager import WindowManager
 
@@ -22,6 +23,7 @@ from modules.launcher.launcher_modes import (
 )
 from modules.launcher.launcher_settings import search_settings
 from modules.launcher.launcher_web import search_web
+from settings import config
 
 window_manager = WindowManager.get_default()
 
@@ -91,6 +93,7 @@ class AppLauncher(widgets.Window):
         )
 
         super().__init__(
+            monitor=config.ui.primary_monitor,
             visible=False,
             anchor=["top", "bottom", "left", "right"],
             namespace="ignis_LAUNCHER",

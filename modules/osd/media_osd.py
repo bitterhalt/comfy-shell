@@ -168,6 +168,7 @@ class MediaOsdWindow(widgets.Window):
         )
 
         super().__init__(
+            monitor=config.ui.primary_monitor,
             layer="overlay",
             anchor=["top"],
             namespace="ignis_MEDIA_OSD",
@@ -181,19 +182,21 @@ class MediaOsdWindow(widgets.Window):
     # ----------------------------------------------------------------
 
     def _on_visible_changed(self, *_):
-        if self.visible:
+        if self.get_visible():
             self._update_content()
 
             if self._timeout:
                 self._timeout.cancel()
 
-            self._timeout = utils.Timeout(
-                TIMEOUT, lambda: setattr(self, "visible", False)
-            )
+            self._timeout = utils.Timeout(TIMEOUT, lambda: self.set_visible(False))
+
         else:
             if self._timeout:
                 self._timeout.cancel()
                 self._timeout = None
+
+    def show_osd(self):
+        self.set_visible(True)
 
     # ----------------------------------------------------------------
 

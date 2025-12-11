@@ -126,7 +126,7 @@ class Popup(widgets.Revealer):
 class NotificationPopup(widgets.Window):
     """Main notification popup window"""
 
-    def __init__(self, monitor: int):
+    def __init__(self, monitor: int = 0):
         self._notif_box = widgets.Box(
             vertical=True,
             valign="start",
@@ -164,24 +164,21 @@ class NotificationPopup(widgets.Window):
 
     def _check_if_empty(self):
         """Hide window if no popups remain"""
-        # Use longer delay to account for animation + any stragglers
         utils.Timeout(400, self._do_check)
 
     def _do_check(self):
         """Actually check and hide window if empty"""
-        # Count children that are actually visible and mapped
         visible_children = [
             c for c in self._notif_box.child if c.get_visible() and c.get_mapped()
         ]
 
-        # Only hide if truly empty
         if len(visible_children) == 0:
             self.visible = False
 
 
-def init_notifications():
-    """Initialize notification popups for all monitors"""
-    from ignis import utils
-
-    for i in range(utils.get_n_monitors()):
-        NotificationPopup(i)
+def init_notifications(primary_monitor: int = 0):
+    """
+    Initialize notification popups on primary monitor only
+    Args: primary_monitor: Monitor to show notifications on (default: 0 for primary only)
+    """
+    return NotificationPopup(primary_monitor)

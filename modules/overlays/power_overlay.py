@@ -1,10 +1,8 @@
 import asyncio
 
 from gi.repository import Gdk
-from ignis import utils, widgets
-from ignis.window_manager import WindowManager
 
-wm = WindowManager.get_default()
+from ignis import utils, widgets
 
 
 def exec_async(cmd: str):

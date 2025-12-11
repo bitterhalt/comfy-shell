@@ -11,9 +11,7 @@ class TimeOsdWindow(widgets.Window):
     def __init__(self):
         self._timeout = None
 
-        self._time_label = widgets.Label(
-            css_classes=["time-osd-label"],
-        )
+        self._time_label = widgets.Label(css_classes=["time-osd-label"])
 
         icon = widgets.Icon(
             image="clock-applet-symbolic",
@@ -26,13 +24,13 @@ class TimeOsdWindow(widgets.Window):
             child=[icon, self._time_label],
         )
 
-        # PILL
         pill = widgets.Box(
             css_classes=["time-osd"],
             child=[row],
         )
 
         super().__init__(
+            monitor=config.ui.primary_monitor,
             layer="overlay",
             anchor=["top", "right"],
             namespace="ignis_TIME_OSD",
@@ -41,19 +39,22 @@ class TimeOsdWindow(widgets.Window):
             child=pill,
         )
 
+        # Listen to GTK-visible changes (triggered by Ignis toggle-window)
         self.connect("notify::visible", self._on_visible_changed)
 
+    # ------------------------------------------------------------------
+
     def _on_visible_changed(self, *_):
-        if self.visible:
+        if self.get_visible():
+            # Update time
             now = datetime.datetime.now()
             self._time_label.set_label(now.strftime("%d.%m  %H:%M"))
 
+            # Restart timeout
             if self._timeout:
                 self._timeout.cancel()
 
-            self._timeout = utils.Timeout(
-                TIMEOUT, lambda: setattr(self, "visible", False)
-            )
+            self._timeout = utils.Timeout(TIMEOUT, lambda: self.set_visible(False))
 
         else:
             if self._timeout:
@@ -61,7 +62,7 @@ class TimeOsdWindow(widgets.Window):
                 self._timeout = None
 
     def show_osd(self):
-        self.visible = True
+        self.set_visible(True)
 
 
 def init_time_osd():

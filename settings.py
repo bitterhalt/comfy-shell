@@ -88,6 +88,10 @@ class WeatherConfig:
 class UIConfig:
     """UI and appearance settings"""
 
+    # Which monitor to show bar/notifications/OSD (0 = primary)
+    # Monitor configuration
+    primary_monitor: int = 0
+
     # OSD timeouts (milliseconds)
     osd_timeout: int = 2000
     volume_osd_timeout: int = 2000
@@ -105,10 +109,22 @@ class RecorderConfig:
     )
     audio_device: str = "default_output"
     video_format: str = "mp4"
+    video_codec: str = "libx264"
 
     def __post_init__(self):
         """Ensure recording directory exists"""
         self.output_dir.mkdir(parents=True, exist_ok=True)
+
+
+@dataclass
+class TimerConfig:
+    """Timer and task configuration"""
+
+    # Auto-remove timers older than this (seconds)
+    expire_seconds: int = 4 * 60 * 60  # 4 hours
+
+    # Polling interval for timer daemon (seconds)
+    check_interval: int = 30
 
 
 @dataclass
@@ -127,6 +143,7 @@ class AppConfig:
     weather: WeatherConfig = field(default_factory=WeatherConfig)
     ui: UIConfig = field(default_factory=UIConfig)
     recorder: RecorderConfig = field(default_factory=RecorderConfig)
+    timer: TimerConfig = field(default_factory=TimerConfig)
     battery: BatteryConfig = field(default_factory=BatteryConfig)
 
     # Application defaults
