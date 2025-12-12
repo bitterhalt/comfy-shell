@@ -9,7 +9,7 @@ from modules.bar.widgets.setting_pill import SystemPopup
 from modules.launcher.launcher import AppLauncher
 from modules.launcher.window_switcher import WindowSwitcher
 from modules.notifications.integrated_center import IntegratedCenter
-from modules.notifications.popup import NotificationPopup
+from modules.notifications.popup import init_notifications
 from modules.notifications.task_popup import init_task_popup
 from modules.osd.media_osd import MediaOsdWindow
 from modules.osd.time_osd import TimeOsdWindow
@@ -48,7 +48,7 @@ css.apply_css(
 PRIMARY_MONITOR = config.ui.primary_monitor
 
 # Initialize notifications FIRST (must be before bars)
-NotificationPopup(PRIMARY_MONITOR)
+init_notifications()
 
 # Initialize task popup
 init_task_popup()
