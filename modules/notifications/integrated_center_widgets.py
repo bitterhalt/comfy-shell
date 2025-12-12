@@ -1,8 +1,77 @@
+import asyncio
+import hashlib
 import time
 from datetime import datetime, timedelta
+from pathlib import Path
 
-from ignis import widgets
+from PIL import Image
+
+from ignis import utils, widgets
 from ignis.services.notifications import Notification
+
+# ───────────────────────────────────────────────────────────────
+# Screenshot preview cache
+# ───────────────────────────────────────────────────────────────
+
+CACHE_DIR = Path("~/.cache/ignis/screenshot_previews").expanduser()
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def get_cached_preview(
+    image_path: str,
+    size: tuple[int, int],
+    crop: bool = False,
+) -> str:
+    src = Path(image_path)
+
+    # Cache key
+    key = f"{src}:{size}:{crop}"
+    digest = hashlib.sha1(key.encode()).hexdigest()
+    cached = CACHE_DIR / f"{digest}.png"
+
+    # Always prefer cached preview
+    if cached.exists():
+        return str(cached)
+
+    # Cannot generate without source
+    if not src.exists():
+        return image_path
+
+    try:
+        img = Image.open(src)
+
+        if crop:
+            w, h = img.size
+            side = min(w, h)
+            left = (w - side) // 2
+            top = (h - side) // 2
+            img = img.crop((left, top, left + side, top + side))
+
+        img = img.resize(size, Image.LANCZOS)
+        img.save(cached, "PNG")
+        return str(cached)
+
+    except Exception:
+        return image_path
+
+
+def delete_cached_preview(image_path: str):
+    """Delete all cached previews for a given image."""
+    try:
+        # Remove all cache files that start with the image path hash
+        src = Path(image_path)
+        if not src.exists():
+            return
+
+        # Find and delete all cached versions
+        for cached_file in CACHE_DIR.glob("*.png"):
+            try:
+                cached_file.unlink()
+            except Exception:
+                pass
+    except Exception:
+        pass
+
 
 # ───────────────────────────────────────────────────────────────
 # Helpers
@@ -10,7 +79,6 @@ from ignis.services.notifications import Notification
 
 
 def format_time_until(fire_at: int) -> str:
-    """Human-friendly time delta for a future timestamp."""
     now = int(time.time())
     diff = fire_at - now
     if diff < 0:
@@ -25,70 +93,205 @@ def format_time_until(fire_at: int) -> str:
 
 
 def format_time_ago(timestamp: int) -> str:
-    """Human-friendly relative time - more readable format."""
     now = int(time.time())
     diff = now - timestamp
 
     if diff < 0:
         return "just now"
 
-    # Less than a minute
     if diff < 60:
         return "just now"
 
-    # Less than an hour
     minutes = diff // 60
     if minutes < 60:
         if minutes == 1:
             return "1 minute ago"
-        return f"{int(minutes)} minutes ago"  # ← int() here
+        return f"{int(minutes)} minutes ago"
 
-    # Less than a day
     hours = minutes // 60
     if hours < 24:
         if hours == 1:
             return "1 hour ago"
-        return f"{int(hours)} hours ago"  # ← int() here
+        return f"{int(hours)} hours ago"
 
-    # Less than a week
     days = hours // 24
     if days < 7:
         if days == 1:
             return "yesterday"
-        return f"{int(days)} days ago"  # ← int() here
+        return f"{int(days)} days ago"
 
-    # Less than a month
     weeks = days // 7
     if weeks < 4:
         if weeks == 1:
             return "1 week ago"
-        return f"{int(weeks)} weeks ago"  # ← int() here
+        return f"{int(weeks)} weeks ago"
 
-    # Less than a year
     months = days // 30
     if months < 12:
         if months == 1:
             return "1 month ago"
-        return f"{int(months)} months ago"  # ← int() here
+        return f"{int(months)} months ago"
 
-    # Years
     years = days // 365
     if years == 1:
         return "1 year ago"
-    return f"{int(years)} years ago"  # ← int() here
+    return f"{int(years)} years ago"
+
+
+def is_screenshot(notification: Notification) -> bool:
+    SCREENSHOT_APPS = {
+        "flameshot",
+        "grim",
+        "grimblast",
+        "spectacle",
+        "gnome-screenshot",
+        "ksnip",
+        "wl-shot",
+    }
+
+    return (
+        (
+            notification.app_name.lower() in SCREENSHOT_APPS
+            or notification.summary.lower() == "screenshot"
+        )
+        and notification.icon
+        and notification.icon.startswith("/")
+        and notification.icon.endswith(".png")
+    )
 
 
 # ═══════════════════════════════════════════════════════════════
-# NOTIFICATION HISTORY ITEM
+# SCREENSHOT HISTORY ITEM (CACHED PREVIEW)
+# ═══════════════════════════════════════════════════════════════
+
+
+class ScreenshotHistoryItem(widgets.Box):
+    """Screenshot entry with cached preview + pill buttons."""
+
+    def __init__(self, notification: Notification):
+        # Get cached preview
+        preview_path = get_cached_preview(
+            notification.icon,
+            size=(340, 191),  # 16:9 ratio
+            crop=True,
+        )
+
+        preview = widgets.Picture(
+            image=preview_path,
+            content_fit="cover",
+            width=340,
+            height=191,
+            css_classes=["screenshot-preview"],
+        )
+
+        timestamp = widgets.Label(
+            label=format_time_ago(notification.time),
+            halign="center",
+            css_classes=["screenshot-timestamp"],
+        )
+
+        path_label = widgets.Label(
+            label=f"Saved to {notification.icon}",
+            halign="center",
+            ellipsize="middle",
+            css_classes=["screenshot-path"],
+        )
+
+        # Action buttons
+        view_btn = widgets.Button(
+            child=widgets.Label(label="View"),
+            css_classes=["pill-btn"],
+            on_click=lambda *_: self._open_screenshot(notification),
+        )
+
+        copy_btn = widgets.Button(
+            child=widgets.Label(label="Copy"),
+            css_classes=["pill-btn"],
+            on_click=lambda *_: self._copy_screenshot(notification),
+        )
+
+        delete_btn = widgets.Button(
+            child=widgets.Label(label="Delete"),
+            css_classes=["pill-btn", "pill-btn-danger"],  # Add both classes
+            on_click=lambda *_: self._delete(notification),
+        )
+
+        actions = widgets.Box(
+            spacing=10,
+            halign="center",
+            hexpand=True,
+            child=[view_btn, copy_btn, delete_btn],
+        )
+
+        super().__init__(
+            vertical=True,
+            spacing=14,
+            hexpand=True,
+            css_classes=["screenshot-history-item"],
+            child=[preview, timestamp, path_label, actions],
+        )
+
+        # Update timestamp periodically
+        utils.Poll(60000, lambda *_: self._update_timestamp(timestamp, notification))
+
+        # Hide when closed
+        notification.connect("closed", lambda *_: setattr(self, "visible", False))
+
+    def _update_timestamp(self, label, notification):
+        label.label = format_time_ago(notification.time)
+        return True
+
+    def _open_screenshot(self, notification):
+        """Open screenshot in image viewer"""
+        if notification.icon:
+            asyncio.create_task(utils.exec_sh_async(f"xdg-open '{notification.icon}'"))
+
+    def _copy_screenshot(self, notification):
+        """Copy screenshot to clipboard"""
+        if notification.icon:
+            asyncio.create_task(utils.exec_sh_async(f"wl-copy < '{notification.icon}'"))
+
+    def _delete(self, notification):
+        """Delete screenshot file and cached preview"""
+        if notification.icon:
+            # Delete the original file
+            asyncio.create_task(utils.exec_sh_async(f"rm '{notification.icon}'"))
+
+            # Delete cached preview
+            delete_cached_preview(notification.icon)
+
+            # Close notification
+            notification.close()
+
+
+# ═══════════════════════════════════════════════════════════════
+# SMART HISTORY ITEM
 # ═══════════════════════════════════════════════════════════════
 
 
 class NotificationHistoryItem(widgets.Box):
-    """Item shown in the Integrated Center's notification list."""
+    """Auto-select screenshot or normal history layout."""
 
     def __init__(self, notification: Notification):
+        super().__init__(
+            child=[
+                (
+                    ScreenshotHistoryItem(notification)
+                    if is_screenshot(notification)
+                    else _NormalHistoryItem(notification)
+                )
+            ]
+        )
 
-        # --- ICON OR DOT -----------------------------------------------------
+
+# ═══════════════════════════════════════════════════════════════
+# NORMAL NOTIFICATION HISTORY ITEM
+# ═══════════════════════════════════════════════════════════════
+
+
+class _NormalHistoryItem(widgets.Box):
+    def __init__(self, notification: Notification):
+
         if notification.icon:
             icon_widget = widgets.Icon(
                 image=notification.icon,
@@ -106,7 +309,6 @@ class NotificationHistoryItem(widgets.Box):
                 valign="start",
             )
 
-        # --- TITLE -----------------------------------------------------------
         title_css_classes = ["notif-history-title"]
         if notification.urgency == 2:
             title_css_classes.append("critical")
@@ -120,14 +322,12 @@ class NotificationHistoryItem(widgets.Box):
             wrap=True,
         )
 
-        # --- TIMESTAMP -------------------------------------------------------
         timestamp_label = widgets.Label(
             label=format_time_ago(notification.time),
             halign="start",
             css_classes=["notif-timestamp"],
         )
 
-        # --- BODY ------------------------------------------------------------
         body = widgets.Label(
             label=notification.body,
             halign="start",
@@ -138,7 +338,6 @@ class NotificationHistoryItem(widgets.Box):
             wrap=True,
         )
 
-        # --- CLOSE BUTTON ----------------------------------------------------
         close_btn = widgets.Button(
             child=widgets.Icon(image="window-close-symbolic", pixel_size=18),
             css_classes=["notif-history-close"],
@@ -146,7 +345,6 @@ class NotificationHistoryItem(widgets.Box):
             on_click=lambda *_: notification.close(),
         )
 
-        # --- TEXT CONTAINER --------------------------------------------------
         text_box = widgets.Box(
             vertical=True,
             spacing=2,
@@ -154,31 +352,25 @@ class NotificationHistoryItem(widgets.Box):
             hexpand=True,
         )
 
-        # --- MAIN ROW --------------------------------------------------------
         super().__init__(
             css_classes=["notif-history-item"],
             spacing=12,
+            hexpand=True,
             child=[icon_widget, text_box, close_btn],
         )
 
-        # When closed → hide
         notification.connect("closed", lambda *_: setattr(self, "visible", False))
-
-        # Update timestamp every 60 seconds (less frequent since it's more readable)
-        from ignis import utils
-
         utils.Poll(
             60000, lambda *_: self._update_timestamp(timestamp_label, notification)
         )
 
-    def _update_timestamp(self, label: widgets.Label, notification: Notification):
-        """Update the timestamp label"""
+    def _update_timestamp(self, label, notification):
         label.label = format_time_ago(notification.time)
-        return True  # Keep polling
+        return True
 
 
 # ═══════════════════════════════════════════════════════════════
-# TASK ITEM (unchanged)
+# TASK ITEM
 # ═══════════════════════════════════════════════════════════════
 
 
@@ -262,8 +454,6 @@ class AddTaskDialog(widgets.Box):
 
         now = datetime.now()
 
-        # Time inputs
-
         self._time = widgets.Entry(
             placeholder_text="HH:MM",
             css_classes=["task-input", "task-time-input"],
@@ -276,7 +466,6 @@ class AddTaskDialog(widgets.Box):
         )
         self._date.text = now.strftime("%d-%m-%Y")
 
-        # Tomorrow quick button
         tomorrow_btn = widgets.Button(
             child=widgets.Label(label="Tomorrow"),
             css_classes=["date-quick-btn"],
@@ -294,17 +483,14 @@ class AddTaskDialog(widgets.Box):
             ],
         )
 
-        # Description (full width at bottom)
-
         self._message = widgets.Entry(
             placeholder_text="What do you need to do?",
             css_classes=["task-input", "task-message-input"],
             hexpand=True,
-            on_accept=lambda *_: self._add(),  # Enter to submit
+            on_accept=lambda *_: self._add(),
         )
         self._message.text = ""
 
-        # Action buttons
         cancel_btn = widgets.Button(
             child=widgets.Label(label="Cancel"),
             css_classes=["task-dialog-btn", "cancel-btn"],
@@ -324,7 +510,6 @@ class AddTaskDialog(widgets.Box):
             child=[cancel_btn, save_btn],
         )
 
-        # Main layout
         super().__init__(
             vertical=True,
             spacing=12,
@@ -337,7 +522,6 @@ class AddTaskDialog(widgets.Box):
             ],
         )
 
-        # Focus time input on creation
         self._time.grab_focus()
 
     def _set_date_offset(self, offset):
@@ -367,7 +551,7 @@ class AddTaskDialog(widgets.Box):
 
 
 # ═══════════════════════════════════════════════════════════════
-# Edit task dialog
+# EDIT TASK DIALOG
 # ═══════════════════════════════════════════════════════════════
 
 
@@ -380,7 +564,6 @@ class EditTaskDialog(widgets.Box):
 
         fire_dt = datetime.fromtimestamp(task["fire_at"])
 
-        # Time inputs (horizontal row)
         self._time = widgets.Entry(
             placeholder_text="HH:MM",
             css_classes=["task-input", "task-time-input"],
@@ -403,7 +586,6 @@ class EditTaskDialog(widgets.Box):
             ],
         )
 
-        # Description (full width at bottom)
         self._message = widgets.Entry(
             placeholder_text="What do you need to do?",
             css_classes=["task-input", "task-message-input"],
@@ -411,8 +593,6 @@ class EditTaskDialog(widgets.Box):
             on_accept=lambda *_: self._save(),
         )
         self._message.text = task.get("message", "")
-
-        # Action buttons
 
         cancel_btn = widgets.Button(
             child=widgets.Label(label="Cancel"),
@@ -433,7 +613,6 @@ class EditTaskDialog(widgets.Box):
             child=[cancel_btn, save_btn],
         )
 
-        # Main layout
         super().__init__(
             vertical=True,
             spacing=12,
@@ -446,7 +625,6 @@ class EditTaskDialog(widgets.Box):
             ],
         )
 
-        # Focus message input on creation
         self._message.grab_focus()
 
     def _save(self):

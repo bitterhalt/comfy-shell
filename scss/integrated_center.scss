@@ -175,7 +175,7 @@
   transition: background-color 0.15s;
 
   &:hover {
-    background-color: $ui-3;
+    background-color: $ui-2;
   }
 }
 /* ───────────────────────────────────────────────────────────────
@@ -195,7 +195,7 @@
   }
 
   &:hover {
-    background-color: rgba($tx-1, 0.12);
+    background-color: $ui-2;
   }
 }
 
@@ -246,7 +246,6 @@
 
 .next-task-box:hover {
   background-color: $ui-2;
-  border-color: $ui-2;
 }
 
 .next-task-text-column {
@@ -352,7 +351,6 @@
 
   &:hover {
     background-color: $ui-2;
-    border-color: $ui-3;
   }
 }
 
@@ -538,5 +536,62 @@
 
   &:hover {
     background-color: lighten($cyan, 8%);
+  }
+}
+
+/* ─────────────────────────────────────────────
+   SCREENSHOT HISTORY (CONSTRAINED)
+   ───────────────────────────────────────────── */
+
+.screenshot-history-item {
+  background: $bg-2;
+  padding: 14px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+
+  &:hover {
+    background: $bg-2;
+  }
+}
+
+.screenshot-preview {
+  border-radius: 8px;
+  background: $bg-1;
+}
+
+/* Timestamp */
+.screenshot-timestamp {
+  font-size: 12px;
+  color: $tx-3;
+}
+
+/* Path text */
+.screenshot-path {
+  font-size: 13px;
+  color: $tx-2;
+}
+
+/* Action row */
+.screenshot-actions {
+  margin-top: 6px;
+}
+
+/* Pills — slightly smaller */
+.pill-btn {
+  background: $ui-1;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+
+  &:hover {
+    background: $ui-2;
+  }
+}
+
+.pill-btn-danger {
+  background: $red;
+
+  &:hover {
+    background-color: $ui-2;
   }
 }
