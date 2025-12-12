@@ -1,9 +1,10 @@
 import asyncio
 
 from gi.repository import Gdk
-
 from ignis import utils, widgets
-from settings import config
+from ignis.window_manager import WindowManager
+
+wm = WindowManager.get_default()
 
 
 def exec_async(cmd: str):
@@ -33,7 +34,7 @@ class ConfirmDialog(widgets.Window):
         cancel_btn = widgets.Button(
             label="Cancel",
             css_classes=["confirm-dialog-btn", "confirm-dialog-cancel"],
-            on_click=lambda x: self._cancel(),
+            on_click=lambda *_: self._cancel(),
             can_focus=True,
         )
 
@@ -41,7 +42,7 @@ class ConfirmDialog(widgets.Window):
         confirm_btn = widgets.Button(
             label="Confirm",
             css_classes=["confirm-dialog-btn", "confirm-dialog-confirm"],
-            on_click=lambda x: self._confirm(),
+            on_click=lambda *_: self._confirm(),
             can_focus=True,
         )
 
@@ -77,7 +78,7 @@ class ConfirmDialog(widgets.Window):
             hexpand=True,
             can_focus=False,
             css_classes=["confirm-dialog-background"],
-            on_click=lambda x: self._cancel(),
+            on_click=lambda *_: self._cancel(),
         )
 
         # Use Overlay like your other modules
@@ -87,7 +88,6 @@ class ConfirmDialog(widgets.Window):
         )
 
         super().__init__(
-            monitor=config.ui.primary_monitor,
             visible=True,
             anchor=["top", "bottom", "left", "right"],
             namespace="ignis_CONFIRM_DIALOG",
@@ -177,7 +177,7 @@ class PowerOverlay(widgets.Window):
         # Logout button
         logout_btn = widgets.Button(
             css_classes=["power-overlay-btn"],
-            on_click=lambda x: self._logout(),
+            on_click=lambda *_: self._logout(),
             can_focus=True,
             child=widgets.Box(
                 vertical=True,
@@ -198,7 +198,7 @@ class PowerOverlay(widgets.Window):
         # Suspend button
         suspend_btn = widgets.Button(
             css_classes=["power-overlay-btn"],
-            on_click=lambda x: self._suspend(),
+            on_click=lambda *_: self._suspend(),
             can_focus=True,
             child=widgets.Box(
                 vertical=True,
@@ -219,7 +219,7 @@ class PowerOverlay(widgets.Window):
         # Reboot button
         reboot_btn = widgets.Button(
             css_classes=["power-overlay-btn", "power-overlay-btn-danger"],
-            on_click=lambda x: self._reboot(),
+            on_click=lambda *_: self._reboot(),
             can_focus=True,
             child=widgets.Box(
                 vertical=True,
@@ -240,7 +240,7 @@ class PowerOverlay(widgets.Window):
         # Shutdown button
         shutdown_btn = widgets.Button(
             css_classes=["power-overlay-btn", "power-overlay-btn-danger"],
-            on_click=lambda x: self._shutdown(),
+            on_click=lambda *_: self._shutdown(),
             can_focus=True,
             child=widgets.Box(
                 vertical=True,
@@ -286,7 +286,7 @@ class PowerOverlay(widgets.Window):
             hexpand=True,
             can_focus=False,
             css_classes=["power-overlay-background"],
-            on_click=lambda x: self.toggle(),
+            on_click=lambda *_: self.toggle(),
         )
 
         # Use Overlay pattern like your recording_overlay
@@ -368,7 +368,7 @@ class PowerOverlay(widgets.Window):
         confirm_dialog(
             "Logout",
             "Are you sure you want to log out?",
-            on_confirm=lambda x: exec_async("loginctl terminate-user $USER"),
+            on_confirm=lambda: exec_async("loginctl terminate-user $USER"),
         )
 
     def _suspend(self):
@@ -382,7 +382,7 @@ class PowerOverlay(widgets.Window):
         confirm_dialog(
             "Reboot System",
             "Are you sure you want to reboot?",
-            on_confirm=lambda x: exec_async("systemctl reboot"),
+            on_confirm=lambda: exec_async("systemctl reboot"),
         )
 
     def _shutdown(self):
@@ -391,5 +391,5 @@ class PowerOverlay(widgets.Window):
         confirm_dialog(
             "Power Off",
             "Are you sure you want to shut down?",
-            on_confirm=lambda x: exec_async("systemctl poweroff"),
+            on_confirm=lambda: exec_async("systemctl poweroff"),
         )
