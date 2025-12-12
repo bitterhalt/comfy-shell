@@ -232,5 +232,5 @@ def init_task_popup():
     global _task_popup_window
 
     if _task_popup_window is None:
-        monitor = config.ui.primary_monitor
+        monitor = config.ui.notifications_monitor
         _task_popup_window = TaskPopupWindow(monitor)

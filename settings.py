@@ -3,8 +3,6 @@ import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from utils.focused_monitor import get_focused_monitor
-
 
 @dataclass
 class PathConfig:
@@ -96,18 +94,16 @@ class UIConfig:
 
     # Primary monitor (0 = first monitor, 1 = second, etc.)
     primary_monitor: int = 0
-    # Focused = uses active monitor
-    focused = get_focused_monitor()
-
-    # Use monitor ID (int) or "focused" for dynamic placement
     bar_monitor: int = 0
-    osd_monitor: int = 0  # Volume/Media/Time/Workspace OSD
-    # launcher_monitor: str = (focused)  # "focused" = spawn on active monitor
+    osd_monitor: int = 0
     launcher_monitor: int = 0
-    weather_monitor: int = 0  # Weather popup
-    power_overlay_monitor: int = 0  # Power menu
-    system_menu_monitor: int = 0  # System settings popup
-    integrated_center_monitor: int = 0  # Notification center
+    notifications_monitor: int = 0
+    recording_overlay_monitor: int = 0
+    window_switcher_monitor: int = 0
+    weather_monitor: int = 0
+    power_overlay_monitor: int = 0
+    system_menu_monitor: int = 0
+    integrated_center_monitor: int = 0
 
     # OSD timeouts (milliseconds)
     osd_timeout: int = 2000
