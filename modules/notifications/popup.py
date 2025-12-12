@@ -168,5 +168,6 @@ class NotificationPopup(widgets.Window):
 
 
 def init_notifications():
-    monitor = config.ui.bar_monitor
+    """Initialize notification popup on configured monitor"""
+    monitor = config.ui.notifications_monitor
     return NotificationPopup(monitor)
