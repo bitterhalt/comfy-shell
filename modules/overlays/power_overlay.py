@@ -258,7 +258,6 @@ class PowerOverlay(widgets.Window):
             ),
         )
 
-        # Buttons container with the actual background
         buttons_container = widgets.Box(
             vertical=True,
             valign="center",
@@ -280,7 +279,6 @@ class PowerOverlay(widgets.Window):
             ],
         )
 
-        # Click outside to close - this provides the dimming
         overlay_btn = widgets.Button(
             vexpand=True,
             hexpand=True,
@@ -289,7 +287,6 @@ class PowerOverlay(widgets.Window):
             on_click=lambda *_: self.toggle(),
         )
 
-        # Use Overlay pattern like your recording_overlay
         root_overlay = widgets.Overlay(
             child=overlay_btn,
             overlays=[buttons_container],

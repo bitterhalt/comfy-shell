@@ -61,7 +61,6 @@ class RecordingOverlay(widgets.Window):
             ),
         )
 
-        # Record Screen button - changes to Stop when recording
         self._record_screen_icon = widgets.Icon(
             image="media-record-symbolic",
             pixel_size=48,
@@ -152,7 +151,6 @@ class RecordingOverlay(widgets.Window):
             kb_mode="exclusive",
         )
 
-        # Connect to recorder signals
         recorder.connect("recording_started", lambda x: self._update_recording_state())
         recorder.connect("recording_stopped", lambda x: self._update_recording_state())
 
@@ -164,13 +162,11 @@ class RecordingOverlay(widgets.Window):
         is_recording = self._is_recording()
 
         if is_recording:
-            # Show stop button
             self._record_screen_icon.image = "media-playback-stop-symbolic"
             self._record_screen_label.label = "Stop Recording"
             self._record_screen_btn.remove_css_class("overlay-btn")
             self._record_screen_btn.add_css_class("overlay-btn-stop")
         else:
-            # Show record button
             self._record_screen_icon.image = "media-record-symbolic"
             self._record_screen_label.label = "Record"
             self._record_screen_btn.remove_css_class("overlay-btn-stop")
@@ -203,10 +199,8 @@ class RecordingOverlay(widgets.Window):
         cmd_manager = CommandManager.get_default()
 
         if self._is_recording():
-            # Stop recording
             cmd_manager.run_command("recorder-stop")
         else:
-            # Start recording
             cmd_manager.run_command("recorder-record-screen")
 
         self.toggle()

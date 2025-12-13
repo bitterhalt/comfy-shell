@@ -4,7 +4,9 @@ Notification list management for integrated center
 
 from ignis import widgets
 from ignis.services.notifications import NotificationService
-from modules.notifications.integrated_center_widgets import NotificationHistoryItem
+
+# Clean import from widgets package
+from modules.notifications.widgets import NotificationHistoryItem
 
 notifications = NotificationService.get_default()
 

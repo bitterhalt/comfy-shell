@@ -3,25 +3,23 @@ import os
 from ignis import utils
 from ignis.command_manager import CommandManager
 from ignis.css_manager import CssInfoPath, CssManager
-from modules.bar.bar import Bar
-from modules.bar.bar_toggle import register_bar
-from modules.bar.widgets.setting_pill import SystemPopup
-from modules.launcher.launcher import AppLauncher
-from modules.launcher.window_switcher import WindowSwitcher
-from modules.notifications.integrated_center import IntegratedCenter
-from modules.notifications.popup import init_notifications
-from modules.notifications.task_popup import init_task_popup
-from modules.osd.media_osd import MediaOsdWindow
-from modules.osd.time_osd import TimeOsdWindow
-from modules.osd.volume_osd import VolumeOSD
-from modules.osd.workspace_osd import init_workspace_osd, set_bar_visibility
-from modules.overlays.power_overlay import PowerOverlay
-from modules.overlays.recording_overlay import RecordingOverlay
-from modules.recorder.recorder import register_recorder_commands
-from modules.weather.weather_window import WeatherPopup
-from settings import config
 
-# from utils.volume_osd_watcher import init_volume_osd_watcher
+# Package imports
+from modules.bar import Bar, register_bar
+from modules.bar.widgets import SystemPopup
+from modules.launcher import AppLauncher, WindowSwitcher
+from modules.notifications import IntegratedCenter, init_notifications, init_task_popup
+from modules.osd import (
+    MediaOsdWindow,
+    TimeOsdWindow,
+    VolumeOSD,
+    init_workspace_osd,
+    set_bar_visibility,
+)
+from modules.overlays import PowerOverlay, RecordingOverlay
+from modules.recorder import register_recorder_commands
+from modules.weather import WeatherPopup
+from settings import config
 
 css = CssManager.get_default()
 
@@ -29,7 +27,6 @@ css = CssManager.get_default()
 # Custom compiler function that removes @charset
 def compile_scss(path):
     compiled = utils.sass_compile(path=path)
-    # Remove @charset line that GTK doesn't support
     lines = compiled.split("\n")
     filtered_lines = [line for line in lines if not line.strip().startswith("@charset")]
     return "\n".join(filtered_lines)
@@ -74,6 +71,7 @@ def _on_visible_changed(window, *_):
 
 bar.connect("notify::visible", _on_visible_changed)
 
+# Initialize all components
 TimeOsdWindow()
 VolumeOSD()
 MediaOsdWindow()

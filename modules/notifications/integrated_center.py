@@ -1,8 +1,3 @@
-"""
-Integrated notification and task center
-Refactored into modular components
-"""
-
 from ignis import utils, widgets
 from ignis.options import options
 from ignis.window_manager import WindowManager

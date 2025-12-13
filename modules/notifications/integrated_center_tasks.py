@@ -9,7 +9,9 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta
 
 from ignis import utils, widgets
-from modules.notifications.integrated_center_widgets import (
+
+# Clean imports from widgets package
+from modules.notifications.widgets import (
     AddTaskDialog,
     EditTaskDialog,
     TaskItem,

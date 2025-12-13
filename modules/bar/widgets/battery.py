@@ -68,8 +68,12 @@ def battery_widget():
         elif battery.percentage < config.battery.warning_threshold:
             container.add_css_class("warning")
             container.remove_css_class("critical")
+        else:
+            container.remove_css_class("warning")
+            container.remove_css_class("critical")
 
-        battery.connect("notify::percentage", update_warning)
-        update_warning()
+    # ✅ FIX: Connect and call outside the function
+    battery.connect("notify::percentage", update_warning)
+    update_warning()
 
     return container
