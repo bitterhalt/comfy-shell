@@ -6,11 +6,14 @@ import asyncio
 
 from ignis import utils, widgets
 from ignis.services.notifications import Notification
+from ignis.window_manager import WindowManager
 from modules.notifications.widgets.cache import (
     delete_cached_preview,
     get_cached_preview,
 )
 from modules.notifications.widgets.time_utils import format_time_ago
+
+wm = WindowManager.get_default()
 
 
 def is_screenshot(notification: Notification) -> bool:
@@ -116,6 +119,7 @@ class ScreenshotHistoryItem(widgets.Box):
         """Open screenshot in image viewer"""
         if notification.icon:
             asyncio.create_task(utils.exec_sh_async(f"xdg-open '{notification.icon}'"))
+            wm.close_window("ignis_INTEGRATED_CENTER")
 
     def _copy_screenshot(self, notification):
         """Copy screenshot to clipboard"""
