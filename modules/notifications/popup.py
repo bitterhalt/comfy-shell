@@ -94,9 +94,13 @@ class NotificationWidget(widgets.Box):
 
 
 class Popup(widgets.Revealer):
-    """Animated popup wrapper for notifications"""
+    """
+    Simple, robust popup with single animation
+    No chained timeouts = no animation freezing issues
+    """
 
-    def __init__(self, notification: Notification):
+    def __init__(self, parent_box: "PopupBox", notification: Notification):
+        self._parent_box = parent_box
         self._notification = notification
 
         widget = NotificationWidget(notification)
@@ -108,63 +112,78 @@ class Popup(widgets.Revealer):
             child=widget,
         )
 
+        # Connect to notification signals
         notification.connect("dismissed", lambda x: self.destroy())
         notification.connect("closed", lambda x: self.destroy())
 
     def destroy(self):
-        """Animated destruction of the popup"""
+        """Simple animated destruction with proper window management"""
+        # Start close animation
         self.reveal_child = False
-        utils.Timeout(self.transition_duration, self.unparent)
+
+        # Wait for animation to complete, then cleanup
+        utils.Timeout(self.transition_duration, self._cleanup)
+
+    def _cleanup(self):
+        """Remove popup and check if window should hide"""
+        # Remove from parent
+        self.unparent()
+
+        # Auto-hide window when last popup is gone
+        visible_popups = [
+            child
+            for child in self._parent_box.child
+            if child.get_visible() and child.get_mapped()
+        ]
+
+        if len(visible_popups) == 0:
+            self._parent_box._window.visible = False
+
+
+class PopupBox(widgets.Box):
+    """Container for notification popups"""
+
+    def __init__(self, window: "NotificationPopup"):
+        self._window = window
+
+        super().__init__(
+            vertical=True,
+            valign="start",
+            halign="end",
+        )
+
+        # Connect to new popup signal
+        notifications.connect("new_popup", self._on_new_popup)
+
+    def _on_new_popup(self, service, notification: Notification):
+        """Add new notification popup"""
+        # Create popup
+        popup = Popup(parent_box=self, notification=notification)
+        self.prepend(popup)
+
+        # Show window if hidden
+        if not self._window.visible:
+            self._window.visible = True
+
+        # Reveal with small delay to ensure window is visible
+        utils.Timeout(10, popup.set_reveal_child, True)
 
 
 class NotificationPopup(widgets.Window):
     """Main notification popup window"""
 
     def __init__(self, monitor: int = 0):
-        self._notif_box = widgets.Box(
-            vertical=True,
-            valign="start",
-            halign="end",
-        )
+        self._popup_box = PopupBox(window=self)
 
         super().__init__(
             anchor=["right", "top"],
             monitor=monitor,
             namespace=f"ignis_NOTIFICATION_POPUP_{monitor}",
             layer="overlay",
-            child=self._notif_box,
+            child=self._popup_box,
             visible=False,
             css_classes=["notification-window"],
         )
-
-        # Connect to new notifications
-        notifications.connect("new_popup", self._on_new_popup)
-
-    def _on_new_popup(self, service, notification):
-        """Add new notification popup"""
-        popup = Popup(notification)
-        self._notif_box.prepend(popup)
-
-        if not self.visible:
-            self.visible = True
-
-        utils.Timeout(10, popup.set_reveal_child, True)
-
-        notification.connect("closed", lambda x: self._check_if_empty())
-        notification.connect("dismissed", lambda x: self._check_if_empty())
-
-    def _check_if_empty(self):
-        """Hide window if no popups remain"""
-        utils.Timeout(400, self._do_check)
-
-    def _do_check(self):
-        """Actually check and hide window if empty"""
-        visible_children = [
-            c for c in self._notif_box.child if c.get_visible() and c.get_mapped()
-        ]
-
-        if len(visible_children) == 0:
-            self.visible = False
 
 
 def init_notifications():

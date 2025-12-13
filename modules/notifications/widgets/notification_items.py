@@ -6,8 +6,10 @@ import asyncio
 
 from ignis import utils, widgets
 from ignis.services.notifications import Notification
-
-from modules.notifications.widgets.cache import delete_cached_preview, get_cached_preview
+from modules.notifications.widgets.cache import (
+    delete_cached_preview,
+    get_cached_preview,
+)
 from modules.notifications.widgets.time_utils import format_time_ago
 
 
