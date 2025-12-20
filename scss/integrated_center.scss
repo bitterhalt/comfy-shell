@@ -213,6 +213,7 @@
 }
 
 .center-calendar .day-number {
+  all: unset;
   color: $tx-2;
 }
 
@@ -426,13 +427,13 @@
   padding: 0 4px;
 }
 
-.task-time-input {
-  min-width: 80px;
-}
-
-.task-date-input {
-  min-width: 120px;
-}
+// .task-time-input {
+//   min-width: 80px;
+// }
+//
+// .task-date-input {
+//   min-width: 120px;
+// }
 
 .date-quick-btn {
   all: unset;
@@ -489,6 +490,7 @@
 }
 
 .task-dialog-btn {
+  all: unset;
   padding: 8px 16px;
   border-radius: 8px;
   font-size: 14px;
