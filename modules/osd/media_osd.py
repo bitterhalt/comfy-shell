@@ -1,0 +1,309 @@
+from ignis import utils, widgets
+from ignis.services.mpris import MprisService
+from settings import config
+
+TIMEOUT = config.ui.media_osd_timeout
+mpris = MprisService.get_default()
+
+# --------------------------------------------------------------------
+# PLAYER ICON + NAME MAPPING
+# --------------------------------------------------------------------
+
+PLAYER_ICONS = {
+    "spotify": "spotify-symbolic",
+    "firefox": "firefox",
+    "zen": "zen-browser",
+    "chromium": "chromium-browser-symbolic",
+    "chrome": "chrome-symbolic",
+    "vlc": "vlc-symbolic",
+    "mpv": "mpv-symbolic",
+    "rhythmbox": "rhythmbox-symbolic",
+    None: "folder-music-symbolic",
+}
+
+PLAYER_NAMES = {
+    "spotify": "Spotify",
+    "firefox": "Firefox",
+    "zen": "Zen Browser",
+    "chromium": "Chromium",
+    "chrome": "Google Chrome",
+    "vlc": "VLC",
+    "mpv": "MPV",
+    "rhythmbox": "Rhythmbox",
+    None: "Media Player",
+}
+
+
+def get_player_icon(player):
+    if not player:
+        return PLAYER_ICONS[None]
+
+    entry = player.desktop_entry
+    if entry in PLAYER_ICONS:
+        return PLAYER_ICONS[entry]
+
+    if player.track_id:
+        tid = player.track_id.lower()
+        if "chromium" in tid:
+            return PLAYER_ICONS["chromium"]
+        if "chrome" in tid:
+            return PLAYER_ICONS["chrome"]
+
+    return PLAYER_ICONS[None]
+
+
+def get_player_name(player):
+    if not player:
+        return PLAYER_NAMES[None]
+
+    entry = player.desktop_entry
+    if entry in PLAYER_NAMES:
+        return PLAYER_NAMES[entry]
+
+    return entry.replace("-", " ").title() if entry else PLAYER_NAMES[None]
+
+
+# --------------------------------------------------------------------
+# MPRIS HELPERS
+# --------------------------------------------------------------------
+
+
+def _active_player():
+    players = mpris.players
+    return players[0] if players else None
+
+
+def mpris_prev():
+    player = _active_player()
+    if player and player.can_go_previous:
+        player.previous()
+
+
+def mpris_next():
+    player = _active_player()
+    if player and player.can_go_next:
+        player.next()
+
+
+def mpris_toggle():
+    player = _active_player()
+    if player:
+        player.play_pause()
+
+
+# --------------------------------------------------------------------
+# MEDIA OSD WINDOW
+# --------------------------------------------------------------------
+
+
+class MediaOsdWindow(widgets.Window):
+    def __init__(self):
+        self._timeout = None
+        self._bound_player = None
+
+        # ── Header
+        self._app_icon = widgets.Icon(
+            image=PLAYER_ICONS[None],
+            pixel_size=20,
+            css_classes=["media-osd-app-icon"],
+        )
+
+        self._app_name = widgets.Label(
+            label="Media Player",
+            ellipsize="end",
+            max_width_chars=30,
+            css_classes=["media-osd-app-name"],
+        )
+
+        close_btn = widgets.Button(
+            child=widgets.Icon(
+                image="window-close-symbolic",
+                pixel_size=18,
+            ),
+            css_classes=["media-osd-close", "unset"],
+            halign="end",
+            valign="center",
+            on_click=lambda *_: self.set_visible(False),
+        )
+
+        header = widgets.Box(
+            spacing=8,
+            css_classes=["media-osd-header"],
+            child=[
+                self._app_icon,
+                self._app_name,
+                widgets.Box(hexpand=True),
+                close_btn,
+            ],
+        )
+
+        # ── Album art
+        self._album_art = widgets.Icon(
+            image="folder-music-symbolic",
+            pixel_size=100,
+            css_classes=["media-osd-art"],
+        )
+
+        # ── Labels
+        self._title_label = widgets.Label(
+            label="No Title",
+            ellipsize="end",
+            max_width_chars=35,
+            css_classes=["media-osd-title"],
+        )
+
+        self._artist_label = widgets.Label(
+            label="No Artist",
+            ellipsize="end",
+            max_width_chars=35,
+            css_classes=["media-osd-artist"],
+        )
+
+        labels = widgets.Box(
+            vertical=True,
+            spacing=2,
+            child=[self._title_label, self._artist_label],
+        )
+
+        # ── Controls (under text)
+        self._btn_prev = widgets.Button(
+            css_classes=["media-osd-control"],
+            on_click=lambda *_: mpris_prev(),
+            child=widgets.Icon(
+                image="media-skip-backward-symbolic",
+                pixel_size=22,
+            ),
+        )
+
+        self._btn_play_icon = widgets.Icon(
+            image="media-playback-start-symbolic",
+            pixel_size=22,
+        )
+
+        self._btn_play = widgets.Button(
+            css_classes=["media-osd-control", "primary"],
+            child=self._btn_play_icon,
+            on_click=lambda *_: mpris_toggle(),
+        )
+
+        self._btn_next = widgets.Button(
+            css_classes=["media-osd-control"],
+            on_click=lambda *_: mpris_next(),
+            child=widgets.Icon(
+                image="media-skip-forward-symbolic",
+                pixel_size=22,
+            ),
+        )
+
+        controls = widgets.Box(
+            spacing=6,
+            halign="end",
+            css_classes=["media-osd-controls"],
+            child=[self._btn_prev, self._btn_play, self._btn_next],
+        )
+
+        # ── Text column (labels + controls)
+        text_column = widgets.Box(
+            vertical=True,
+            spacing=6,
+            hexpand=True,
+            valign="start",
+            child=[labels, controls],
+        )
+
+        # ── Main row
+        main_row = widgets.Box(
+            spacing=12,
+            child=[self._album_art, text_column],
+        )
+
+        pill = widgets.Box(
+            vertical=True,
+            spacing=8,
+            css_classes=["media-osd"],
+            child=[header, main_row],
+        )
+
+        root = widgets.Box(
+            halign="center",
+            valign="start",
+            child=[pill],
+        )
+
+        super().__init__(
+            monitor=config.ui.primary_monitor,
+            layer="overlay",
+            anchor=["top"],
+            namespace="ignis_MEDIA_OSD",
+            visible=False,
+            css_classes=["media-osd-window"],
+            child=root,
+        )
+
+        self.connect("notify::visible", self._on_visible_changed)
+
+    # ----------------------------------------------------------------
+
+    def _on_visible_changed(self, *_):
+        if self.get_visible():
+            self._update_content()
+
+            if self._timeout:
+                self._timeout.cancel()
+
+            self._timeout = utils.Timeout(
+                TIMEOUT,
+                lambda: self.set_visible(False),
+            )
+        else:
+            if self._timeout:
+                self._timeout.cancel()
+                self._timeout = None
+
+    def show_osd(self):
+        self.set_visible(True)
+
+    # ----------------------------------------------------------------
+
+    def _bind_play_icon(self, player):
+        self._btn_play_icon.image = player.bind(
+            "playback_status",
+            lambda s: (
+                "media-playback-pause-symbolic"
+                if s == "Playing"
+                else "media-playback-start-symbolic"
+            ),
+        )
+
+    def _update_content(self):
+        player = _active_player()
+
+        if not player:
+            self._bound_player = None
+            self._app_icon.image = PLAYER_ICONS[None]
+            self._app_name.label = "No Media"
+            self._title_label.label = "No media playing"
+            self._artist_label.label = ""
+            self._album_art.image = "folder-music-symbolic"
+            self._btn_play_icon.image = "media-playback-stop-symbolic"
+            self._btn_prev.set_sensitive(False)
+            self._btn_next.set_sensitive(False)
+            return
+
+        # App info
+        self._app_icon.image = get_player_icon(player)
+        self._app_name.label = get_player_name(player)
+
+        # Track info
+        self._title_label.label = player.title or "Unknown Title"
+        self._artist_label.label = player.artist or "Unknown Artist"
+        self._album_art.image = player.art_url or "folder-music-symbolic"
+
+        # Bind playback state once per player
+        if self._bound_player != player:
+            self._bind_play_icon(player)
+            self._bound_player = player
+
+        # Capabilities
+        self._btn_prev.set_sensitive(player.can_go_previous)
+        self._btn_next.set_sensitive(player.can_go_next)

@@ -1,0 +1,585 @@
+/* ═══════════════════════════════════════════════════════════════
+   INTEGRATED NOTIFICATION & TASK CENTER
+   ═══════════════════════════════════════════════════════════════ */
+
+.center-window {
+  background-color: unset;
+  border: unset;
+}
+
+.center-overlay {
+  all: unset;
+  background-color: unset;
+}
+
+.center-container {
+  margin: 10px;
+  revealer {
+    box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.35);
+    border-radius: 8px;
+  }
+}
+.integrated-center {
+  background-color: $bg-1;
+  border: unset;
+  min-height: 572px;
+}
+
+/* ───────────────────────────────────────────────────────────────
+   TWO COLUMN LAYOUT
+   ─────────────────────────────────────────────────────────────── */
+
+.left-column {
+  min-width: 416px;
+  border-right: 1px solid $ui-1;
+  padding: 12px 0;
+}
+
+.right-column {
+  padding: 12px 0;
+}
+
+/* ───────────────────────────────────────────────────────────────
+   HEADER ACTION (Clear all)
+   ─────────────────────────────────────────────────────────────── */
+
+.header-action-btn {
+  all: unset;
+  color: $tx-3;
+  padding: 0 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.header-action-btn:hover {
+  color: $tx-2;
+  background-color: unset;
+}
+
+/* ───────────────────────────────────────────────────────────────
+   DND TOGGLE (bottom of left column)
+   ─────────────────────────────────────────────────────────────── */
+
+.dnd-box {
+  all: unset;
+  padding: 0px 16px;
+}
+
+.dnd-label {
+  color: $tx-1;
+  font-size: 15px;
+}
+
+.dnd-box switch {
+  background-color: $ui-1;
+  border-radius: 10px;
+  padding: 0 6px;
+  min-height: 24px;
+}
+
+.dnd-box switch trough {
+  background-color: $ui-2;
+  border-radius: 10px;
+  transition: background-color 0.2s;
+}
+
+.dnd-box switch slider {
+  all: unset;
+  background-color: $bg-1;
+  border-radius: 10px;
+  margin: 4px 0;
+  transition: transform 0.2s;
+}
+
+.dnd-box switch:checked {
+  background-color: $red;
+}
+
+/* ───────────────────────────────────────────────────────────────
+   WEATHER (top pill)
+   ─────────────────────────────────────────────────────────────── */
+
+.weather-compact {
+  all: unset;
+  padding: 8px 16px;
+  margin: 0 12px;
+  background-color: $bg-2;
+  border: unset;
+  border-radius: 8px;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+
+  &:hover {
+    background-color: $ui-2;
+    // border-color: $ui-2;
+  }
+}
+
+.weather-temp-compact {
+  font-size: 17px;
+  font-weight: 600;
+  color: $tx-1;
+  min-width: 48px;
+}
+
+.weather-desc-compact {
+  font-size: 13px;
+  color: $tx-3;
+}
+
+/* ───────────────────────────────────────────────────────────────
+   MEDIA WIDGET (MPRIS pill) - Now in left column
+   ─────────────────────────────────────────────────────────────── */
+
+.media-center-wrapper {
+  padding: 0 12px;
+  margin-bottom: 8px;
+}
+
+.media-pill {
+  background-color: $bg-2;
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 366px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: $ui-2;
+  }
+}
+
+.media-pill-icon {
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.media-pill-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: $tx-2;
+}
+
+.media-pill-artist {
+  font-size: 13px;
+  color: $tx-3;
+  margin-top: 2px;
+}
+
+.media-pill-button {
+  all: unset;
+  color: $tx-1;
+  padding: 6px;
+  border-radius: 8px;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: $ui-2;
+  }
+}
+/* ───────────────────────────────────────────────────────────────
+   CALENDAR (hidden behind expander)
+   ─────────────────────────────────────────────────────────────── */
+
+.calendar-expander {
+  all: unset;
+  background-color: rgba($tx-1, 0.06);
+  border-radius: 8px;
+  padding: 4px;
+  margin: 8px 12px 4px 12px;
+  transition: background-color 0.15s;
+
+  .calendar-expander-icon {
+    opacity: 0.7;
+  }
+
+  &:hover {
+    background-color: $ui-2;
+  }
+}
+
+.calendar-box {
+  margin-bottom: 10px;
+}
+
+.center-calendar {
+  all: unset;
+  background-color: $bg-2;
+  border: unset;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 12px;
+}
+
+.center-calendar .day-number {
+  color: $tx-2;
+}
+
+.center-calendar .today {
+  background-color: $bg-2;
+  color: $magenta;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.center-calendar .other-month {
+  color: $tx-3;
+  opacity: 0.5;
+}
+
+/* ───────────────────────────────────────────────────────────────
+   NEXT UPCOMING TASK PILL
+   ─────────────────────────────────────────────────────────────── */
+
+.next-task-box {
+  background-color: $bg-2;
+  // border: 1px solid $ui-1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 6px 12px 10px 12px;
+  min-height: 52px;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+
+.next-task-box:hover {
+  background-color: $ui-2;
+}
+
+.next-task-text-column {
+  min-width: 0; // allow ellipsize
+}
+
+.next-task-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: $tx-1;
+}
+
+.next-task-meta {
+  font-size: 12px;
+  color: $red;
+  margin-top: 2px;
+}
+
+.add-task-btn {
+  all: unset;
+  background-color: unset;
+  color: $cyan;
+  padding: 2px 8px;
+  margin-left: 4px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+
+  &:hover {
+    color: $cyan;
+    background-color: rgba($cyan, 0.12);
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────
+   TASK LIST + NOTIFICATIONS
+   ─────────────────────────────────────────────────────────────── */
+
+.content-list {
+  padding: 0 12px;
+}
+
+.notif-history-item {
+  background-color: $bg-2;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: $ui-2;
+    border-color: $ui-3;
+  }
+}
+
+.notif-history-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: $tx-2;
+
+  &.critical {
+    color: $red;
+  }
+}
+
+.notif-history-body {
+  font-size: 13px;
+  color: $tx-3;
+}
+.notif-timestamp {
+  font-size: 11px;
+  color: $tx-3;
+  opacity: 0.9;
+  margin-top: 1px;
+  margin-bottom: 2px;
+  font-weight: 400;
+}
+
+.notif-history-close {
+  color: $tx-3;
+}
+.notif-history-close:hover,
+.notif-history-item:hover .notif-timestamp {
+  opacity: 0.8;
+}
+
+.task-item {
+  background-color: $bg-2;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+
+  &:hover {
+    background-color: $ui-2;
+  }
+}
+
+.task-title {
+  font-weight: 600;
+  color: $tx-2;
+}
+
+.task-time {
+  color: $tx-3;
+  font-size: 13px;
+}
+
+.task-action-btn {
+  all: unset;
+  padding: 6px;
+  border-radius: 8px;
+  opacity: 0.6;
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    opacity 0.15s;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.task-edit:hover {
+  background-color: $yellow;
+  color: $bg-1;
+}
+.task-complete:hover {
+  background-color: $cyan;
+  color: $bg-1;
+}
+.task-delete:hover {
+  background-color: $red;
+  color: $bg-1;
+}
+
+.empty-state {
+  color: $tx-3;
+  font-size: 13px;
+  padding: 20px;
+}
+
+/* ───────────────────────────────────────────────────────────────
+   COMPACT TASK DIALOG
+   ─────────────────────────────────────────────────────────────── */
+
+.task-dialog-compact {
+  background-color: $bg-1;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 40px 16px;
+  min-width: 420px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.35);
+}
+
+.task-dialog-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: $tx-2;
+  margin-bottom: 8px;
+}
+
+/* ───────────────────────────────────────────────────────────────
+   TIME ROW
+   ─────────────────────────────────────────────────────────────── */
+
+.task-dialog-time-row {
+  background-color: $bg-2;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.task-emoji-label {
+  font-size: 18px;
+  padding: 0 4px;
+}
+
+.task-time-input {
+  min-width: 80px;
+}
+
+.task-date-input {
+  min-width: 120px;
+}
+
+.date-quick-btn {
+  all: unset;
+  background-color: $ui-2;
+  color: $tx-3;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+
+  &:hover {
+    background-color: $ui-3;
+    color: $tx-2;
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────
+   MESSAGE INPUT
+   ─────────────────────────────────────────────────────────────── */
+
+.task-message-input {
+  padding: 12px;
+  font-size: 14px;
+}
+
+/* ───────────────────────────────────────────────────────────────
+   SHARED INPUT STYLES
+   ─────────────────────────────────────────────────────────────── */
+
+.task-input {
+  all: unset;
+  background-color: $bg-2;
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: $tx-1;
+  font-size: 14px;
+  caret-color: $tx-1;
+  transition: background-color 0.15s;
+  &:hover {
+    color: $tx-2;
+    background-color: $ui-1;
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────
+   BUTTON ROW
+   ─────────────────────────────────────────────────────────────── */
+
+.task-dialog-buttons {
+  margin-top: 8px;
+}
+
+.task-dialog-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    transform 0.1s;
+
+  &:hover {
+    transform: translatey(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.cancel-btn {
+  background-color: $ui-2;
+  color: $tx-2;
+
+  &:hover {
+    background-color: $ui-3;
+    color: $tx-1;
+  }
+}
+
+.add-btn {
+  background-color: $cyan;
+  color: $bg-1;
+  font-weight: 600;
+
+  &:hover {
+    background-color: lighten($cyan, 8%);
+  }
+}
+
+/* ─────────────────────────────────────────────
+   SCREENSHOT HISTORY
+   ───────────────────────────────────────────── */
+
+.screenshot-history-item {
+  background: $bg-2;
+  padding: 14px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+
+  &:hover {
+    background: $bg-2;
+  }
+}
+
+.screenshot-preview {
+  border-radius: 8px;
+  background: $bg-1;
+}
+
+.screenshot-timestamp {
+  font-size: 12px;
+  color: $tx-3;
+}
+
+.screenshot-path {
+  font-size: 13px;
+  color: $tx-2;
+}
+
+.screenshot-actions {
+  margin-top: 6px;
+}
+
+.pill-btn {
+  background: $ui-1;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+
+  &:hover {
+    background: $ui-2;
+  }
+}
+
+.pill-btn-danger {
+  background: $red;
+
+  &:hover {
+    background-color: $ui-2;
+  }
+}

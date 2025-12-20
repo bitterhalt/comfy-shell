@@ -1,0 +1,149 @@
+/* ═══════════════════════════════════════════════════════════════
+   VOL OSD
+   ═══════════════════════════════════════════════════════════════ */
+.vol-window {
+  margin: 10px;
+  padding: 8px;
+}
+
+.vol-container {
+  background: $osd-bg;
+  padding: 16px;
+  border-radius: 8px;
+  min-width: 260px;
+  box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.35);
+}
+
+.vol-icon {
+  color: $tx-2;
+}
+
+.vol-track trough {
+  background: $ui-2;
+  border-radius: 8px;
+  min-height: 12px;
+  min-width: 200px;
+}
+
+.vol-track trough highlight {
+  background: $cyan;
+  border-radius: 8px;
+  min-height: 12px;
+}
+
+.vol-track slider {
+  all: unset;
+  background: transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WORKSPACE/TIME OSD
+   ═══════════════════════════════════════════════════════════════ */
+
+.time-osd-window {
+  font-family: Cascadia Code;
+  background: transparent;
+  border-radius: 8px;
+  border: none;
+  padding: 16px;
+}
+
+.workspace-osd-window {
+  font-family: Cascadia Code;
+  background: transparent;
+  border-radius: 8px;
+  border: none;
+  padding: 16px;
+}
+
+.time-osd,
+.workspace-osd {
+  background: $osd-bg;
+  border: none;
+  border-radius: 8px;
+  margin: 10px;
+  padding: 16px;
+  box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.35);
+}
+
+.time-osd-icon,
+.workspace-osd-icon {
+  color: $cyan;
+}
+
+.time-osd-label {
+  font-weight: 600;
+  color: $tx-2;
+}
+.workspace-osd-label {
+  font-weight: 600;
+  color: $tx-2;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MEDIA OSD
+   ═══════════════════════════════════════════════════════════════ */
+.media-osd-header {
+  color: $tx-1;
+  padding-bottom: 4px;
+}
+.media-osd-window {
+  background: transparent;
+  border: none;
+  padding: 8px;
+}
+
+.media-osd {
+  background: $osd-bg;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 20px;
+  box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.35);
+  min-width: 400px;
+}
+
+.media-osd-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: $tx-1;
+}
+
+.media-osd-artist {
+  font-size: 14px;
+  color: $tx-3;
+  margin-top: 2px;
+}
+.media-osd-app-icon {
+  border-radius: 8px;
+  color: $tx-1;
+}
+.media-osd-status-icon {
+  color: $tx-3;
+}
+
+.media-osd-controls {
+  color: $tx-1;
+  margin-top: 27px;
+}
+
+.media-osd-control {
+  padding: 6px;
+  border-radius: 999px;
+  background: transparent;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.media-osd-close {
+  padding: 4px;
+  border-radius: 50%;
+  opacity: 0.7;
+}
+
+.media-osd-close:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.08);
+}

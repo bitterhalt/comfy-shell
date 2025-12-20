@@ -1,0 +1,22 @@
+@import "scss/colors";
+@import "scss/utilities";
+
+@import "scss/bar";
+@import "scss/clipboard";
+@import "scss/bar_popup";
+@import "scss/integrated_center";
+@import "scss/launcher";
+@import "scss/notifications";
+@import "scss/osd";
+@import "scss/settings";
+@import "scss/power_overlay";
+@import "scss/recording_overlay";
+@import "scss/task_popup";
+@import "scss/weather";
+@import "scss/window_switcher";
+
+* {
+  font-family:
+    "Adwaita Sans",
+    Symbols Nerd Font Mono;
+}

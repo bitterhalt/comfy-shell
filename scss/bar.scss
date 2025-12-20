@@ -1,0 +1,114 @@
+.bar {
+  background-color: $bg-1;
+  color: $tx-1;
+  padding: 0px 6px;
+  font-family: "Adwaita Sans", "Symbols Nerd Font Mono";
+  font-size: 11pt;
+}
+
+.workspaces {
+}
+
+.ws-btn {
+  all: unset;
+  min-width: 16px;
+  padding: 2px 6px;
+  margin: 2px 0px;
+  border-radius: 6px;
+  background: transparent;
+  color: $tx-1;
+}
+
+.ws-btn.active {
+  background: $ui-3;
+  color: $tx-1;
+  font-weight: bold;
+}
+
+.window-title {
+  padding: 2px 6px;
+}
+
+.clock,
+.clock-button {
+  all: unset;
+  padding: 2px 6px;
+  margin: 2px 0px;
+  border-radius: 6px;
+}
+
+.recording-icon {
+  all: unset;
+  padding: 2px 6px;
+  margin: 2px 0px;
+  border-radius: 6px;
+  color: $red;
+  animation: blink 2s infinite;
+}
+
+.system-indicator-button {
+  all: unset;
+  color: $tx-1;
+  padding: 2px 6px;
+  margin: 2px 0px;
+  border-radius: 8px;
+}
+
+.system-indicator-speaker.muted {
+  color: $tx-1; /* or whatever “muted” gray you like */
+}
+
+.clock-notif-dot {
+  font-size: 10px;
+  line-height: 1;
+  margin-left: -2px;
+}
+
+.clock-notif-dot.normal {
+  color: $cyan;
+}
+
+.clock-notif-dot.critical {
+  color: $red;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.audio-widget:hover,
+.clock-button:hover,
+.clock:hover,
+.system-indicator-button:hover,
+.ws-btn:hover,
+.network-box:hover {
+  background: $bg-2;
+  color: $tx-2;
+}
+
+tooltip,
+.tooltip {
+  background: $bg-2;
+  border-radius: 8px;
+  margin: 4px;
+  padding: 15px;
+  border: solid 1px $ui-1;
+}
+
+tooltip label,
+.tooltip label {
+  color: $tx-2;
+  font-size: 15px;
+  font-weight: 400;
+}
