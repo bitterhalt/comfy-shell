@@ -1,7 +1,6 @@
 import asyncio
 
 from gi.repository import Gdk, Gtk
-
 from ignis import widgets
 from ignis.window_manager import WindowManager
 
@@ -13,7 +12,6 @@ from modules.launcher.launcher_emoji import load_emojis, search_emojis
 
 # Import mode helpers
 from modules.launcher.launcher_modes import (
-    MODE_BINARY,
     MODE_EMOJI,
     MODE_NORMAL,
     MODE_PLACEHOLDERS,
@@ -21,6 +19,7 @@ from modules.launcher.launcher_modes import (
     MODE_WEB,
 )
 from modules.launcher.launcher_web import search_web
+
 from settings import config
 
 window_manager = WindowManager.get_default()
@@ -49,9 +48,7 @@ class AppLauncher(widgets.Window):
             placeholder_text=MODE_PLACEHOLDERS[MODE_NORMAL],
             css_classes=["launcher-entry", "unset"],
             hexpand=True,
-            on_change=lambda *_: self._debounced_search(
-                0.02 if self._mode == MODE_BINARY else 0.04
-            ),
+            on_change=lambda *_: self._debounced_search(0.04),
             on_accept=lambda *_: self._launch_first(),
         )
 
@@ -142,12 +139,12 @@ class AppLauncher(widgets.Window):
         self._entry.placeholder_text = MODE_PLACEHOLDERS[self._mode]
         self._last_results_key = None
 
-        self._debounced_search(0.02 if self._mode == MODE_BINARY else 0.04)
+        self._debounced_search(0.04)
 
         return True
 
     def _cycle_mode(self, direction: int) -> bool:
-        mode_order = [MODE_NORMAL, MODE_BINARY, MODE_EMOJI, MODE_WEB]
+        mode_order = [MODE_NORMAL, MODE_EMOJI, MODE_WEB]
 
         try:
             current_idx = mode_order.index(self._mode)
@@ -161,7 +158,7 @@ class AppLauncher(widgets.Window):
         self._last_results_key = None
 
         if self._entry.text.strip():
-            self._debounced_search(0.02 if self._mode == MODE_BINARY else 0.04)
+            self._debounced_search(0.04)
         else:
             self._results.child = []
             self._results_container.visible = False
@@ -195,11 +192,6 @@ class AppLauncher(widgets.Window):
             self._results_container.visible = False
             return
 
-        if self._mode == MODE_BINARY:
-            self._results.child = search_binaries(q)
-            self._results_container.visible = True
-            return
-
         if self._mode == MODE_EMOJI:
             self._results.child = search_emojis(q, self._emojis)
             self._results_container.visible = True
@@ -215,7 +207,24 @@ class AppLauncher(widgets.Window):
             self._results_container.visible = True
             return
 
-        results = search_apps(q, self._app_index)
+        # NORMAL / desktop mode: search .desktop apps and ALSO search PATH binaries.
+        # Ensure .desktop app matches are listed first, with binaries appended after.
+        app_results = search_apps(q, self._app_index)
+        bin_results = search_binaries(q)
+
+        # search_binaries returns a "no binaries" Label widget when nothing matches.
+        # If we have app results, drop that "no binaries" placeholder so it's not shown
+        # mixed in with app results. If both are empty, overall no results will be handled below.
+        if bin_results and len(bin_results) == 1:
+            label_item = bin_results[0]
+            if hasattr(label_item, "get_css_classes"):
+                classes = label_item.get_css_classes()
+            else:
+                classes = getattr(label_item, "css_classes", [])
+            if "no-results" in classes and app_results:
+                bin_results = []
+
+        results = app_results + bin_results
 
         if not results:
             self._results.child = []

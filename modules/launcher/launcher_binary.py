@@ -5,6 +5,7 @@ import shlex
 
 from ignis import utils, widgets
 from ignis.window_manager import WindowManager
+
 from settings import config
 
 window_manager = WindowManager.get_default()
@@ -142,7 +143,7 @@ def search_binaries(term: str) -> list:
     scored.sort(key=lambda x: (-x[0], x[1]))
 
     return (
-        [BinaryItem(name, path, term) for _, name, path in scored[:10]]
+        [BinaryItem(name, path, term) for _, name, path in scored[:4]]
         if scored
         else [
             widgets.Label(

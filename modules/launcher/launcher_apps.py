@@ -4,6 +4,7 @@ from ignis import widgets
 from ignis.menu_model import IgnisMenuItem, IgnisMenuModel, IgnisMenuSeparator
 from ignis.services.applications import Application, ApplicationsService
 from ignis.window_manager import WindowManager
+
 from settings import config
 
 applications = ApplicationsService.get_default()
@@ -89,6 +90,7 @@ def build_app_index():
 def search_apps(query: str, app_index: list) -> list:
     """Search for applications matching the query"""
     ql = query.lower()
-    results = [app for name, app in app_index if ql in name][:6]
+    # limit to 5 app results (changed from 6 to 5)
+    results = [app for name, app in app_index if ql in name][:4]
 
     return [AppItem(app, query) for app in results] if results else []
