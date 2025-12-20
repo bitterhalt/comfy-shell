@@ -97,7 +97,7 @@ class AppLauncher(widgets.Window):
             namespace="ignis_LAUNCHER",
             layer="top",
             popup=True,
-            css_classes=["launcher-window"],
+            css_classes=["launcher-window", "unset"],
             child=widgets.Overlay(child=overlay, overlays=[main]),
             kb_mode="on_demand",
             setup=lambda w: w.connect("notify::visible", self._on_open),

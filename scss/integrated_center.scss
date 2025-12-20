@@ -15,7 +15,7 @@
 .center-container {
   margin: 10px;
   revealer {
-    box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.35);
+    box-shadow: $box-shadow;
     border-radius: 8px;
   }
 }
@@ -64,7 +64,7 @@
    ─────────────────────────────────────────────────────────────── */
 
 .dnd-box {
-  padding: 8px 0 0 16px;
+  padding: 8px 16px;
 }
 
 .dnd-label {
@@ -73,7 +73,6 @@
 }
 
 .dnd-box switch {
-  all: unset;
   background-color: $ui-1;
   border-radius: 10px;
   padding: 0 6px;
@@ -87,7 +86,6 @@
 }
 
 .dnd-box switch slider {
-  all: unset;
   background-color: $bg-1;
   border-radius: 10px;
   margin: 4px 0;
@@ -400,12 +398,10 @@
    ─────────────────────────────────────────────────────────────── */
 
 .task-dialog-compact {
+  all: unset;
   background-color: $bg-1;
   border-radius: 8px;
   padding: 20px;
-  margin: 40px 16px;
-  min-width: 420px;
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.35);
 }
 
 .task-dialog-title {

@@ -53,7 +53,7 @@ def _fetch_clients(reverse: bool = False) -> List[ClientEntry]:
         if isinstance(ws_name, str) and ws_name.startswith("special"):
             sortkey = 1
             sort_ws = 9999
-            ws_label = "[⭐]"
+            ws_label = "⭐"
 
         else:
             sortkey = 0

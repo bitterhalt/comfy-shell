@@ -44,7 +44,7 @@ class SettingItem(widgets.Button):
         path = os.path.expanduser(setting["path"])
 
         super().__init__(
-            css_classes=["setting-item"],
+            css_classes=["setting-item", "unset"],
             on_click=lambda *_: self._open(),
             child=widgets.Box(
                 spacing=12,

@@ -5,7 +5,6 @@ Task item widgets for the integrated center
 from datetime import datetime
 
 from ignis import widgets
-
 from modules.notifications.widgets.time_utils import format_time_until
 
 
