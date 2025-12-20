@@ -28,7 +28,7 @@ class EmojiItem(widgets.Button):
     def __init__(self, char, name):
         self._emoji = char
         super().__init__(
-            css_classes=["emoji-item"],
+            css_classes=["emoji-item", "unset"],
             on_click=lambda *_: self._copy(),
             child=widgets.Box(
                 spacing=12,

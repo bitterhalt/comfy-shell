@@ -17,7 +17,7 @@ class SearchWebButton(widgets.Button):
         self._url = url
 
         super().__init__(
-            css_classes=["app-item"],
+            css_classes=["app-item", "unset"],
             on_click=lambda *_: (
                 asyncio.create_task(
                     utils.exec_sh_async(f"xdg-open {shlex.quote(url)}")

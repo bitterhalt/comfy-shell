@@ -44,7 +44,7 @@ class AppItem(widgets.Button):
         pop = widgets.PopoverMenu()
 
         super().__init__(
-            css_classes=["app-item"],
+            css_classes=["app-item", "unset"],
             on_click=lambda *_: self._launch(),
             on_right_click=lambda *_: pop.popup(),
             child=widgets.Box(

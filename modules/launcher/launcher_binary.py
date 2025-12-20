@@ -120,7 +120,7 @@ class BinaryItem(widgets.Button):
         row.set_height_request(32)
 
         super().__init__(
-            css_classes=["bin-item"],
+            css_classes=["bin-item", "unset"],
             on_click=lambda *_: self._launch(),
             child=row,
         )

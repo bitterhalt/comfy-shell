@@ -32,13 +32,11 @@ class IntegratedCenter(widgets.Window):
 
         dnd_box = widgets.Box(
             spacing=8,
-            css_classes=["dnd-box", "unset"],
+            css_classes=["dnd-box"],
             hexpand=True,
             halign="start",
             child=[
-                widgets.Label(
-                    label="Do Not Disturb", css_classes=["dnd-label", "unset"]
-                ),
+                widgets.Label(label="Do Not Disturb", css_classes=["dnd-label"]),
                 dnd_switch,
             ],
         )

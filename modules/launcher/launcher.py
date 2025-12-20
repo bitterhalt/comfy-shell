@@ -47,7 +47,7 @@ class AppLauncher(widgets.Window):
         # Entry
         self._entry = widgets.Entry(
             placeholder_text=MODE_PLACEHOLDERS[MODE_NORMAL],
-            css_classes=["launcher-entry"],
+            css_classes=["launcher-entry", "unset"],
             hexpand=True,
             on_change=lambda *_: self._debounced_search(
                 0.02 if self._mode == MODE_BINARY else 0.04

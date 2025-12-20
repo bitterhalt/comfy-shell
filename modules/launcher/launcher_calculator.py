@@ -26,7 +26,7 @@ def calculate(expression: str) -> list:
             Gdk.Display.get_default().get_clipboard().set(value)
 
         btn = widgets.Button(
-            css_classes=["calc-result"],
+            css_classes=["calc-result", "unset"],
             on_click=lambda *_: copy_result(str(result)),
             child=widgets.Box(
                 spacing=12,

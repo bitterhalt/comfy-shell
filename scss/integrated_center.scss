@@ -64,7 +64,6 @@
    ─────────────────────────────────────────────────────────────── */
 
 .dnd-box {
-  all: unset;
   padding: 8px 0 0 16px;
 }
 
@@ -74,6 +73,7 @@
 }
 
 .dnd-box switch {
+  all: unset;
   background-color: $ui-1;
   border-radius: 10px;
   padding: 0 6px;
