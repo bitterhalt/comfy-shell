@@ -67,12 +67,15 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 <summary><b>Window-list</b></summary><br>
 <img src="assets/screenshots/winmenu.png" width="80%" />
 </details>
+<details>
+<summary><b>Clipboard</b></summary><br>
+<img src="assets/screenshots/clipboard.png" width="80%" />
+</details>
 
 ## TODO
 
 > _02.12.27_
 
-- [x] adapt new window_manager.api --> Mostly done, I think 👍🏻
 - [x] add bluetooth in panel
 - [ ] cleanup the code and make syntax more consistenta
 - [x] add small time stamps to notifications
