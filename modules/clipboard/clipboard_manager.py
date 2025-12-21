@@ -221,10 +221,6 @@ class ClipboardManager(widgets.Window):
         self.connect("notify::visible", self._on_visible)
 
     def _on_key(self, _ctrl, keyval, *_):
-        if keyval == Gdk.KEY_Escape:
-            self._close()
-            return True
-
         if keyval == Gdk.KEY_Down:
             self._move_selection(1)
             return True
