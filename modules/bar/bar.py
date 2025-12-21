@@ -1,4 +1,5 @@
 from ignis import utils, widgets
+
 from settings import config
 
 from .widgets.battery import battery_widget

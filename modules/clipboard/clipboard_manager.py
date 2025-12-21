@@ -2,9 +2,12 @@ import asyncio
 from dataclasses import dataclass
 
 from gi.repository import Gdk, Gtk
-
 from ignis import utils, widgets
+from ignis.window_manager import WindowManager
+
 from settings import config
+
+wm = WindowManager.get_default()
 
 
 @dataclass
@@ -189,7 +192,7 @@ class ClipboardManager(widgets.Window):
             hexpand=True,
             can_focus=False,
             css_classes=["clipboard-overlay", "unset"],  # Remove focus ring
-            on_click=lambda *_: self._close(),
+            on_click=lambda x: wm.close_window("ignis_INTEGRATED_CENTER"),
         )
 
         root = widgets.Overlay(
@@ -304,6 +307,3 @@ class ClipboardManager(widgets.Window):
     async def _clear_and_reload(self):
         await utils.exec_sh_async("cliphist wipe")
         self._reload()
-
-    def _close(self):
-        self.visible = False

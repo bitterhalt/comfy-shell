@@ -206,9 +206,9 @@
 .center-calendar {
   all: unset;
   background-color: $bg-2;
-  border: unset;
+  border: 1px solid $ui-1;
   border-radius: 8px;
-  padding: 8px;
+  padding: 4px;
   margin: 12px;
 }
 

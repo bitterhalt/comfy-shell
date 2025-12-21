@@ -22,7 +22,7 @@ from modules.launcher.launcher_web import search_web
 
 from settings import config
 
-window_manager = WindowManager.get_default()
+wm = WindowManager.get_default()
 
 
 # =============================================================================
@@ -84,7 +84,7 @@ class AppLauncher(widgets.Window):
             hexpand=True,
             can_focus=False,
             css_classes=["launcher-overlay", "unset"],
-            on_click=lambda *_: self._close(),
+            on_click=lambda x: wm.close_window("ignis_LAUNCHER"),
         )
 
         super().__init__(
@@ -249,9 +249,6 @@ class AppLauncher(widgets.Window):
         elif "calc-result" in item.get_css_classes():
             label = item.child.child[1].child[1]
             Gdk.Display.get_default().get_clipboard().set(label.label.replace("= ", ""))
-
-    def _close(self):
-        self.visible = False
 
     def _on_open(self, *_):
         if self.visible:
