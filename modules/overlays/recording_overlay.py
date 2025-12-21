@@ -3,6 +3,7 @@ import asyncio
 from ignis import utils, widgets
 from ignis.services.recorder import RecorderService
 from ignis.window_manager import WindowManager
+
 from settings import config
 
 wm = WindowManager.get_default()
@@ -143,6 +144,7 @@ class RecordingOverlay(widgets.Window):
             monitor=config.ui.primary_monitor,
             visible=False,
             anchor=["top", "bottom", "left", "right"],
+            exclusivity="ignore",
             namespace="ignis_RECORDING_OVERLAY",
             layer="overlay",
             popup=True,
