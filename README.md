@@ -67,10 +67,6 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 <summary><b>Window-list</b></summary><br>
 <img src="assets/screenshots/winmenu.png" width="80%" />
 </details>
-<details>
-<summary><b>Clipboard</b></summary><br>
-<img src="assets/screenshots/clipboard.png" width="80%" />
-</details>
 
 ## TODO
 

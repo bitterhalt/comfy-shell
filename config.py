@@ -7,7 +7,6 @@ from ignis.css_manager import CssInfoPath, CssManager
 # Package imports
 from modules.bar import Bar, register_bar
 from modules.bar.widgets import SystemPopup
-from modules.clipboard import ClipboardManager
 from modules.launcher import AppLauncher, SettingsManager, WindowSwitcher
 from modules.notifications import IntegratedCenter, init_notifications, init_task_popup
 from modules.osd import (
@@ -79,7 +78,6 @@ MediaOsdWindow()
 WeatherPopup()
 AppLauncher()
 PowerOverlay()
-ClipboardManager()
 RecordingOverlay()
 SystemPopup()
 IntegratedCenter()
