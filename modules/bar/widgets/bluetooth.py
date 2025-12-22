@@ -2,6 +2,7 @@ import asyncio
 
 from ignis import utils, widgets
 from ignis.services.bluetooth import BluetoothService
+from modules.utils.signal_manager import SignalManager
 
 
 def exec_async(cmd: str):
@@ -15,6 +16,8 @@ class BluetoothButton(widgets.Button):
     """Bluetooth toggle button with device connection status"""
 
     def __init__(self):
+        self._signals = SignalManager()
+
         self._icon = widgets.Icon(
             image="bluetooth-symbolic",
             pixel_size=22,
@@ -28,8 +31,15 @@ class BluetoothButton(widgets.Button):
         )
 
         self._update()
-        bluetooth.connect("notify:: powered", lambda *_: self._update())
-        bluetooth.connect("notify::connected-devices", lambda *_: self._update())
+
+        self._signals.connect(bluetooth, "notify::powered", lambda *_: self._update())
+        self._signals.connect(
+            bluetooth, "notify::connected-devices", lambda *_: self._update()
+        )
+
+        self._signals.connect(
+            self, "destroy", lambda *_: self._signals.disconnect_all()
+        )
 
     def _toggle(self):
         bluetooth.powered = not bluetooth.powered
@@ -56,4 +66,3 @@ class BluetoothButton(widgets.Button):
                 "Click to open Blueman Manager\n"
                 "Right-click to enable"
             )
-
