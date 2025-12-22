@@ -10,75 +10,99 @@ notifications = NotificationService.get_default()
 
 
 def clock():
-    """Clock with notification indicator - with signal cleanup"""
+    """Clock with notification indicator (fully correct & leak-safe)"""
+
     signals = SignalManager()
 
-    # Visible clock text
+    # ──────────────────────────────────────────────
+    # UI
+    # ──────────────────────────────────────────────
+
     clock_label = widgets.Label(css_classes=["clock"])
 
-    # Notification dot indicator
     notif_dot = widgets.Label(
         label="●",
         css_classes=["clock-notif-dot"],
         visible=False,
     )
 
-    # Clock + dot container
     clock_content = widgets.Box(
         spacing=6,
         child=[clock_label, notif_dot],
     )
 
-    # Clickable wrapper
     clock_button = widgets.Button(
         child=clock_content,
         css_classes=["clock-button"],
-        on_click=lambda x: wm.open_window("ignis_INTEGRATED_CENTER"),
+        on_click=lambda *_: wm.open_window("ignis_INTEGRATED_CENTER"),
     )
 
+    # ──────────────────────────────────────────────
+    # Helpers
+    # ──────────────────────────────────────────────
+
     def update_time():
-        """Update time display"""
         return datetime.datetime.now().strftime("%H:%M")
 
-    def update_notifications(*args):
-        """Update notification indicator"""
-        now = datetime.datetime.now()
-        date_str = now.strftime("%A, %d.%m %Y")
-        count = len(notifications.notifications)
+    def update_notifications(*_):
+        notifs = notifications.notifications
+        count = len(notifs)
+        has_critical = any(n.urgency == 2 for n in notifs)
 
-        # Check for critical notifications
-        has_critical = any(n.urgency == 2 for n in notifications.notifications)
-
-        # Update tooltip
-        tooltip = date_str
+        tooltip = datetime.datetime.now().strftime("%A, %d.%m %Y")
         if count > 0:
             tooltip += f"\n\n{count} notification(s)"
 
         clock_button.set_tooltip_text(tooltip)
 
-        # Update dot visibility and color
         if count > 0:
             notif_dot.visible = True
-            if has_critical:
-                notif_dot.remove_css_class("normal")
-                notif_dot.add_css_class("critical")
-            else:
-                notif_dot.remove_css_class("critical")
-                notif_dot.add_css_class("normal")
+            notif_dot.remove_css_class("normal")
+            notif_dot.remove_css_class("critical")
+            notif_dot.add_css_class("critical" if has_critical else "normal")
         else:
             notif_dot.visible = False
 
-    # Bind clock content to poll
+    def watch_notification(nt):
+        # Update dot when notification is removed
+        signals.connect(nt, "closed", update_notifications)
+        try:
+            signals.connect(nt, "dismissed", update_notifications)
+        except Exception:
+            pass
+
+    def on_new_notification(_, nt):
+        watch_notification(nt)
+        update_notifications()
+
+    # ──────────────────────────────────────────────
+    # Clock update (safe Poll binding)
+    # ──────────────────────────────────────────────
+
     clock_label.set_property(
         "label",
         utils.Poll(60000, lambda *_: update_time()).bind("output"),
     )
 
-    # Connect signals through manager
-    signals.connect(notifications, "notified", update_notifications)
-    signals.connect(notifications, "notify::notifications", update_notifications)
+    # ──────────────────────────────────────────────
+    # Notification wiring (ADD + REMOVE)
+    # ──────────────────────────────────────────────
 
-    # Initial update
+    signals.connect(notifications, "notified", on_new_notification)
+    signals.connect(notifications, "new_popup", on_new_notification)
+
+    # Track existing notifications (important on reload)
+    for nt in notifications.notifications:
+        watch_notification(nt)
+
+    # Cleanup when widget dies (reload-safe)
+    signals.connect(
+        clock_button,
+        "destroy",
+        lambda *_: signals.disconnect_all(),
+    )
+
+    # Initial state
     update_notifications()
 
     return clock_button

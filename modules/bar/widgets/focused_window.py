@@ -1,6 +1,7 @@
 from ignis import utils, widgets
 from ignis.services.hyprland import HyprlandService
 from ignis.services.niri import NiriService
+from modules.utils.signal_manager import SignalManager
 
 hypr = HyprlandService.get_default()
 niri = NiriService.get_default()
@@ -9,9 +10,9 @@ TITLE_EXCEPTIONS = ["firefox", "zen"]
 
 
 def window_title(monitor_name: str):
-    # ───────────────────────────────────────────────────────────────
+    # ───────────────────────────────────────────────
     # LABEL
-    # ───────────────────────────────────────────────────────────────
+    # ───────────────────────────────────────────────
 
     if hypr.is_available:
         title_label = widgets.Label(
@@ -39,10 +40,6 @@ def window_title(monitor_name: str):
             child=[title_label],
         )
 
-    # ───────────────────────────────────────────────────────────────
-    # WINDOW ICON
-    # ───────────────────────────────────────────────────────────────
-
     icon = widgets.Icon(
         pixel_size=22,
         css_classes=["window-title-icon"],
@@ -50,30 +47,39 @@ def window_title(monitor_name: str):
         image="application-x-executable-symbolic",
     )
 
-    # ───────────────────────────────────────────────────────────────
-    # ICON + LABEL UPDATE LOGIC
-    # ───────────────────────────────────────────────────────────────
+    box = widgets.Box(
+        spacing=6,
+        halign="start",
+        valign="center",
+        css_classes=["window-title-box"],
+        child=[icon, title_label],
+    )
+
+    compositor_signals = SignalManager()
+    window_signals = SignalManager()
+    current = {"win": None}
+
+    # ───────────────────────────────────────────────
+    # Update logic
+    # ───────────────────────────────────────────────
 
     def update_display(*_):
-        """Update icon and label based on active window's class/app_id"""
         try:
             if hypr.is_available:
-                win = hypr.active_window
-
+                win = current["win"]
                 if not win or win.address == "0x0" or not win.initial_class:
-                    icon.set_visible(False)
-                    title_label.set_label("")
+                    icon.visible = False
+                    title_label.label = ""
                     return
 
                 win_class = win.initial_class
                 win_title = win.title
 
             elif niri.is_available:
-                win = niri.active_window
-
+                win = current["win"]
                 if not win or not win.app_id:
-                    icon.set_visible(False)
-                    title_label.set_label("")
+                    icon.visible = False
+                    title_label.label = ""
                     return
 
                 win_class = win.app_id
@@ -82,51 +88,77 @@ def window_title(monitor_name: str):
             else:
                 return
 
-            # --- CONDITIONAL LABEL LOGIC ---
-            if win_class.lower() in TITLE_EXCEPTIONS:
-                display_text = win_title
-            else:
-                display_text = win_class
+            title_label.label = (
+                win_title if win_class.lower() in TITLE_EXCEPTIONS else win_class
+            )
 
-            title_label.set_label(display_text)
-
-            # --- ICON LOGIC  ---
             icon_name = utils.get_app_icon_name(win_class)
-
             if icon_name:
                 icon.image = icon_name
-                icon.set_visible(True)
+                icon.visible = True
             else:
-                icon.set_visible(False)
+                icon.visible = False
 
         except Exception:
-            icon.set_visible(False)
-            title_label.set_label("")
+            icon.visible = False
+            title_label.label = ""
 
-    update_display()
+    # ───────────────────────────────────────────────
+    # Active window rewiring
+    # ───────────────────────────────────────────────
 
-    # ───────────────────────────────────────────────────────────────
-    # CONNECT SIGNALS
-    # ───────────────────────────────────────────────────────────────
+    def rewire_active_window(*_):
+        if hypr.is_available:
+            win = hypr.active_window
+        elif niri.is_available:
+            win = niri.active_window
+        else:
+            win = None
+
+        if win is current["win"]:
+            update_display()
+            return
+
+        window_signals.disconnect_all()
+        current["win"] = win
+
+        if not win:
+            update_display()
+            return
+
+        if hypr.is_available:
+            window_signals.connect(win, "notify::initial-class", update_display)
+            window_signals.connect(win, "notify::title", update_display)
+        elif niri.is_available:
+            window_signals.connect(win, "notify::app-id", update_display)
+            window_signals.connect(win, "notify::title", update_display)
+
+        update_display()
+
+    # ───────────────────────────────────────────────
+    # Compositor-level signals
+    # ───────────────────────────────────────────────
 
     if hypr.is_available:
-        hypr.active_window.connect("notify::initial-class", update_display)
-        hypr.active_window.connect("notify::title", update_display)
-        hypr.connect("notify::active-workspace", update_display)
-
+        compositor_signals.connect(hypr, "notify::active-window", rewire_active_window)
+        compositor_signals.connect(
+            hypr, "notify::active-workspace", rewire_active_window
+        )
     elif niri.is_available:
-        niri.active_window.connect("notify::app-id", update_display)
-        niri.active_window.connect("notify::title", update_display)
-        niri.connect("notify::active-workspace", update_display)
+        compositor_signals.connect(niri, "notify::active-window", rewire_active_window)
+        compositor_signals.connect(
+            niri, "notify::active-workspace", rewire_active_window
+        )
 
-    # ───────────────────────────────────────────────────────────────
-    # FINAL LAYOUT
-    # ───────────────────────────────────────────────────────────────
-
-    return widgets.Box(
-        spacing=6,
-        halign="start",
-        valign="center",
-        css_classes=["window-title-box"],
-        child=[icon, title_label],
+    # Cleanup when widget dies
+    compositor_signals.connect(
+        box,
+        "destroy",
+        lambda *_: (
+            window_signals.disconnect_all(),
+            compositor_signals.disconnect_all(),
+        ),
     )
+
+    rewire_active_window()
+    return box

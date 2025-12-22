@@ -2,6 +2,7 @@ from ignis import widgets
 from ignis.services.audio import AudioService
 from ignis.services.network import NetworkService
 from ignis.window_manager import WindowManager
+from modules.utils.signal_manager import SignalManager
 
 wm = WindowManager.get_default()
 audio = AudioService.get_default()
@@ -42,16 +43,20 @@ def _network_icon():
 def system_indicator():
     """Cluster of volume + mic + network, whole thing clickable."""
 
+    signals = SignalManager()
+
     speaker_icon = widgets.Icon(
         image=_speaker_icon(),
         pixel_size=22,
         css_classes=["system-indicator-speaker"],
     )
+
     mic_icon = widgets.Icon(
         image=_mic_icon(),
         pixel_size=22,
         visible=_mic_visible(),
     )
+
     net_icon = widgets.Icon(
         image=_network_icon(),
         pixel_size=22,
@@ -66,7 +71,7 @@ def system_indicator():
     button = widgets.Button(
         css_classes=["system-indicator-button"],
         child=inner,
-        on_click=lambda x: wm.open_window("ignis_SYSTEM_MENU"),
+        on_click=lambda *_: wm.open_window("ignis_SYSTEM_MENU"),
     )
 
     def refresh(*_):
@@ -80,16 +85,25 @@ def system_indicator():
         else:
             speaker_icon.remove_css_class("muted")
 
-    # initial state
+    # Initial state
     refresh()
 
-    # connects: minimal but enough
-    audio.speaker.connect("notify::is-muted", refresh)
-    audio.speaker.connect("notify::volume", refresh)
-    audio.microphone.connect("notify::is-muted", refresh)
-    wifi.connect("notify::is-connected", refresh)
-    wifi.connect("notify::icon-name", refresh)
-    ethernet.connect("notify::is-connected", refresh)
-    vpn.connect("notify::is-connected", refresh)
+    # Audio signals
+    signals.connect(audio.speaker, "notify::is-muted", refresh)
+    signals.connect(audio.speaker, "notify::volume", refresh)
+    signals.connect(audio.microphone, "notify::is-muted", refresh)
+
+    # Network signals
+    signals.connect(wifi, "notify::is-connected", refresh)
+    signals.connect(wifi, "notify::icon-name", refresh)
+    signals.connect(ethernet, "notify::is-connected", refresh)
+    signals.connect(vpn, "notify::is-connected", refresh)
+
+    # Cleanup on widget destroy (reload-safe)
+    signals.connect(
+        button,
+        "destroy",
+        lambda *_: signals.disconnect_all(),
+    )
 
     return button

@@ -160,12 +160,38 @@ class WeatherPopup(widgets.Window):
         # internal state
         self._last_data: Optional[dict] = None
         self._update_task = None
+        self._refresh_poll = None
 
         # Connect to visibility for animation
         self.connect("notify::visible", self._on_visible_change)
 
         # auto-refresh every CACHE_TTL seconds
-        utils.Poll(CACHE_TTL * 1000, lambda *_: self._update_weather())
+        self._refresh_poll = utils.Poll(
+            CACHE_TTL * 1000, lambda *_: self._update_weather()
+        )
+
+        # Cleanup on destroy
+        self.connect("destroy", self._cleanup)
+
+    # ───────────────────────────────────────────────
+    # Cleanup
+    # ───────────────────────────────────────────────
+
+    def _cleanup(self, *_):
+        """Cancel poll on destroy"""
+        if self._refresh_poll:
+            try:
+                self._refresh_poll.cancel()
+            except:
+                pass
+            self._refresh_poll = None
+
+        if self._update_task:
+            try:
+                self._update_task.cancel()
+            except:
+                pass
+            self._update_task = None
 
     # ───────────────────────────────────────────────
     # Animation handlers

@@ -14,19 +14,18 @@ class WeatherPill:
     """Compact weather display that opens full weather popup on click"""
 
     def __init__(self):
-        # Weather icon
+        self._poll = None
+
         self._weather_icon = widgets.Icon(
             image="weather-clouds-symbolic",
             pixel_size=32,
         )
 
-        # Temperature
         self._weather_temp = widgets.Label(
             label="--°",
             css_classes=["weather-temp-compact"],
         )
 
-        # Description
         self._weather_desc = widgets.Label(
             label="…",
             css_classes=["weather-desc-compact"],
@@ -34,29 +33,46 @@ class WeatherPill:
             max_width_chars=20,
         )
 
-        # Clickable button
         self.button = widgets.Button(
             css_classes=["weather-compact"],
-            on_click=lambda x: self._open_weather_popup(),
+            on_click=lambda *_: self._open_weather_popup(),
             child=widgets.Box(
                 spacing=10,
-                child=[self._weather_icon, self._weather_temp, self._weather_desc],
+                child=[
+                    self._weather_icon,
+                    self._weather_temp,
+                    self._weather_desc,
+                ],
             ),
         )
 
         # Initial update
         self.update()
 
-        # Periodic refresh (every 10 minutes)
-        utils.Poll(600000, lambda *_: self.update())
+        # OWNED poll (every 10 minutes)
+        self._poll = utils.Poll(600000, self.update)
 
-    def update(self):
-        """Update weather data"""
+    # ──────────────────────────────────────────────
+    # Lifecycle
+    # ──────────────────────────────────────────────
+
+    def destroy(self):
+        if self._poll:
+            try:
+                self._poll.cancel()
+            except Exception:
+                pass
+            self._poll = None
+
+    # ──────────────────────────────────────────────
+    # Updates
+    # ──────────────────────────────────────────────
+
+    def update(self, *_):
         asyncio.create_task(self._update_async())
         return True
 
     async def _update_async(self):
-        """Async weather update"""
         from modules.weather.weather_data import fetch_weather_async
 
         data = await fetch_weather_async()
@@ -76,7 +92,17 @@ class WeatherPill:
         )
         self._weather_icon.set_tooltip_text(tooltip)
 
+    # ──────────────────────────────────────────────
+    # Actions
+    # ──────────────────────────────────────────────
+
     def _open_weather_popup(self):
-        """Open the weather popup window"""
-        wm.close_window("ignis_INTEGRATED_CENTER")
-        wm.open_window("ignis_WEATHER")
+        try:
+            wm.close_window("ignis_INTEGRATED_CENTER")
+        except Exception:
+            pass
+
+        try:
+            wm.open_window("ignis_WEATHER")
+        except Exception:
+            pass

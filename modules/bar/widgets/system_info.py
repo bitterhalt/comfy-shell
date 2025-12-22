@@ -20,10 +20,7 @@ class SystemInfoWidget(widgets.Box):
             css_classes=["system-info-bar", "cpu-bar", "unset"],
         )
 
-        self._cpu_label = widgets.Label(
-            label="0%",
-            css_classes=["system-info-percent"],
-        )
+        self._cpu_label = widgets.Label(label="0%", css_classes=["system-info-percent"])
 
         cpu_box = widgets.Box(
             spacing=16,
@@ -46,10 +43,7 @@ class SystemInfoWidget(widgets.Box):
             css_classes=["system-info-bar", "ram-bar", "unset"],
         )
 
-        self._ram_label = widgets.Label(
-            label="0%",
-            css_classes=["system-info-percent"],
-        )
+        self._ram_label = widgets.Label(label="0%", css_classes=["system-info-percent"])
 
         ram_box = widgets.Box(
             spacing=16,
@@ -64,32 +58,20 @@ class SystemInfoWidget(widgets.Box):
         # System info labels
         # ──────────────────────────────────────────────
         self._os_label = widgets.Label(
-            label="Loading…",
-            halign="start",
-            css_classes=["system-info-text"],
+            label="Loading…", halign="start", css_classes=["system-info-text"]
         )
-
         self._kernel_label = widgets.Label(
-            label="Loading…",
-            halign="start",
-            css_classes=["system-info-text"],
+            label="Loading…", halign="start", css_classes=["system-info-text"]
         )
-
         self._uptime_label = widgets.Label(
-            label="Loading…",
-            halign="start",
-            css_classes=["system-info-text"],
+            label="Loading…", halign="start", css_classes=["system-info-text"]
         )
 
         info_box = widgets.Box(
             vertical=True,
             spacing=4,
             css_classes=["system-info-details"],
-            child=[
-                self._os_label,
-                self._kernel_label,
-                self._uptime_label,
-            ],
+            child=[self._os_label, self._kernel_label, self._uptime_label],
         )
 
         super().__init__(
@@ -103,15 +85,30 @@ class SystemInfoWidget(widgets.Box):
         self._last_cpu_total = None
         self._last_cpu_idle = None
 
+        # Poll owners (so we can cancel)
+        self._poll_cpu = None
+        self._poll_ram = None
+        self._poll_info = None
+
         # Initial update
         self._update_cpu()
         self._update_ram()
         self._update_info()
 
-        # Polling
-        utils.Poll(3000, self._update_cpu)
-        utils.Poll(3000, self._update_ram)
-        utils.Poll(60000, self._update_info)
+        # Polling (owned)
+        self._poll_cpu = utils.Poll(3000, self._update_cpu)
+        self._poll_ram = utils.Poll(3000, self._update_ram)
+        self._poll_info = utils.Poll(60000, self._update_info)
+
+    def destroy(self):
+        for p in (self._poll_cpu, self._poll_ram, self._poll_info):
+            if p:
+                try:
+                    p.cancel()
+                except Exception:
+                    pass
+        self._poll_cpu = self._poll_ram = self._poll_info = None
+        super().destroy()
 
     # ──────────────────────────────────────────────
     # CPU usage via /proc/stat
@@ -124,10 +121,8 @@ class SystemInfoWidget(widgets.Box):
             return None, None
 
         values = list(map(int, parts[1:]))
-
         idle = values[3] + values[4]  # idle + iowait
         total = sum(values)
-
         return total, idle
 
     def _update_cpu(self, *_):
@@ -148,16 +143,11 @@ class SystemInfoWidget(widgets.Box):
         self._last_cpu_total = total
         self._last_cpu_idle = idle
 
-        if total_delta <= 0:
-            usage = 0
-        else:
-            usage = 100 * (1 - idle_delta / total_delta)
-
+        usage = 0 if total_delta <= 0 else 100 * (1 - idle_delta / total_delta)
         usage = max(0, min(usage, 100))
 
         self._cpu_bar.value = usage
         self._cpu_label.label = f"{int(usage)}%"
-
         return True
 
     # ──────────────────────────────────────────────
@@ -167,15 +157,9 @@ class SystemInfoWidget(widgets.Box):
         total = fetch.mem_total or 0
         available = fetch.mem_available or 0
 
-        if total > 0:
-            used = total - available
-            percent = (used / total) * 100
-        else:
-            percent = 0
-
+        percent = ((total - available) / total) * 100 if total > 0 else 0
         self._ram_bar.value = percent
         self._ram_label.label = f"{int(percent)}%"
-
         return True
 
     # ──────────────────────────────────────────────
@@ -190,7 +174,6 @@ class SystemInfoWidget(widgets.Box):
             self._uptime_label.label = "Uptime: " + self._format_uptime(*uptime)
         else:
             self._uptime_label.label = "Uptime: Unknown"
-
         return True
 
     def _format_uptime(self, days: int, hours: int, minutes: int, _seconds: int) -> str:

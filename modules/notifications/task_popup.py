@@ -1,7 +1,3 @@
-"""
-Task popup - Fixed to use storage manager
-"""
-
 import time
 from datetime import datetime
 
@@ -178,7 +174,19 @@ class TaskPopupWindow(widgets.Window):
 
         # Start checking for due tasks
         self._check_tasks()
-        utils.Poll(30000, self._check_tasks)  # Check every 30 seconds
+        self._check_poll = utils.Poll(30000, self._check_tasks)
+
+        # Cleanup on destroy
+        self.connect("destroy", self._cleanup)
+
+    def _cleanup(self, *_):
+        """Cancel poll on destroy"""
+        if hasattr(self, "_check_poll") and self._check_poll:
+            try:
+                self._check_poll.cancel()
+            except:
+                pass
+            self._check_poll = None
 
     def _check_tasks(self, *args):
         """Check for tasks that are due and show popups"""

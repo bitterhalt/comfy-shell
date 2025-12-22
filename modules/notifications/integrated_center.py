@@ -165,6 +165,17 @@ class IntegratedCenter(widgets.Window):
         # Handle visibility changes for reveal animation
         self.connect("notify::visible", self._on_visible_change)
 
+        # Cleanup weather pill on destroy
+        self.connect("destroy", self._cleanup)
+
+    def _cleanup(self, *_):
+        """Cleanup weather pill poll on destroy"""
+        if hasattr(self, "_weather_pill") and self._weather_pill:
+            try:
+                self._weather_pill.destroy()
+            except:
+                pass
+
     def _on_visible_change(self, *_):
         """Handle reveal animation when window opens/closes"""
         if self.visible:

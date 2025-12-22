@@ -12,12 +12,12 @@ from modules.notifications.widgets.cache import (
     get_cached_preview,
 )
 from modules.notifications.widgets.time_utils import format_time_ago
+from modules.utils.signal_manager import SignalManager
 
 wm = WindowManager.get_default()
 
 
 def is_screenshot(notification: Notification) -> bool:
-    """Check if notification is a screenshot notification"""
     SCREENSHOT_APPS = {
         "flameshot",
         "grim",
@@ -43,12 +43,10 @@ class ScreenshotHistoryItem(widgets.Box):
     """Screenshot notification with cached preview and action buttons"""
 
     def __init__(self, notification: Notification):
-        # Get cached preview
-        preview_path = get_cached_preview(
-            notification.icon,
-            size=(340, 191),  # 16:9 ratio
-            crop=True,
-        )
+        self._signals = SignalManager()
+        self._poll = None
+
+        preview_path = get_cached_preview(notification.icon, size=(340, 191), crop=True)
 
         preview = widgets.Picture(
             image=preview_path,
@@ -58,7 +56,7 @@ class ScreenshotHistoryItem(widgets.Box):
             css_classes=["screenshot-preview"],
         )
 
-        timestamp = widgets.Label(
+        self._timestamp = widgets.Label(
             label=format_time_ago(notification.time),
             halign="center",
             css_classes=["screenshot-timestamp"],
@@ -71,19 +69,16 @@ class ScreenshotHistoryItem(widgets.Box):
             css_classes=["screenshot-path"],
         )
 
-        # Action buttons
         view_btn = widgets.Button(
             child=widgets.Label(label="View"),
             css_classes=["pill-btn", "unset"],
             on_click=lambda *_: self._open_screenshot(notification),
         )
-
         copy_btn = widgets.Button(
             child=widgets.Label(label="Copy"),
             css_classes=["pill-btn", "unset"],
             on_click=lambda *_: self._copy_screenshot(notification),
         )
-
         delete_btn = widgets.Button(
             child=widgets.Label(label="Delete"),
             css_classes=["pill-btn", "pill-btn-danger", "unset"],
@@ -102,40 +97,45 @@ class ScreenshotHistoryItem(widgets.Box):
             spacing=14,
             hexpand=True,
             css_classes=["screenshot-history-item"],
-            child=[preview, timestamp, path_label, actions],
+            child=[preview, self._timestamp, path_label, actions],
         )
 
-        # Update timestamp periodically
-        utils.Poll(60000, lambda *_: self._update_timestamp(timestamp, notification))
+        # Poll owned (cancelled in destroy)
+        self._poll = utils.Poll(60000, lambda *_: self._update_timestamp(notification))
 
-        # Hide when closed
-        notification.connect("closed", lambda *_: setattr(self, "visible", False))
+        # Notification closed -> hide
+        self._signals.connect(
+            notification, "closed", lambda *_: setattr(self, "visible", False)
+        )
+        self._signals.connect(self, "destroy", lambda *_: self.destroy())
 
-    def _update_timestamp(self, label, notification):
-        label.label = format_time_ago(notification.time)
+    def destroy(self):
+        if self._poll:
+            try:
+                self._poll.cancel()
+            except Exception:
+                pass
+            self._poll = None
+        self._signals.disconnect_all()
+        super().destroy()
+
+    def _update_timestamp(self, notification):
+        self._timestamp.label = format_time_ago(notification.time)
         return True
 
     def _open_screenshot(self, notification):
-        """Open screenshot in image viewer"""
         if notification.icon:
             asyncio.create_task(utils.exec_sh_async(f"xdg-open '{notification.icon}'"))
             wm.close_window("ignis_INTEGRATED_CENTER")
 
     def _copy_screenshot(self, notification):
-        """Copy screenshot to clipboard"""
         if notification.icon:
             asyncio.create_task(utils.exec_sh_async(f"wl-copy < '{notification.icon}'"))
 
     def _delete(self, notification):
-        """Delete screenshot file and cached preview"""
         if notification.icon:
-            # Delete the original file
             asyncio.create_task(utils.exec_sh_async(f"rm '{notification.icon}'"))
-
-            # Delete cached preview
             delete_cached_preview(notification.icon)
-
-            # Close notification
             notification.close()
 
 
@@ -143,7 +143,9 @@ class NormalHistoryItem(widgets.Box):
     """Standard notification history item"""
 
     def __init__(self, notification: Notification):
-        # Icon or dot indicator
+        self._signals = SignalManager()
+        self._poll = None
+
         if notification.icon:
             icon_widget = widgets.Icon(
                 image=notification.icon,
@@ -161,7 +163,6 @@ class NormalHistoryItem(widgets.Box):
                 valign="start",
             )
 
-        # Title styling
         title_css_classes = ["notif-history-title"]
         if notification.urgency == 2:
             title_css_classes.append("critical")
@@ -175,7 +176,7 @@ class NormalHistoryItem(widgets.Box):
             wrap=True,
         )
 
-        timestamp_label = widgets.Label(
+        self._timestamp_label = widgets.Label(
             label=format_time_ago(notification.time),
             halign="start",
             css_classes=["notif-timestamp"],
@@ -201,7 +202,7 @@ class NormalHistoryItem(widgets.Box):
         text_box = widgets.Box(
             vertical=True,
             spacing=2,
-            child=[summary, timestamp_label, body],
+            child=[summary, self._timestamp_label, body],
             hexpand=True,
         )
 
@@ -212,13 +213,25 @@ class NormalHistoryItem(widgets.Box):
             child=[icon_widget, text_box, close_btn],
         )
 
-        notification.connect("closed", lambda *_: setattr(self, "visible", False))
-        utils.Poll(
-            60000, lambda *_: self._update_timestamp(timestamp_label, notification)
-        )
+        self._poll = utils.Poll(60000, lambda *_: self._update_timestamp(notification))
 
-    def _update_timestamp(self, label, notification):
-        label.label = format_time_ago(notification.time)
+        self._signals.connect(
+            notification, "closed", lambda *_: setattr(self, "visible", False)
+        )
+        self._signals.connect(self, "destroy", lambda *_: self.destroy())
+
+    def destroy(self):
+        if self._poll:
+            try:
+                self._poll.cancel()
+            except Exception:
+                pass
+            self._poll = None
+        self._signals.disconnect_all()
+        super().destroy()
+
+    def _update_timestamp(self, notification):
+        self._timestamp_label.label = format_time_ago(notification.time)
         return True
 
 

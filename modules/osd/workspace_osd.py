@@ -1,6 +1,7 @@
 from ignis import utils, widgets
 from ignis.services.hyprland import HyprlandService
 from ignis.services.niri import NiriService
+from modules.utils.signal_manager import SignalManager
 from settings import config
 
 TIMEOUT = config.ui.workspace_osd_timeout
@@ -15,6 +16,7 @@ _bar_visible = True
 class WorkspaceOSD(widgets.Window):
     def __init__(self):
         self._timeout = None
+        self._signals = SignalManager()
 
         self._label = widgets.Label(css_classes=["workspace-osd-label"])
 
@@ -43,9 +45,29 @@ class WorkspaceOSD(widgets.Window):
         self.connect("notify::visible", self._on_visible_changed)
 
         if hypr.is_available:
-            hypr.connect("notify::active-workspace", self._on_workspace_change)
+            self._signals.connect(
+                hypr, "notify::active-workspace", self._on_workspace_change
+            )
         elif niri.is_available:
-            niri.connect("notify::active-workspace", self._on_workspace_change)
+            self._signals.connect(
+                niri, "notify::active-workspace", self._on_workspace_change
+            )
+
+        self.connect("destroy", self._cleanup)
+
+    # ──────────────────────────────────────────────────────────
+    # CLEANUP
+    # ──────────────────────────────────────────────────────────
+
+    def _cleanup(self, *_):
+        """Cleanup all signal connections and timeouts"""
+        self._signals.disconnect_all()
+        if self._timeout:
+            try:
+                self._timeout.cancel()
+            except:
+                pass
+            self._timeout = None
 
     # ──────────────────────────────────────────────────────────
     # VISIBILITY HANDLING
