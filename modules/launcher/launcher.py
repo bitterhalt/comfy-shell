@@ -1,6 +1,7 @@
 import asyncio
 
 from gi.repository import Gdk, Gtk
+
 from ignis import widgets
 from ignis.window_manager import WindowManager
 from modules.launcher.launcher_apps import build_app_index, search_apps
@@ -15,7 +16,6 @@ from modules.launcher.launcher_modes import (
     MODE_WEB,
 )
 from modules.launcher.launcher_web import search_web
-
 from settings import config
 
 wm = WindowManager.get_default()
@@ -88,7 +88,7 @@ class AppLauncher(widgets.Window):
         self._setup_keyboard_controller()
 
     # ──────────────────────────────────────────────
-    # Keyboard
+    # Keyboard handling
     # ──────────────────────────────────────────────
 
     def _setup_keyboard_controller(self):
@@ -113,6 +113,38 @@ class AppLauncher(widgets.Window):
                 return self._toggle_mode(MODE_SHORTCUTS[key])
 
         return False
+
+    # ──────────────────────────────────────────────
+    # Mode handling (FIXED)
+    # ──────────────────────────────────────────────
+
+    def _toggle_mode(self, mode):
+        if mode == self._mode:
+            return True
+
+        self._mode = mode
+        self._entry.placeholder_text = MODE_PLACEHOLDERS.get(
+            mode, MODE_PLACEHOLDERS[MODE_NORMAL]
+        )
+        self._last_results_key = None
+        self._search()
+        return True
+
+    def _cycle_mode(self, direction: int):
+        modes = list(MODE_PLACEHOLDERS.keys())
+
+        try:
+            idx = modes.index(self._mode)
+        except ValueError:
+            idx = 0
+
+        idx = (idx + direction) % len(modes)
+        self._mode = modes[idx]
+
+        self._entry.placeholder_text = MODE_PLACEHOLDERS[self._mode]
+        self._last_results_key = None
+        self._search()
+        return True
 
     # ──────────────────────────────────────────────
     # Search
@@ -141,21 +173,25 @@ class AppLauncher(widgets.Window):
             self._results_container.visible = False
             return
 
+        # ── MODE: EMOJI ─────────────────────────────
         if self._mode == MODE_EMOJI:
             self._results.child = search_emojis(q, self._emojis)
             self._results_container.visible = True
             return
 
+        # ── MODE: WEB ───────────────────────────────
         if self._mode == MODE_WEB:
             self._results.child = search_web(q)
             self._results_container.visible = True
             return
 
+        # ── CALCULATOR (implicit) ───────────────────
         if q.endswith("=") or looks_like_math(q):
             self._results.child = calculate(q.rstrip("="))
             self._results_container.visible = True
             return
 
+        # ── MODE: NORMAL (apps + binaries) ──────────
         app_results = search_apps(q, self._app_index)
         bin_results = search_binaries(q)
 
@@ -194,7 +230,7 @@ class AppLauncher(widgets.Window):
             self._entry.placeholder_text = MODE_PLACEHOLDERS[MODE_NORMAL]
             self._entry.grab_focus()
         else:
-            # 🔴 critical cleanup
+            # critical cleanup: stop async search task
             if self._search_task:
                 self._search_task.cancel()
                 self._search_task = None
