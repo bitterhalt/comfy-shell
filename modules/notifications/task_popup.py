@@ -1,13 +1,16 @@
+"""
+Task popup - Fixed to use storage manager
+"""
+
 import time
 from datetime import datetime
 
 from ignis import utils, widgets
-
-# Import locking functions from integrated_center
-from modules.notifications.integrated_center_tasks import load_tasks, save_tasks
+from modules.notifications.storage_manager import TaskStorageManager
 from settings import config
 
-QUEUE_FILE = config.paths.timer_queue
+# Use shared storage manager
+_storage_manager = TaskStorageManager(config.paths.timer_queue)
 
 
 class TaskPopup(widgets.Revealer):
@@ -34,7 +37,7 @@ class TaskPopup(widgets.Revealer):
         )
 
         message = widgets.Label(
-            label=task.get("message", "Task is due! "),
+            label=task.get("message", "Task is due!"),
             halign="start",
             wrap=True,
             max_width_chars=30,
@@ -124,27 +127,22 @@ class TaskPopup(widgets.Revealer):
         now = int(time.time())
         new_fire_at = now + (minutes * 60)
 
-        # Update task in queue
-        tasks = load_tasks()
-        updated = False
-        for i, t in enumerate(tasks):
-            if t == self._task:
-                tasks[i]["fire_at"] = new_fire_at
-                updated = True
-                break
+        # Update task using batch operation
+        def snooze_op(tasks):
+            return [
+                {**t, "fire_at": new_fire_at} if t == self._task else t for t in tasks
+            ]
 
-        if updated:
-            save_tasks(tasks)
-            print(f"Task snoozed for {minutes} minutes")
-
+        _storage_manager.batch_update(snooze_op)
         self._dismiss()
 
     def _complete(self):
         """Mark task as complete and remove it"""
-        tasks = load_tasks()
-        tasks = [t for t in tasks if t != self._task]
-        save_tasks(tasks)
-        print("Task completed")
+
+        def delete_op(tasks):
+            return [t for t in tasks if t != self._task]
+
+        _storage_manager.batch_update(delete_op)
         self._dismiss()
 
     def _dismiss(self):
@@ -184,10 +182,10 @@ class TaskPopupWindow(widgets.Window):
 
     def _check_tasks(self, *args):
         """Check for tasks that are due and show popups"""
-        tasks = load_tasks()
+        all_tasks = _storage_manager.load_tasks()
         now = int(time.time())
 
-        for task in tasks:
+        for task in all_tasks:
             fire_at = task.get("fire_at", 0)
 
             # Check if task is due (within 1 minute window to avoid duplicates)

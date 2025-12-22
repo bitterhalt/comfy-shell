@@ -1,42 +1,77 @@
 from ignis import widgets
 from ignis.services.upower import UPowerService
+from modules.utils.signal_manager import SignalManager
 from settings import config
 
 upower = UPowerService.get_default()
 
 
-def battery_widget():
-    """Battery indicator with icon and percentage"""
-    batteries = [dev for dev in upower.devices if dev.type == "battery"]
+class BatteryWidget(widgets.Box):
+    """Battery indicator with proper signal management"""
 
-    if not batteries:
-        return widgets.Box(visible=False)
+    def __init__(self):
+        super().__init__(
+            css_classes=["battery"],
+            spacing=4,
+        )
 
-    battery = batteries[0]
+        # Get battery device
+        batteries = [dev for dev in upower.devices if dev.type == "battery"]
+        if not batteries:
+            self.visible = False
+            return
 
-    icon = widgets.Icon(
-        image=battery.icon_name,
-        pixel_size=22,
-    )
+        self._battery = batteries[0]
+        self._signals = SignalManager()
 
-    label = widgets.Label(
-        label=battery.bind("percentage", lambda p: f"{int(p)}%"),
-    )
+        # Create widgets
+        self._icon = widgets.Icon(
+            image=self._battery.icon_name,
+            pixel_size=22,
+        )
 
-    container = widgets.Box(
-        css_classes=["battery"],
-        spacing=4,
-        child=[icon, label],
-    )
+        self._label = widgets.Label(
+            label=self._battery.bind("percentage", lambda p: f"{int(p)}%"),
+        )
 
-    def update_tooltip(*_):
+        self.child = [self._icon, self._label]
+
+        # Setup signal connections
+        self._setup_signals()
+
+        # Initial update
+        self._update_all()
+
+    def _setup_signals(self):
+        """Setup all signal connections through manager"""
+        battery = self._battery
+
+        # Connect all relevant signals to single handler
+        for signal in [
+            "notify::percentage",
+            "notify::is-charging",
+            "notify::is-discharging",
+            "notify::time-to-full",
+            "notify::time-to-empty",
+        ]:
+            self._signals.connect(battery, signal, lambda *_: self._update_all())
+
+    def _update_all(self):
+        """Update all battery UI elements"""
+        self._update_tooltip()
+        self._update_warning_class()
+
+    def _update_tooltip(self):
+        """Update tooltip with battery info"""
+        battery = self._battery
+
         status = (
             "Charging"
             if battery.is_charging
             else "Discharging" if battery.is_discharging else "Full"
         )
-        time_str = ""
 
+        time_str = ""
         if battery.is_charging and battery.time_to_full > 0:
             hours = battery.time_to_full // 3600
             mins = (battery.time_to_full % 3600) // 60
@@ -46,34 +81,25 @@ def battery_widget():
             mins = (battery.time_to_empty % 3600) // 60
             time_str = f"\nTime remaining: {hours}h {mins}m"
 
-        container.set_tooltip_text(
+        self.set_tooltip_text(
             f"{battery.device_name}\n{status}: {int(battery.percentage)}%{time_str}"
         )
 
-    # Connect to property changes
-    battery.connect("notify::percentage", update_tooltip)
-    battery.connect("notify::is-charging", update_tooltip)
-    battery.connect("notify::is-discharging", update_tooltip)
-    battery.connect("notify::time-to-full", update_tooltip)
-    battery.connect("notify::time-to-empty", update_tooltip)
+    def _update_warning_class(self):
+        """Update CSS classes based on battery level"""
+        percent = self._battery.percentage
 
-    # Initial tooltip
-    update_tooltip()
-
-    # Add warning class for low battery
-    def update_warning(*_):
-        if battery.percentage < config.battery.critical_threshold:
-            container.add_css_class("critical")
-            container.remove_css_class("warning")
-        elif battery.percentage < config.battery.warning_threshold:
-            container.add_css_class("warning")
-            container.remove_css_class("critical")
+        if percent < config.battery.critical_threshold:
+            self.add_css_class("critical")
+            self.remove_css_class("warning")
+        elif percent < config.battery.warning_threshold:
+            self.add_css_class("warning")
+            self.remove_css_class("critical")
         else:
-            container.remove_css_class("warning")
-            container.remove_css_class("critical")
+            self.remove_css_class("warning")
+            self.remove_css_class("critical")
 
-    # ✅ FIX: Connect and call outside the function
-    battery.connect("notify::percentage", update_warning)
-    update_warning()
 
-    return container
+def battery_widget():
+    """Factory function for backward compatibility"""
+    return BatteryWidget()

@@ -1,5 +1,6 @@
 from ignis import widgets
 from ignis.services.audio import AudioService
+from modules.utils.signal_manager import SignalManager
 
 audio = AudioService.get_default()
 
@@ -50,6 +51,9 @@ class AudioSection(widgets.Box):
         self.stream = stream
         self.device_type = device_type
 
+        # Signal manager for cleanup
+        self._signals = SignalManager()
+
         mute_icon = widgets.Icon(
             image=stream.bind(
                 "is_muted",
@@ -81,12 +85,15 @@ class AudioSection(widgets.Box):
             value=stream.bind("volume", lambda v: int(v or 0)),
             on_change=lambda w: setattr(stream, "volume", w.value),
             sensitive=stream.bind("is_muted", lambda m: not m),
-            can_focus=False,  # GTK STOP intercepting my keybinds
+            can_focus=False,
             hexpand=True,
             css_classes=["pill-audio-scale"],
         )
 
-        stream.connect("notify::volume", lambda *_: self._update_icon(mute_icon))
+        # Track volume changes for icon update
+        self._signals.connect(
+            stream, "notify::volume", lambda *_: self._update_icon(mute_icon)
+        )
 
         # ─────────────────────────────────────────────
         #  EXPAND ARROW
@@ -120,8 +127,14 @@ class AudioSection(widgets.Box):
         self.child = [row, self._device_list]
 
         self._populate_devices()
-        audio.connect(f"{device_type}-added", lambda *_: self._populate_devices())
-        audio.connect(f"notify::{device_type}", lambda *_: self._populate_devices())
+
+        # Track device changes through signal manager
+        self._signals.connect(
+            audio, f"{device_type}-added", lambda *_: self._populate_devices()
+        )
+        self._signals.connect(
+            audio, f"notify::{device_type}", lambda *_: self._populate_devices()
+        )
 
     # ─────────────────────────────────────────────
     #  ICON LOGIC
@@ -168,3 +181,7 @@ class AudioSection(widgets.Box):
         for s in streams:
             item = AudioDeviceItem(s, self.device_type)
             self._device_list.append(item)
+
+    def cleanup(self):
+        """Cleanup signal connections"""
+        self._signals.disconnect_all()

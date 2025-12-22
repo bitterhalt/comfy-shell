@@ -1,4 +1,4 @@
-from . import bar, launcher, notifications, osd, overlays, recorder, weather
+from . import bar, launcher, notifications, osd, overlays, recorder, utils, weather
 
 __all__ = [
     "bar",
@@ -6,6 +6,7 @@ __all__ = [
     "notifications",
     "osd",
     "overlays",
+    "utils",
     "recorder",
     "weather",
 ]

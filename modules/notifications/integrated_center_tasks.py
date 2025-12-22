@@ -1,16 +1,13 @@
 """
-Task/timer management for integrated center
+Task/timer management for integrated center - OPTIMIZED
 """
 
-import fcntl
-import json
 import time
-from contextlib import contextmanager
 from datetime import datetime, timedelta
+from typing import Dict
 
 from ignis import utils, widgets
-
-# Clean imports from widgets package
+from modules.notifications.storage_manager import TaskStorageManager
 from modules.notifications.widgets import (
     AddTaskDialog,
     EditTaskDialog,
@@ -19,49 +16,8 @@ from modules.notifications.widgets import (
 )
 from settings import config
 
-QUEUE_FILE = config.paths.timer_queue
-
-
-# ============================================================================
-# File locking helpers
-# ============================================================================
-
-
-@contextmanager
-def _locked_queue_file(mode: str = "r"):
-    """File lock helper for the timer/task JSON."""
-    QUEUE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    if not QUEUE_FILE.exists():
-        QUEUE_FILE.write_text("[]")
-
-    with open(QUEUE_FILE, mode, encoding="utf-8") as f:
-        try:
-            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-            yield f
-        finally:
-            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-
-
-def load_tasks():
-    try:
-        with _locked_queue_file("r") as f:
-            txt = f.read()
-            return json.loads(txt) if txt.strip() else []
-    except Exception:
-        return []
-
-
-def save_tasks(tasks):
-    try:
-        with _locked_queue_file("w") as f:
-            json.dump(tasks, f, indent=2)
-    except Exception:
-        pass
-
-
-# ============================================================================
-# Task list widget
-# ============================================================================
+# Create storage manager instance (shared across all instances)
+_storage_manager = TaskStorageManager(config.paths.timer_queue)
 
 
 class TaskList:
@@ -69,6 +25,7 @@ class TaskList:
 
     def __init__(self, on_show_dialog):
         self._on_show_dialog = on_show_dialog
+        self._storage = _storage_manager
 
         # Task list container
         self._task_list = widgets.Box(vertical=True, css_classes=["content-list"])
@@ -80,7 +37,7 @@ class TaskList:
             valign="center",
         )
 
-        # Scrollable container (initially hidden)
+        # Scrollable container
         self.scroll = widgets.Scroll(
             vexpand=True,
             vscrollbar_policy="automatic",
@@ -129,106 +86,114 @@ class TaskList:
         utils.Poll(30000, lambda *_: self.reload())
 
     def reload(self):
-        """Reload tasks from file"""
+        """Reload tasks from storage (uses cache for performance)"""
         now = int(time.time())
-        tasks = [t for t in load_tasks() if t.get("fire_at", 0) > now]
-        tasks.sort(key=lambda t: t["fire_at"])
 
-        # Update full list
+        # Single cached read
+        all_tasks = self._storage.load_tasks()
+
+        # Filter and sort in memory
+        pending_tasks = [task for task in all_tasks if task.get("fire_at", 0) > now]
+        pending_tasks.sort(key=lambda t: t["fire_at"])
+
+        # Update UI
         self._task_list.child = [
             TaskItem(
-                t,
+                task,
                 self._delete_task,
                 self._complete_task,
                 self._open_edit_dialog,
                 self._snooze_task,
             )
-            for t in tasks
+            for task in pending_tasks
         ]
-        self._task_empty.visible = len(tasks) == 0
+        self._task_empty.visible = len(pending_tasks) == 0
 
         # Update next task pill
-        if tasks:
-            nxt = tasks[0]
-            fire = nxt["fire_at"]
-            fire_dt = datetime.fromtimestamp(fire)
-
-            today = datetime.now().date()
-            tomorrow = today + timedelta(days=1)
-
-            if fire_dt.date() == today:
-                day = "Today"
-            elif fire_dt.date() == tomorrow:
-                day = "Tomorrow"
-            else:
-                day = fire_dt.strftime("%d.%m")
-
-            time_label = fire_dt.strftime("%H:%M")
-            remain = format_time_until(fire)
-
-            self._next_task_title.label = nxt.get("message", "")
-            self._next_task_meta.label = f"{day} • {time_label} • {remain}"
-            self._next_task_meta.visible = True
-        else:
-            self._next_task_title.label = "No tasks for today"
-            self._next_task_meta.visible = False
+        self._update_next_task_pill(pending_tasks)
 
         return True
 
-    # Task actions
-    def _add_task(self, task):
-        tasks = load_tasks()
-        tasks.append(task)
-        save_tasks(tasks)
-        self.reload()
+    def _update_next_task_pill(self, pending_tasks: list):
+        """Update the next task pill display"""
+        if not pending_tasks:
+            self._next_task_title.label = "No tasks for today"
+            self._next_task_meta.visible = False
+            return
 
-    def _update_task(self, old, new):
-        tasks = load_tasks()
-        out = []
-        replaced = False
-        for t in tasks:
-            if not replaced and t == old:
-                out.append(new)
-                replaced = True
-            else:
-                out.append(t)
-        save_tasks(out)
-        self.reload()
+        next_task = pending_tasks[0]
+        fire_timestamp = next_task["fire_at"]
+        fire_dt = datetime.fromtimestamp(fire_timestamp)
 
-    def _delete_task(self, task):
-        tasks = load_tasks()
-        save_tasks([t for t in tasks if t != task])
-        self.reload()
+        today = datetime.now().date()
+        tomorrow = today + timedelta(days=1)
 
-    def _complete_task(self, task):
+        if fire_dt.date() == today:
+            day_label = "Today"
+        elif fire_dt.date() == tomorrow:
+            day_label = "Tomorrow"
+        else:
+            day_label = fire_dt.strftime("%d.%m")
+
+        time_label = fire_dt.strftime("%H:%M")
+        remaining = format_time_until(fire_timestamp)
+
+        self._next_task_title.label = next_task.get("message", "")
+        self._next_task_meta.label = f"{day_label} • {time_label} • {remaining}"
+        self._next_task_meta.visible = True
+
+    # ═══════════════════════════════════════════════════════════════
+    # Task Operations - All use batch_update for single read/write
+    # ═══════════════════════════════════════════════════════════════
+
+    def _add_task(self, task: Dict):
+        """Add task with single write operation"""
+        if self._storage.batch_update(lambda tasks: tasks + [task]):
+            self.reload()
+
+    def _update_task(self, old_task: Dict, new_task: Dict):
+        """Update task with single read/write"""
+
+        def update_op(tasks):
+            return [new_task if t == old_task else t for t in tasks]
+
+        if self._storage.batch_update(update_op):
+            self.reload()
+
+    def _delete_task(self, task: Dict):
+        """Delete task with single read/write"""
+
+        def delete_op(tasks):
+            return [t for t in tasks if t != task]
+
+        if self._storage.batch_update(delete_op):
+            self.reload()
+
+    def _complete_task(self, task: Dict):
+        """Mark task as complete"""
         self._delete_task(task)
 
-    def _snooze_task(self, task, minutes=5):
+    def _snooze_task(self, task: Dict, minutes: int = 5):
+        """Snooze task with single read/write"""
         now = int(time.time())
-        tasks = load_tasks()
-        out = []
-        used = False
-        for t in tasks:
-            if not used and t == task:
-                nt = dict(t)
-                nt["fire_at"] = now + minutes * 60
-                out.append(nt)
-                used = True
-            else:
-                out.append(t)
-        save_tasks(out)
-        self.reload()
+        new_fire_time = now + (minutes * 60)
+
+        def snooze_op(tasks):
+            return [{**t, "fire_at": new_fire_time} if t == task else t for t in tasks]
+
+        if self._storage.batch_update(snooze_op):
+            self.reload()
 
     # Dialog management
     def _open_add_dialog(self):
-        dlg = AddTaskDialog(
+        dialog = AddTaskDialog(
             on_add=lambda task: (self._add_task(task), self._on_show_dialog(None)),
             on_cancel=lambda *_: self._on_show_dialog(None),
         )
-        self._on_show_dialog(dlg)
+        self._on_show_dialog(dialog)
 
     def _open_edit_dialog(self, task):
-        dlg = EditTaskDialog(
+        dialog = EditTaskDialog(
             task,
             on_save=lambda new: (
                 self._update_task(task, new),
@@ -236,4 +201,4 @@ class TaskList:
             ),
             on_cancel=lambda *_: self._on_show_dialog(None),
         )
-        self._on_show_dialog(dlg)
+        self._on_show_dialog(dialog)

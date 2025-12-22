@@ -1,5 +1,6 @@
 from ignis import utils, widgets
 from ignis.services.notifications import Notification, NotificationService
+from modules.utils.signal_manager import SignalManager
 from settings import config
 
 notifications = NotificationService.get_default()
@@ -97,6 +98,7 @@ class Popup(widgets.Revealer):
     def __init__(self, parent_box: "PopupBox", notification: Notification):
         self._parent_box = parent_box
         self._notification = notification
+        self._signals = SignalManager()
 
         widget = NotificationWidget(notification)
 
@@ -107,12 +109,15 @@ class Popup(widgets.Revealer):
             child=widget,
         )
 
-        # Connect to notification signals
-        notification.connect("dismissed", lambda x: self.destroy())
-        notification.connect("closed", lambda x: self.destroy())
+        # Track notification signals through SignalManager
+        self._signals.connect(notification, "dismissed", lambda *_: self.destroy())
+        self._signals.connect(notification, "closed", lambda *_: self.destroy())
 
     def destroy(self):
-        """Simple animated destruction with proper window management"""
+        """Simple animated destruction with proper cleanup"""
+        # Disconnect all signals first
+        self._signals.disconnect_all()
+
         # Start close animation
         self.reveal_child = False
 
@@ -140,6 +145,7 @@ class PopupBox(widgets.Box):
 
     def __init__(self, window: "NotificationPopup"):
         self._window = window
+        self._signals = SignalManager()
 
         super().__init__(
             vertical=True,
@@ -147,8 +153,8 @@ class PopupBox(widgets.Box):
             halign="end",
         )
 
-        # Connect to new popup signal
-        notifications.connect("new_popup", self._on_new_popup)
+        # Connect to new popup signal through SignalManager
+        self._signals.connect(notifications, "new_popup", self._on_new_popup)
 
     def _on_new_popup(self, service, notification: Notification):
         """Add new notification popup"""
@@ -162,6 +168,10 @@ class PopupBox(widgets.Box):
 
         # Reveal with small delay to ensure window is visible
         utils.Timeout(10, popup.set_reveal_child, True)
+
+    def cleanup(self):
+        """Cleanup all signal connections"""
+        self._signals.disconnect_all()
 
 
 class NotificationPopup(widgets.Window):
@@ -179,6 +189,10 @@ class NotificationPopup(widgets.Window):
             visible=False,
             css_classes=["notification-window"],
         )
+
+    def cleanup(self):
+        """Cleanup all signal connections"""
+        self._popup_box.cleanup()
 
 
 def init_notifications():

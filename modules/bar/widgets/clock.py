@@ -3,12 +3,16 @@ import datetime
 from ignis import utils, widgets
 from ignis.services.notifications import NotificationService
 from ignis.window_manager import WindowManager
+from modules.utils.signal_manager import SignalManager
 
 wm = WindowManager.get_default()
 notifications = NotificationService.get_default()
 
 
 def clock():
+    """Clock with notification indicator - with signal cleanup"""
+    signals = SignalManager()
+
     # Visible clock text
     clock_label = widgets.Label(css_classes=["clock"])
 
@@ -33,16 +37,16 @@ def clock():
     )
 
     def update_time():
-        """Update time display (called every minute)"""
+        """Update time display"""
         return datetime.datetime.now().strftime("%H:%M")
 
     def update_notifications(*args):
-        """Update notification indicator and tooltip (live updates)"""
+        """Update notification indicator"""
         now = datetime.datetime.now()
         date_str = now.strftime("%A, %d.%m %Y")
         count = len(notifications.notifications)
 
-        # Check if any critical notifications exist
+        # Check for critical notifications
         has_critical = any(n.urgency == 2 for n in notifications.notifications)
 
         # Update tooltip
@@ -70,11 +74,9 @@ def clock():
         utils.Poll(60000, lambda *_: update_time()).bind("output"),
     )
 
-    # Connect to notified for instant updates on new notifications
-    notifications.connect("notified", update_notifications)
-
-    # Connect to the notifications list property change for instant updates on dismissals
-    notifications.connect("notify::notifications", update_notifications)
+    # Connect signals through manager
+    signals.connect(notifications, "notified", update_notifications)
+    signals.connect(notifications, "notify::notifications", update_notifications)
 
     # Initial update
     update_notifications()
