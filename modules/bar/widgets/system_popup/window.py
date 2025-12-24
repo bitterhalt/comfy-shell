@@ -2,25 +2,16 @@ import asyncio
 
 from ignis import utils, widgets
 from ignis.services.audio import AudioService
-from ignis.services.network import NetworkService
 from ignis.window_manager import WindowManager
-from modules.bar.widgets.audio_menu_window import AudioSection
 from modules.bar.widgets.bluetooth import BluetoothButton
-from modules.bar.widgets.network_items import (
-    EthernetItem,
-    VpnNetworkItem,
-    WifiNetworkItem,
-)
-from modules.bar.widgets.network_pill import NetworkPill
-from modules.bar.widgets.system_info import SystemInfoWidget
 from settings import config
+
+from .audio_section import AudioSection
+from .network_section import create_network_section
+from .system_info_section import SystemInfoWidget
 
 wm = WindowManager.get_default()
 audio = AudioService.get_default()
-net = NetworkService.get_default()
-wifi = net.wifi
-vpn = net.vpn
-ethernet = net.ethernet
 
 
 def exec_async(cmd: str):
@@ -31,7 +22,7 @@ class SystemPopup(widgets.Window):
     """System menu popup with quick settings and network controls"""
 
     def __init__(self):
-
+        # Top row buttons
         record_btn = widgets.Button(
             css_classes=["sys-top-btn", "unset"],
             on_click=lambda x: (
@@ -58,58 +49,6 @@ class SystemPopup(widgets.Window):
             child=widgets.Icon(image="system-shutdown-symbolic", pixel_size=22),
         )
 
-        # NETWORK REVEALER
-        wifi_section = widgets.Box(
-            vertical=True,
-            spacing=4,
-            child=wifi.bind(
-                "devices",
-                transform=lambda devs: (
-                    [widgets.Label(label="No Wi-Fi device detected")]
-                    if not devs
-                    else devs[0].bind(
-                        "access_points",
-                        transform=lambda aps: [WifiNetworkItem(a) for a in aps],
-                    )
-                ),
-            ),
-        )
-
-        ethernet_section = widgets.Box(
-            vertical=True,
-            spacing=4,
-            child=ethernet.bind(
-                "devices", transform=lambda devs: [EthernetItem(d) for d in devs]
-            ),
-        )
-
-        vpn_section = widgets.Box(
-            vertical=True,
-            spacing=4,
-            child=vpn.bind(
-                "connections",
-                transform=lambda conns: [VpnNetworkItem(c) for c in conns],
-            ),
-        )
-
-        net_details = widgets.Box(
-            vertical=True,
-            spacing=6,
-            css_classes=["sys-net-details"],
-            child=[wifi_section, ethernet_section, vpn_section],
-        )
-
-        self._net_revealer = widgets.Revealer(
-            child=net_details,
-            reveal_child=False,
-            transition_type="slide_down",
-            transition_duration=180,
-        )
-
-        # NETWORK PILL (WIDE, BETWEEN AUDIO AND CPU/RAM)
-        network_pill = NetworkPill(self._net_revealer)
-
-        # TOP ROW – LEFT (record+bt) and RIGHT (lock+power)
         top_row = widgets.Box(
             spacing=8,
             css_classes=["sys-top-row"],
@@ -128,7 +67,7 @@ class SystemPopup(widgets.Window):
             ],
         )
 
-        # AUDIO SLIDERS
+        # Audio sliders
         speaker = AudioSection(stream=audio.speaker, device_type="speaker")
         mic = AudioSection(stream=audio.microphone, device_type="microphone")
 
@@ -139,15 +78,18 @@ class SystemPopup(widgets.Window):
             child=[speaker, mic],
         )
 
-        # MIDDLE WIFI PILL ROW (WIDE)
+        # Network section
+        network_pill, net_revealer = create_network_section()
+
         middle_row = widgets.Box(
             css_classes=["sys-middle-row"],
             child=[network_pill],
         )
 
+        # System info
         system_info = SystemInfoWidget()
 
-        # MAIN PANEL
+        # Main panel
         panel = widgets.Box(
             vertical=True,
             spacing=6,
@@ -156,12 +98,12 @@ class SystemPopup(widgets.Window):
                 top_row,
                 audio_content,
                 middle_row,
-                self._net_revealer,
+                net_revealer,
                 system_info,
             ],
         )
 
-        # Revealer
+        # Revealer for slide animation
         self._revealer = widgets.Revealer(
             child=panel,
             reveal_child=False,
@@ -169,7 +111,7 @@ class SystemPopup(widgets.Window):
             transition_duration=180,
         )
 
-        # OVERLAY CLICK-TO-CLOSE
+        # Overlay click-to-close
         overlay_btn = widgets.Button(
             vexpand=True,
             hexpand=True,
@@ -209,18 +151,15 @@ class SystemPopup(widgets.Window):
         if self.visible:
             self._revealer.reveal_child = True
 
+            # Scan WiFi when opening
+            from ignis.services.network import NetworkService
+
+            wifi = NetworkService.get_default().wifi
             if wifi.devices:
-                asyncio.create_task(self._scan_wifi())
+                asyncio.create_task(wifi.devices[0].scan())
         else:
             self._revealer.reveal_child = False
 
     def toggle(self):
         """Toggle system popup visibility"""
         self.visible = not self.visible
-
-    async def _scan_wifi(self):
-        """Scan for available WiFi networks"""
-        try:
-            await wifi.devices[0].scan()
-        except Exception:
-            pass

@@ -1,36 +1,32 @@
-import asyncio
+"""Main launcher window"""
 
-from gi.repository import Gdk, Gtk
+import asyncio
 
 from ignis import widgets
 from ignis.window_manager import WindowManager
-from modules.launcher.launcher_apps import build_app_index, search_apps
-from modules.launcher.launcher_binary import search_binaries
-from modules.launcher.launcher_calculator import calculate, looks_like_math
-from modules.launcher.launcher_emoji import load_emojis, search_emojis
-from modules.launcher.launcher_modes import (
-    MODE_EMOJI,
-    MODE_NORMAL,
-    MODE_PLACEHOLDERS,
-    MODE_SHORTCUTS,
-    MODE_WEB,
-)
-from modules.launcher.launcher_web import search_web
+
 from settings import config
+
+from .keyboard import KeyboardController
+from .launcher_modes import MODE_NORMAL, MODE_PLACEHOLDERS
+from .search import SearchCoordinator
 
 wm = WindowManager.get_default()
 
 
 class AppLauncher(widgets.Window):
+    """Main launcher window with search and mode switching"""
+
     def __init__(self):
+        # State
         self._mode = MODE_NORMAL
-
-        self._emojis = load_emojis()
-        self._app_index = build_app_index()
-
         self._search_task = None
         self._last_results_key = None
 
+        # Search coordinator
+        self._search_coordinator = SearchCoordinator()
+
+        # Entry
         self._entry = widgets.Entry(
             placeholder_text=MODE_PLACEHOLDERS[MODE_NORMAL],
             css_classes=["launcher-entry", "unset"],
@@ -48,6 +44,7 @@ class AppLauncher(widgets.Window):
             ],
         )
 
+        # Results
         self._results = widgets.Box(vertical=True, css_classes=["launcher-results"])
         self._results_container = widgets.Box(
             vertical=True,
@@ -56,6 +53,7 @@ class AppLauncher(widgets.Window):
             child=[self._results],
         )
 
+        # Layout
         main = widgets.Box(
             vertical=True,
             valign="start",
@@ -69,7 +67,7 @@ class AppLauncher(widgets.Window):
             hexpand=True,
             can_focus=False,
             css_classes=["launcher-overlay", "unset"],
-            on_click=lambda *_: wm.close_window("ignis_LAUNCHER"),
+            on_click=lambda x: wm.close_window("ignis_LAUNCHER"),
         )
 
         super().__init__(
@@ -85,72 +83,15 @@ class AppLauncher(widgets.Window):
             setup=lambda w: w.connect("notify::visible", self._on_open),
         )
 
-        self._setup_keyboard_controller()
+        # Setup keyboard handling
+        self._keyboard = KeyboardController(self)
 
-    # ──────────────────────────────────────────────
-    # Keyboard handling
-    # ──────────────────────────────────────────────
-
-    def _setup_keyboard_controller(self):
-        keyc = Gtk.EventControllerKey()
-        keyc.connect("key-pressed", self._on_key_pressed)
-        self.add_controller(keyc)
-
-    def _on_key_pressed(self, controller, keyval, keycode, state):
-        alt = state & Gdk.ModifierType.ALT_MASK
-
-        if alt and keyval == Gdk.KEY_Left:
-            return self._cycle_mode(-1)
-        elif alt and keyval == Gdk.KEY_Right:
-            return self._cycle_mode(1)
-
-        if alt:
-            keyname = Gdk.keyval_name(keyval)
-            if not keyname:
-                return False
-            key = keyname.lower()
-            if key in MODE_SHORTCUTS:
-                return self._toggle_mode(MODE_SHORTCUTS[key])
-
-        return False
-
-    # ──────────────────────────────────────────────
-    # Mode handling (FIXED)
-    # ──────────────────────────────────────────────
-
-    def _toggle_mode(self, mode):
-        if mode == self._mode:
-            return True
-
-        self._mode = mode
-        self._entry.placeholder_text = MODE_PLACEHOLDERS.get(
-            mode, MODE_PLACEHOLDERS[MODE_NORMAL]
-        )
-        self._last_results_key = None
-        self._search()
-        return True
-
-    def _cycle_mode(self, direction: int):
-        modes = list(MODE_PLACEHOLDERS.keys())
-
-        try:
-            idx = modes.index(self._mode)
-        except ValueError:
-            idx = 0
-
-        idx = (idx + direction) % len(modes)
-        self._mode = modes[idx]
-
-        self._entry.placeholder_text = MODE_PLACEHOLDERS[self._mode]
-        self._last_results_key = None
-        self._search()
-        return True
-
-    # ──────────────────────────────────────────────
+    # =========================================================================
     # Search
-    # ──────────────────────────────────────────────
+    # =========================================================================
 
     def _debounced_search(self, delay: float = 0.04):
+        """Debounce search to avoid excessive updates"""
         if self._search_task:
             self._search_task.cancel()
 
@@ -161,47 +102,23 @@ class AppLauncher(widgets.Window):
         self._search_task = asyncio.create_task(run())
 
     def _search(self):
+        """Perform search based on current query and mode"""
         q = self._entry.text.strip()
         key = f"{q}|{self._mode}"
 
+        # Skip if same search
         if key == self._last_results_key:
             return
         self._last_results_key = key
 
+        # Clear if empty query
         if not q:
             self._results.child = []
             self._results_container.visible = False
             return
 
-        # ── MODE: EMOJI ─────────────────────────────
-        if self._mode == MODE_EMOJI:
-            self._results.child = search_emojis(q, self._emojis)
-            self._results_container.visible = True
-            return
-
-        # ── MODE: WEB ───────────────────────────────
-        if self._mode == MODE_WEB:
-            self._results.child = search_web(q)
-            self._results_container.visible = True
-            return
-
-        # ── CALCULATOR (implicit) ───────────────────
-        if q.endswith("=") or looks_like_math(q):
-            self._results.child = calculate(q.rstrip("="))
-            self._results_container.visible = True
-            return
-
-        # ── MODE: NORMAL (apps + binaries) ──────────
-        app_results = search_apps(q, self._app_index)
-        bin_results = search_binaries(q)
-
-        if bin_results and len(bin_results) == 1:
-            item = bin_results[0]
-            if "no-results" in getattr(item, "css_classes", []):
-                if app_results:
-                    bin_results = []
-
-        results = app_results + bin_results
+        # Get results from search coordinator
+        results = self._search_coordinator.search(q, self._mode)
 
         if not results:
             self._results.child = []
@@ -211,17 +128,28 @@ class AppLauncher(widgets.Window):
         self._results.child = results
         self._results_container.visible = True
 
-    # ──────────────────────────────────────────────
-    # Helpers
-    # ──────────────────────────────────────────────
+    # =========================================================================
+    # Actions
+    # =========================================================================
 
     def _launch_first(self):
-        if self._results.child:
-            item = self._results.child[0]
-            if hasattr(item, "on_click"):
-                item.on_click(None)
+        """Launch/activate first result on Enter"""
+        if not self._results.child:
+            return
+
+        item = self._results.child[0]
+
+        if hasattr(item, "on_click") and callable(item.on_click):
+            item.on_click(None)
+        elif "calc-result" in item.get_css_classes():
+            # Special handling for calculator results (copy to clipboard)
+            from gi.repository import Gdk
+
+            label = item.child.child[1].child[1]
+            Gdk.Display.get_default().get_clipboard().set(label.label.replace("= ", ""))
 
     def _on_open(self, *_):
+        """Reset state when window opens"""
         if self.visible:
             self._entry.text = ""
             self._results.child = []
@@ -229,8 +157,3 @@ class AppLauncher(widgets.Window):
             self._mode = MODE_NORMAL
             self._entry.placeholder_text = MODE_PLACEHOLDERS[MODE_NORMAL]
             self._entry.grab_focus()
-        else:
-            # critical cleanup: stop async search task
-            if self._search_task:
-                self._search_task.cancel()
-                self._search_task = None

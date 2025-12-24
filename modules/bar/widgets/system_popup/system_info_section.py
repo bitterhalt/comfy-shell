@@ -8,9 +8,7 @@ class SystemInfoWidget(widgets.Box):
     """System info panel with CPU usage (procfs) + RAM + system info"""
 
     def __init__(self):
-        # ──────────────────────────────────────────────
-        # CPU usage bar (from /proc/stat)
-        # ──────────────────────────────────────────────
+        # CPU usage bar
         self._cpu_bar = widgets.Scale(
             min=0,
             max=100,
@@ -31,9 +29,7 @@ class SystemInfoWidget(widgets.Box):
             ],
         )
 
-        # ──────────────────────────────────────────────
         # RAM usage bar
-        # ──────────────────────────────────────────────
         self._ram_bar = widgets.Scale(
             min=0,
             max=100,
@@ -54,9 +50,7 @@ class SystemInfoWidget(widgets.Box):
             ],
         )
 
-        # ──────────────────────────────────────────────
         # System info labels
-        # ──────────────────────────────────────────────
         self._os_label = widgets.Label(
             label="Loading…", halign="start", css_classes=["system-info-text"]
         )
@@ -85,7 +79,7 @@ class SystemInfoWidget(widgets.Box):
         self._last_cpu_total = None
         self._last_cpu_idle = None
 
-        # Poll owners (so we can cancel)
+        # Poll owners
         self._poll_cpu = None
         self._poll_ram = None
         self._poll_info = None
@@ -95,12 +89,16 @@ class SystemInfoWidget(widgets.Box):
         self._update_ram()
         self._update_info()
 
-        # Polling (owned)
+        # Start polling
         self._poll_cpu = utils.Poll(3000, self._update_cpu)
         self._poll_ram = utils.Poll(3000, self._update_ram)
         self._poll_info = utils.Poll(60000, self._update_info)
 
-    def destroy(self):
+        # Cleanup on destroy
+        self.connect("destroy", self._cleanup)
+
+    def _cleanup(self, *_):
+        """Cancel all polls"""
         for p in (self._poll_cpu, self._poll_ram, self._poll_info):
             if p:
                 try:
@@ -108,11 +106,7 @@ class SystemInfoWidget(widgets.Box):
                 except Exception:
                     pass
         self._poll_cpu = self._poll_ram = self._poll_info = None
-        super().destroy()
 
-    # ──────────────────────────────────────────────
-    # CPU usage via /proc/stat
-    # ──────────────────────────────────────────────
     def _read_cpu_stat(self):
         try:
             with open("/proc/stat", "r") as f:
@@ -150,9 +144,6 @@ class SystemInfoWidget(widgets.Box):
         self._cpu_label.label = f"{int(usage)}%"
         return True
 
-    # ──────────────────────────────────────────────
-    # RAM usage (FetchService)
-    # ──────────────────────────────────────────────
     def _update_ram(self, *_):
         total = fetch.mem_total or 0
         available = fetch.mem_available or 0
@@ -162,9 +153,6 @@ class SystemInfoWidget(widgets.Box):
         self._ram_label.label = f"{int(percent)}%"
         return True
 
-    # ──────────────────────────────────────────────
-    # System info
-    # ──────────────────────────────────────────────
     def _update_info(self, *_):
         self._os_label.label = f"OS: {fetch.os_name or 'Unknown'}"
         self._kernel_label.label = f"Kernel: {fetch.kernel or 'Unknown'}"

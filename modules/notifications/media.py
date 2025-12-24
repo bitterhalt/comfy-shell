@@ -56,6 +56,7 @@ class MediaPill(widgets.Box):
             css_classes=["media-pill"],
             halign="fill",
             valign="center",
+            hexpand=True,
         )
 
         # ── ICON ──
@@ -88,7 +89,6 @@ class MediaPill(widgets.Box):
         text_box = widgets.Box(
             vertical=True,
             spacing=2,
-            hexpand=True,
             child=[title, artist],
         )
 
