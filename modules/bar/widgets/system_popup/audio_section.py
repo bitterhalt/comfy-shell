@@ -12,7 +12,7 @@ class AudioDeviceItem(widgets.Button):
 
     def __init__(self, stream, device_type: str):
         super().__init__(
-            css_classes=["audio-device-item"],
+            css_classes=["audio-device-item", "unset"],
             on_click=lambda *_: setattr(audio, device_type, stream),
             child=widgets.Box(
                 spacing=4,

@@ -46,7 +46,7 @@
 .header-action-btn {
   all: unset;
   color: $tx-3;
-  padding: 0 20px;
+  margin-right: 22px;
   border-radius: 8px;
   font-size: 13px;
   transition:
@@ -55,8 +55,7 @@
 }
 
 .header-action-btn:hover {
-  color: $tx-2;
-  background-color: unset;
+  color: $red;
 }
 
 /* ───────────────────────────────────────────────────────────────
@@ -65,7 +64,7 @@
 
 .dnd-box {
   all: unset;
-  padding: 0px 16px;
+  padding: 8px 0 0 16px;
 }
 
 .dnd-label {

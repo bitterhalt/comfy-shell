@@ -1,3 +1,5 @@
+"""Main system popup window"""
+
 import asyncio
 
 from ignis import utils, widgets
@@ -7,7 +9,7 @@ from modules.bar.widgets.bluetooth import BluetoothButton
 from settings import config
 
 from .audio_section import AudioSection
-from .network_section import create_network_section
+from .network_section import NetworkSection  # ✅ Changed import
 from .system_info_section import SystemInfoWidget
 
 wm = WindowManager.get_default()
@@ -79,11 +81,13 @@ class SystemPopup(widgets.Window):
         )
 
         # Network section
-        network_pill, net_revealer = create_network_section()
+        network_section = NetworkSection()
 
-        middle_row = widgets.Box(
-            css_classes=["sys-middle-row"],
-            child=[network_pill],
+        network_content = widgets.Box(
+            vertical=True,
+            spacing=10,
+            css_classes=["sys-network-pill"],
+            child=[network_section],
         )
 
         # System info
@@ -97,8 +101,7 @@ class SystemPopup(widgets.Window):
             child=[
                 top_row,
                 audio_content,
-                middle_row,
-                net_revealer,
+                network_content,
                 system_info,
             ],
         )
@@ -150,13 +153,6 @@ class SystemPopup(widgets.Window):
         """Handle reveal animation when window opens/closes"""
         if self.visible:
             self._revealer.reveal_child = True
-
-            # Scan WiFi when opening
-            from ignis.services.network import NetworkService
-
-            wifi = NetworkService.get_default().wifi
-            if wifi.devices:
-                asyncio.create_task(wifi.devices[0].scan())
         else:
             self._revealer.reveal_child = False
 

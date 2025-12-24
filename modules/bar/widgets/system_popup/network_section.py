@@ -1,3 +1,7 @@
+"""Network control section with WiFi/Ethernet/VPN"""
+
+import asyncio
+
 from ignis import widgets
 from ignis.services.network import NetworkService
 from modules.bar.widgets.network_items import (
@@ -58,12 +62,13 @@ def _primary_net_icon() -> str:
     return "network-offline-symbolic"
 
 
-class NetworkPill(widgets.Button):
-    """Main network status pill with expandable network list"""
+class NetworkSection(widgets.Box):
+    """Network section with pill and expandable network list"""
 
-    def __init__(self, revealer: widgets.Revealer):
-        self._revealer = revealer
+    def __init__(self):
+        super().__init__(vertical=True, spacing=10)
 
+        # Main pill button
         self._icon = widgets.Icon(image=_primary_net_icon(), pixel_size=22)
         self._label = widgets.Label(
             label=_generic_net_label(),
@@ -76,18 +81,66 @@ class NetworkPill(widgets.Button):
             hexpand=True,
         )
 
-        inner = widgets.Box(
+        pill_content = widgets.Box(
             spacing=6,
             child=[self._icon, self._label, self._percent],
         )
 
-        super().__init__(
+        pill_button = widgets.Button(
             css_classes=["sys-pill", "sys-pill-primary", "unset"],
-            child=inner,
+            child=pill_content,
             hexpand=True,
-            on_click=lambda *_: self._toggle(),
+            on_click=lambda *_: self._toggle_list(),
             on_right_click=lambda *_: self._toggle_airplane(),
         )
+
+        # WiFi section
+        wifi_section = widgets.Box(
+            vertical=True,
+            spacing=4,
+            child=wifi.bind(
+                "devices",
+                transform=lambda devs: (
+                    [widgets.Label(label="No Wi-Fi device detected")]
+                    if not devs
+                    else devs[0].bind(
+                        "access_points",
+                        transform=lambda aps: [WifiNetworkItem(a) for a in aps],
+                    )
+                ),
+            ),
+        )
+
+        # Ethernet section
+        ethernet_section = widgets.Box(
+            vertical=True,
+            spacing=4,
+            child=ethernet.bind(
+                "devices", transform=lambda devs: [EthernetItem(d) for d in devs]
+            ),
+        )
+
+        # VPN section
+        vpn_section = widgets.Box(
+            vertical=True,
+            spacing=4,
+            child=vpn.bind(
+                "connections",
+                transform=lambda conns: [VpnNetworkItem(c) for c in conns],
+            ),
+        )
+
+        # Network details container
+        self._device_list = widgets.Box(
+            vertical=True,
+            spacing=6,
+            visible=False,
+            css_classes=["sys-net-details"],
+            child=[wifi_section, ethernet_section, vpn_section],
+        )
+
+        # Set children: pill button + device list
+        self.child = [pill_button, self._device_list]
 
         # Connect to network changes
         for obj, prop in [
@@ -107,75 +160,15 @@ class NetworkPill(widgets.Button):
         self._label.label = _generic_net_label()
         self._percent.label = _net_signal_percent()
 
-    def _toggle(self):
+    def _toggle_list(self):
         """Toggle network list visibility"""
-        self._revealer.reveal_child = not self._revealer.reveal_child
+        new_state = not self._device_list.visible
+        self._device_list.visible = new_state
+
+        # Scan WiFi when opening
+        if new_state and wifi.devices:
+            asyncio.create_task(wifi.devices[0].scan())
 
     def _toggle_airplane(self):
         """Toggle airplane mode (WiFi enable/disable)"""
         wifi.enabled = not wifi.enabled
-
-
-def create_network_section() -> tuple[widgets.Button, widgets.Revealer]:
-    """
-    Create network section with pill and details revealer
-
-    Returns:
-        tuple: (NetworkPill, Revealer with network details)
-    """
-    # WiFi section
-    wifi_section = widgets.Box(
-        vertical=True,
-        spacing=4,
-        child=wifi.bind(
-            "devices",
-            transform=lambda devs: (
-                [widgets.Label(label="No Wi-Fi device detected")]
-                if not devs
-                else devs[0].bind(
-                    "access_points",
-                    transform=lambda aps: [WifiNetworkItem(a) for a in aps],
-                )
-            ),
-        ),
-    )
-
-    # Ethernet section
-    ethernet_section = widgets.Box(
-        vertical=True,
-        spacing=4,
-        child=ethernet.bind(
-            "devices", transform=lambda devs: [EthernetItem(d) for d in devs]
-        ),
-    )
-
-    # VPN section
-    vpn_section = widgets.Box(
-        vertical=True,
-        spacing=4,
-        child=vpn.bind(
-            "connections",
-            transform=lambda conns: [VpnNetworkItem(c) for c in conns],
-        ),
-    )
-
-    # Network details container
-    net_details = widgets.Box(
-        vertical=True,
-        spacing=6,
-        css_classes=["sys-net-details"],
-        child=[wifi_section, ethernet_section, vpn_section],
-    )
-
-    # Revealer for network list
-    revealer = widgets.Revealer(
-        child=net_details,
-        reveal_child=False,
-        transition_type="slide_down",
-        transition_duration=180,
-    )
-
-    # Network pill
-    pill = NetworkPill(revealer)
-
-    return pill, revealer
