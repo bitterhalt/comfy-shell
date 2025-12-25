@@ -46,7 +46,11 @@ class ScreenshotHistoryItem(widgets.Box):
         self._signals = SignalManager()
         self._poll = None
 
-        preview_path = get_cached_preview(notification.icon, size=(340, 191), crop=True)
+        preview_path = get_cached_preview(
+            notification.icon,
+            size=(340, 191),
+            crop=False,
+        )
 
         preview = widgets.Picture(
             image=preview_path,

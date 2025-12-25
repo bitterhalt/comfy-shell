@@ -18,14 +18,8 @@ def get_cached_preview(
 ) -> str:
     """
     Get or generate a cached preview of an image.
-    
-    Args:
-        image_path: Path to source image
-        size: Target size (width, height)
-        crop: Whether to crop to square first
-        
-    Returns:
-        Path to cached preview (or original if generation fails)
+    Args:image_path: Path to source image size: Target size (width, height) crop: Whether to crop to square first
+    Returns: Path to cached preview (or original if generation fails)
     """
     src = Path(image_path)
 
@@ -63,9 +57,7 @@ def get_cached_preview(
 def delete_cached_preview(image_path: str):
     """
     Delete cached previews for a specific image.
-    
-    Args:
-        image_path: Path to source image
+    Args: image_path: Path to source image
     """
     try:
         src = Path(image_path)
@@ -74,7 +66,7 @@ def delete_cached_preview(image_path: str):
 
         # Generate base key for this image
         src_str = str(src)
-        
+
         # Delete all cached versions of this image
         for cached_file in CACHE_DIR.glob("*.png"):
             try:
@@ -89,7 +81,7 @@ def delete_cached_preview(image_path: str):
                             break
             except Exception:
                 pass
-                
+
     except Exception:
         pass
 

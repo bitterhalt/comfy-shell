@@ -328,9 +328,12 @@
 }
 
 .notif-history-close {
+  border-radius: 8px;
   color: $tx-3;
 }
-.notif-history-close:hover,
+.notif-history-close:hover {
+  background: $ui-3;
+}
 .notif-history-item:hover .notif-timestamp {
   opacity: 0.8;
 }
