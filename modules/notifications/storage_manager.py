@@ -20,7 +20,7 @@ class TaskStorageManager:
         self.storage_file = storage_file
         self._cache: Optional[List[Dict]] = None
         self._cache_time: float = 0
-        self._cache_ttl: float = 1.0  # 1 second cache
+        self._cache_ttl: float = 10.0
 
         # Ensure file exists
         if not self.storage_file.exists():
