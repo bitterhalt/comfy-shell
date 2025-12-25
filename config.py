@@ -7,7 +7,6 @@ from ignis.css_manager import CssInfoPath, CssManager
 # Package imports
 from modules.bar import Bar, register_bar
 from modules.bar.widgets import SystemPopup
-from modules.launcher import AppLauncher, SettingsManager, WindowSwitcher
 from modules.notifications import IntegratedCenter, init_notifications, init_task_popup
 from modules.osd import (
     MediaOsdWindow,
@@ -19,6 +18,7 @@ from modules.osd import (
 from modules.overlays import PowerOverlay, RecordingOverlay
 from modules.recorder import register_recorder_commands
 from modules.weather import WeatherPopup
+from modules.windowlist import WindowSwitcher
 from settings import config
 
 css = CssManager.get_default()
@@ -76,13 +76,11 @@ TimeOsdWindow()
 VolumeOSD()
 MediaOsdWindow()
 WeatherPopup()
-AppLauncher()
 PowerOverlay()
 RecordingOverlay()
 SystemPopup()
 IntegratedCenter()
 WindowSwitcher()
-SettingsManager()
 
 # Register commands
 command_manager = CommandManager.get_default()

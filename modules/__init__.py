@@ -1,12 +1,12 @@
-from . import bar, launcher, notifications, osd, overlays, recorder, utils, weather
+from . import bar, notifications, osd, overlays, recorder, utils, weather, windowlist
 
 __all__ = [
     "bar",
-    "launcher",
     "notifications",
     "osd",
     "overlays",
-    "utils",
     "recorder",
+    "utils",
     "weather",
+    "windowlist",
 ]

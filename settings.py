@@ -253,21 +253,6 @@ class AppConfig:
     recorder: RecorderConfig = field(default_factory=RecorderConfig)
     battery: BatteryConfig = field(default_factory=BatteryConfig)
 
-    # Application defaults
-    terminal: str = field(default_factory=lambda: os.getenv("TERMINAL", "foot"))
-    editor: str = field(default_factory=lambda: os.getenv("EDITOR", "nvim"))
-    file_opener: str = field(default_factory=lambda: os.getenv("FILE_OPENER", "vopen"))
-
-    # Color configuration
-    match_color: str = "#24837B"  # Launcher search highlight color
-
-    # Terminal command format for applications
-    terminal_format: str = field(init=False)
-
-    def __post_init__(self):
-        """Initialize derived configuration"""
-        self.terminal_format = f"{self.terminal} %command%"
-
 
 # Global configuration instance
 config = AppConfig()

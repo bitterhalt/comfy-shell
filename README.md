@@ -24,7 +24,6 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 - Power menu
 - Network & system indicators
 - Record indicator
-- Weather
 
 ### 🔸 OSD
 
@@ -33,11 +32,14 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 - Workspaces on barless mode
 - Build-in Notifications
 
-### 🔸 Launcher
+### 🔸 Menus
 
-- Power Menu
-- Screenshot Menu
-- App runner wired with: Calculator, Emojis, Websearch
+- Notification history
+- Quick settings
+- Weather
+- Power
+- Screenshots
+- Window Switcher
 
 ### 🔸 Extra Integrations
 
