@@ -62,10 +62,6 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 <img src="assets/screenshots/weather.png" width="80%" />
 </details>
 <details>
-<summary><b>Quick settings</b></summary><br>
-<img src="assets/screenshots/quick_settings.png" width="80%" />
-</details>
-<details>
 <summary><b>Window-list</b></summary><br>
 <img src="assets/screenshots/winmenu.png" width="80%" />
 </details>
