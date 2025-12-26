@@ -58,7 +58,7 @@ def _fetch_clients(reverse: bool = False) -> List[ClientEntry]:
         else:
             sortkey = 0
             sort_ws = ws_id_int
-            ws_label = f"[{ws_id_int}]"
+            ws_label = f"{ws_id_int}"
 
         desc = f"{cls} - {title}"
 

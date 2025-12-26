@@ -1,5 +1,5 @@
 """
-Task/timer management for integrated center - OPTIMIZED
+Task/timer management for integrated center
 """
 
 import time
@@ -7,16 +7,15 @@ from datetime import datetime, timedelta
 from typing import Dict
 
 from ignis import utils, widgets
-from modules.notifications.storage_manager import TaskStorageManager
 from modules.notifications.widgets import (
     AddTaskDialog,
     EditTaskDialog,
     TaskItem,
     format_time_until,
 )
+from modules.utils.task_storage_manager import TaskStorageManager
 from settings import config
 
-# Create storage manager instance (shared across all instances)
 _storage_manager = TaskStorageManager(config.paths.timer_queue)
 
 
@@ -26,6 +25,8 @@ class TaskList:
     def __init__(self, on_show_dialog):
         self._on_show_dialog = on_show_dialog
         self._storage = _storage_manager
+        self._poll = None
+        self._is_visible = False
 
         # Task list container
         self._task_list = widgets.Box(vertical=True, css_classes=["content-list"])
@@ -82,8 +83,47 @@ class TaskList:
         # Initial load
         self.reload()
 
-        # Periodic refresh
-        utils.Poll(30000, lambda *_: self.reload())
+        # Poll
+        self._poll = utils.Poll(60000, lambda *_: self._poll_update())
+
+        # Cleanup
+        self.scroll.connect("destroy", lambda *_: self._cleanup())
+
+    def _cleanup(self, *_):
+        """Cancel poll on destroy"""
+        if self._poll:
+            try:
+                self._poll.cancel()
+            except:
+                pass
+            self._poll = None
+
+    def _poll_update(self):
+        """Periodic update - only if visible and has tasks"""
+        # Skip if not visible
+        if not self._is_visible:
+            return True
+
+        # Quick check: do we even have tasks?
+        now = int(time.time())
+        count = self._storage.get_pending_count(now)
+
+        if count == 0:
+            # No tasks, skip expensive reload
+            return True
+
+        # Only reload if we have tasks
+        self.reload()
+        return True
+
+    def set_visible(self, visible: bool):
+        """Called when integrated center opens/closes"""
+        self._is_visible = visible
+
+        if visible:
+            # Force refresh when opening
+            self._storage.invalidate_cache()
+            self.reload()
 
     def reload(self):
         """Reload tasks from storage (uses cache for performance)"""
@@ -103,7 +143,6 @@ class TaskList:
                 self._delete_task,
                 self._complete_task,
                 self._open_edit_dialog,
-                self._snooze_task,
             )
             for task in pending_tasks
         ]
@@ -143,7 +182,7 @@ class TaskList:
         self._next_task_meta.visible = True
 
     # ═══════════════════════════════════════════════════════════════
-    # Task Operations - All use batch_update for single read/write
+    # Task Operations
     # ═══════════════════════════════════════════════════════════════
 
     def _add_task(self, task: Dict):
@@ -172,17 +211,6 @@ class TaskList:
     def _complete_task(self, task: Dict):
         """Mark task as complete"""
         self._delete_task(task)
-
-    def _snooze_task(self, task: Dict, minutes: int = 5):
-        """Snooze task with single read/write"""
-        now = int(time.time())
-        new_fire_time = now + (minutes * 60)
-
-        def snooze_op(tasks):
-            return [{**t, "fire_at": new_fire_time} if t == task else t for t in tasks]
-
-        if self._storage.batch_update(snooze_op):
-            self.reload()
 
     # Dialog management
     def _open_add_dialog(self):

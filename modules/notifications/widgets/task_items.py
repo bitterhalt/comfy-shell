@@ -9,9 +9,7 @@ from modules.notifications.widgets.time_utils import format_time_until
 
 
 class TaskItem(widgets.Box):
-    """A single scheduled task item"""
-
-    def __init__(self, task, on_delete, on_complete, on_edit, on_snooze):
+    def __init__(self, task, on_delete, on_complete, on_edit):
         self._task = task
 
         fire_dt = datetime.fromtimestamp(task["fire_at"])

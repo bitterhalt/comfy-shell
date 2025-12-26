@@ -1,4 +1,4 @@
-.task-popup-window {
+task-popup-window {
   background: unset;
   border: unset;
 }
@@ -55,12 +55,11 @@
 .task-popup-actions {
   margin-top: 8px;
   padding-top: 12px;
-  border-top: 1px solid $ui-1;
 }
 
 .task-popup-action {
   all: unset;
-  padding: 10px 12px;
+  padding: 10px 16px;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
@@ -74,16 +73,6 @@
 
   &:active {
     transform: scale(0.98);
-  }
-}
-
-.snooze-btn {
-  background: $ui-2;
-  color: $tx-2;
-
-  &:hover {
-    background: $magenta;
-    color: $bg-1;
   }
 }
 

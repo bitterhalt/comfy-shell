@@ -1,11 +1,14 @@
+"""
+Task popup
+"""
+
 import time
 from datetime import datetime
 
 from ignis import utils, widgets
-from modules.notifications.storage_manager import TaskStorageManager
+from modules.utils.task_storage_manager import TaskStorageManager
 from settings import config
 
-# Use shared storage manager
 _storage_manager = TaskStorageManager(config.paths.timer_queue)
 
 
@@ -71,25 +74,7 @@ class TaskPopup(widgets.Revealer):
             child=[icon, text_box, close_btn],
         )
 
-        # Action buttons
-        snooze_5_btn = widgets.Button(
-            child=widgets.Label(label="5 min"),
-            css_classes=["task-popup-action", "snooze-btn"],
-            on_click=lambda x: self._snooze(5),
-        )
-
-        snooze_15_btn = widgets.Button(
-            child=widgets.Label(label="15 min"),
-            css_classes=["task-popup-action", "snooze-btn"],
-            on_click=lambda x: self._snooze(15),
-        )
-
-        snooze_60_btn = widgets.Button(
-            child=widgets.Label(label="1 hour"),
-            css_classes=["task-popup-action", "snooze-btn"],
-            on_click=lambda x: self._snooze(60),
-        )
-
+        # Action button
         complete_btn = widgets.Button(
             child=widgets.Label(label="Complete"),
             css_classes=["task-popup-action", "complete-btn"],
@@ -98,9 +83,9 @@ class TaskPopup(widgets.Revealer):
 
         action_box = widgets.Box(
             spacing=8,
-            homogeneous=True,
+            halign="end",
             css_classes=["task-popup-actions"],
-            child=[snooze_5_btn, snooze_15_btn, snooze_60_btn, complete_btn],
+            child=[complete_btn],
         )
 
         # Main container
@@ -117,20 +102,6 @@ class TaskPopup(widgets.Revealer):
             reveal_child=False,
             child=container,
         )
-
-    def _snooze(self, minutes):
-        """Snooze task for specified minutes"""
-        now = int(time.time())
-        new_fire_at = now + (minutes * 60)
-
-        # Update task using batch operation
-        def snooze_op(tasks):
-            return [
-                {**t, "fire_at": new_fire_at} if t == self._task else t for t in tasks
-            ]
-
-        _storage_manager.batch_update(snooze_op)
-        self._dismiss()
 
     def _complete(self):
         """Mark task as complete and remove it"""
@@ -161,6 +132,7 @@ class TaskPopupWindow(widgets.Window):
             valign="start",
             halign="end",
         )
+        self._shown_tasks = set()  # Track shown tasks to avoid duplicates
 
         super().__init__(
             anchor=["right", "top"],
@@ -172,9 +144,8 @@ class TaskPopupWindow(widgets.Window):
             css_classes=["task-popup-window"],
         )
 
-        # Start checking for due tasks
         self._check_tasks()
-        self._check_poll = utils.Poll(30000, self._check_tasks)
+        self._check_poll = utils.Poll(60000, self._check_tasks)
 
         # Cleanup on destroy
         self.connect("destroy", self._cleanup)
@@ -190,23 +161,26 @@ class TaskPopupWindow(widgets.Window):
 
     def _check_tasks(self, *args):
         """Check for tasks that are due and show popups"""
-        all_tasks = _storage_manager.load_tasks()
+        # Force fresh read to catch new tasks
+        all_tasks = _storage_manager.load_tasks(force_refresh=True)
         now = int(time.time())
 
         for task in all_tasks:
             fire_at = task.get("fire_at", 0)
+            task_id = (task.get("message", ""), fire_at)
 
-            # Check if task is due (within 1 minute window to avoid duplicates)
-            if fire_at <= now and fire_at > (now - 60):
-                # Check if popup already exists for this task
-                already_shown = False
-                for child in self._popup_box.child:
-                    if hasattr(child, "_task") and child._task == task:
-                        already_shown = True
-                        break
+            # Check if task is due
+            if fire_at <= now and fire_at > (now - 120):
+                # Skip if already shown
+                if task_id in self._shown_tasks:
+                    continue
 
-                if not already_shown:
-                    self._show_popup(task)
+                self._show_popup(task)
+                self._shown_tasks.add(task_id)
+
+        # Clean up old entries from shown_tasks
+        cutoff = now - 300
+        self._shown_tasks = {(msg, t) for msg, t in self._shown_tasks if t > cutoff}
 
         return True
 
@@ -234,7 +208,6 @@ _task_popup_window = None
 
 
 def init_task_popup():
-    """Initialize task popup window (call once at startup)"""
     global _task_popup_window
 
     if _task_popup_window is None:

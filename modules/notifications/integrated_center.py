@@ -1,3 +1,7 @@
+"""
+Integrated center
+"""
+
 from ignis import utils, widgets
 from ignis.options import options
 from ignis.window_manager import WindowManager
@@ -11,7 +15,6 @@ wm = WindowManager.get_default()
 
 
 class IntegratedCenter(widgets.Window):
-    """Two-column integrated center with notifications + tasks + weather/media"""
 
     def __init__(self):
         # -------------------------------------------------------
@@ -165,11 +168,11 @@ class IntegratedCenter(widgets.Window):
         # Handle visibility changes for reveal animation
         self.connect("notify::visible", self._on_visible_change)
 
-        # Cleanup weather pill on destroy
+        # Cleanup on destroy
         self.connect("destroy", self._cleanup)
 
     def _cleanup(self, *_):
-        """Cleanup weather pill poll on destroy"""
+        """Cleanup weather pill and task list on destroy"""
         if hasattr(self, "_weather_pill") and self._weather_pill:
             try:
                 self._weather_pill.destroy()
@@ -179,8 +182,14 @@ class IntegratedCenter(widgets.Window):
     def _on_visible_change(self, *_):
         """Handle reveal animation when window opens/closes"""
         if self.visible:
+            # Notify task list that we're visible
+            self._task_list.set_visible(True)
+
             utils.Timeout(10, lambda: setattr(self._revealer, "reveal_child", True))
         else:
+            # Notify task list that we're hidden
+            self._task_list.set_visible(False)
+
             self._revealer.reveal_child = False
 
     def _toggle_calendar(self):
