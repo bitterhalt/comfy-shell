@@ -21,7 +21,7 @@
 
 .power-overlay-btn {
   all: unset;
-  color: $tx-1;
+  color: $cyan;
   background: $bg-2;
   border: 1px solid $ui-1;
   border-radius: 8px;
@@ -69,11 +69,6 @@
   &:active {
     transform: translateY(-2px) scale(0.98);
   }
-}
-
-.power-overlay .power-overlay-btn:hover icon,
-.power-overlay .power-overlay-btn:focus icon {
-  color: $tx-2;
 }
 
 .power-overlay-label {

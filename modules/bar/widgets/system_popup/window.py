@@ -110,8 +110,8 @@ class SystemPopup(widgets.Window):
         self._revealer = widgets.Revealer(
             child=panel,
             reveal_child=False,
-            transition_type="slide_down",
-            transition_duration=180,
+            transition_type=config.animations.revealer_type,
+            transition_duration=config.animations.revealer_duration,
         )
 
         # Overlay click-to-close

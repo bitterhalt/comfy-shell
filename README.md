@@ -70,6 +70,7 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 
 > _02.12.27_
 
+- [ ] In settings: add option to remember bar state after restart
 - [x] add bluetooth in panel
 - [ ] cleanup the code and make syntax more consistenta
 - [x] add small time stamps to notifications

@@ -2,6 +2,7 @@ import os
 
 from ignis import utils
 from ignis.command_manager import CommandManager
+from ignis.config_manager import ConfigManager
 from ignis.css_manager import CssInfoPath, CssManager
 
 # Package imports
@@ -22,6 +23,11 @@ from modules.windowlist import WindowSwitcher
 from settings import config
 
 css = CssManager.get_default()
+
+config_manager = ConfigManager.get_default()
+
+# Delete or "True" if you want autoreload
+config_manager.autoreload_config = False
 
 
 # Custom compiler function that removes @charset

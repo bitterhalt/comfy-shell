@@ -121,8 +121,8 @@ class WeatherPopup(widgets.Window):
         self._revealer = widgets.Revealer(
             child=popup_box,
             reveal_child=False,
-            transition_type="slide_down",
-            transition_duration=180,
+            transition_type=config.animations.revealer_type,
+            transition_duration=config.animations.revealer_duration,
         )
 
         container = widgets.Box(
