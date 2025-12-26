@@ -62,23 +62,7 @@
     border-color 0.2s,
     transform 0.1s;
 
-  &:hover {
-    background: $red;
-    border: unset;
-    transform: translateY(-4px);
-  }
-
-  &:hover icon {
-    color: $bg-1;
-  }
-
-  &:hover .power-overlay-label {
-    color: $tx-1;
-  }
-
   &:focus {
-    background: $red;
-    border: unset;
     transform: translateY(-4px);
   }
 
@@ -95,7 +79,7 @@
 .power-overlay-label {
   font-size: 15px;
   font-weight: 500;
-  color: $tx-2;
+  color: $tx-1;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -174,4 +158,8 @@
   &:hover {
     background: lighten($red, 10%);
   }
+}
+
+.power-warning-icon {
+  color: $red;
 }

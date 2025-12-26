@@ -1,6 +1,7 @@
 import asyncio
 
 from gi.repository import Gdk
+
 from ignis import utils, widgets
 from ignis.window_manager import WindowManager
 
@@ -228,6 +229,7 @@ class PowerOverlay(widgets.Window):
                 child=[
                     widgets.Icon(
                         image="system-reboot-symbolic",
+                        css_classes=["power-warning-icon"],
                         pixel_size=48,
                     ),
                     widgets.Label(
@@ -249,6 +251,7 @@ class PowerOverlay(widgets.Window):
                 child=[
                     widgets.Icon(
                         image="system-shutdown-symbolic",
+                        css_classes=["power-warning-icon"],
                         pixel_size=48,
                     ),
                     widgets.Label(

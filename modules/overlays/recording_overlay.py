@@ -3,7 +3,6 @@ import asyncio
 from ignis import utils, widgets
 from ignis.services.recorder import RecorderService
 from ignis.window_manager import WindowManager
-
 from settings import config
 
 wm = WindowManager.get_default()
@@ -21,6 +20,7 @@ class RecordingOverlay(widgets.Window):
         # Screenshot button
         self._screenshot_icon = widgets.Icon(
             image="camera-photo-symbolic",
+            css_classes=["screenshot-icon"],
             pixel_size=48,
         )
 
@@ -43,6 +43,7 @@ class RecordingOverlay(widgets.Window):
         # Screenshot Region button
         self._screenshot_region_icon = widgets.Icon(
             image="image-crop-symbolic",
+            css_classes=["screenshot-region-icon"],
             pixel_size=48,
         )
 
@@ -64,6 +65,7 @@ class RecordingOverlay(widgets.Window):
 
         self._record_screen_icon = widgets.Icon(
             image="media-record-symbolic",
+            css_classes=["record-icon"],
             pixel_size=48,
         )
 
@@ -86,6 +88,7 @@ class RecordingOverlay(widgets.Window):
         # Record Region button
         self._record_region_icon = widgets.Icon(
             image="edit-select-all-symbolic",
+            css_classes=["record-region-icon"],
             pixel_size=48,
         )
 

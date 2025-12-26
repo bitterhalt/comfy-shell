@@ -55,8 +55,8 @@
 
 .overlay-btn-stop {
   all: unset;
-  background: $red;
-  border: 1px solid $red;
+  background: $tx-1;
+  border: 3px solid $red;
   border-radius: 8px;
   padding: 24px 20px;
   min-width: 140px;
@@ -65,14 +65,10 @@
     border-color 0.2s,
     transform 0.1s;
 
+  &:focus,
   &:hover {
     background: lighten($red, 10%);
     border-color: lighten($red, 10%);
-    transform: translateY(-4px);
-  }
-
-  &:focus {
-    background: lighten($red, 10%);
     transform: translateY(-4px);
   }
 
@@ -81,8 +77,8 @@
   }
 }
 
-.overlay-btn-stop icon {
-  color: $bg-1;
+.overlay-btn-stop image {
+  color: $red;
 }
 
 .overlay-btn-stop .overlay-label {
@@ -93,26 +89,18 @@
 .overlay-label {
   font-size: 15px;
   font-weight: 500;
-  color: $tx-2;
+  color: $tx-1;
 }
 
-/* Icon colors */
-.overlay-btn:nth-child(1) icon {
+.screenshot-icon {
   color: $cyan;
 }
 
-.overlay-btn:nth-child(2) icon {
-  color: $magenta;
-}
-
-.overlay-btn:nth-child(3) icon {
-  color: $red;
-}
-
-.overlay-btn:nth-child(4) icon {
+.record-region-icon,
+.screenshot-region-icon {
   color: $yellow;
 }
 
-.overlay-btn:hover icon {
-  color: $tx-2;
+.record-icon {
+  color: $red;
 }
