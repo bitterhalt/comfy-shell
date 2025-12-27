@@ -8,7 +8,6 @@ class SystemInfoWidget(widgets.Box):
     """System info panel with CPU usage (procfs) + RAM + system info"""
 
     def __init__(self):
-        # CPU usage bar
         self._cpu_bar = widgets.Scale(
             min=0,
             max=100,
@@ -29,7 +28,6 @@ class SystemInfoWidget(widgets.Box):
             ],
         )
 
-        # RAM usage bar
         self._ram_bar = widgets.Scale(
             min=0,
             max=100,
@@ -50,7 +48,6 @@ class SystemInfoWidget(widgets.Box):
             ],
         )
 
-        # System info labels
         self._os_label = widgets.Label(
             label="Loading…", halign="start", css_classes=["system-info-text"]
         )
@@ -75,26 +72,20 @@ class SystemInfoWidget(widgets.Box):
             child=[cpu_box, ram_box, info_box],
         )
 
-        # CPU stat tracking
         self._last_cpu_total = None
         self._last_cpu_idle = None
-
-        # Poll owners
         self._poll_cpu = None
         self._poll_ram = None
         self._poll_info = None
 
-        # Initial update
         self._update_cpu()
         self._update_ram()
         self._update_info()
 
-        # Start polling
         self._poll_cpu = utils.Poll(3000, self._update_cpu)
         self._poll_ram = utils.Poll(3000, self._update_ram)
         self._poll_info = utils.Poll(60000, self._update_info)
 
-        # Cleanup on destroy
         self.connect("destroy", self._cleanup)
 
     def _cleanup(self, *_):

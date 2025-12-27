@@ -68,7 +68,6 @@ class NetworkSection(widgets.Box):
     def __init__(self):
         super().__init__(vertical=True, spacing=10)
 
-        # Main pill button
         self._icon = widgets.Icon(image=_primary_net_icon(), pixel_size=22)
         self._label = widgets.Label(
             label=_generic_net_label(),
@@ -94,7 +93,6 @@ class NetworkSection(widgets.Box):
             on_right_click=lambda *_: self._toggle_airplane(),
         )
 
-        # WiFi section
         wifi_section = widgets.Box(
             vertical=True,
             spacing=4,
@@ -111,7 +109,6 @@ class NetworkSection(widgets.Box):
             ),
         )
 
-        # Ethernet section
         ethernet_section = widgets.Box(
             vertical=True,
             spacing=4,
@@ -120,7 +117,6 @@ class NetworkSection(widgets.Box):
             ),
         )
 
-        # VPN section
         vpn_section = widgets.Box(
             vertical=True,
             spacing=4,
@@ -130,7 +126,6 @@ class NetworkSection(widgets.Box):
             ),
         )
 
-        # Network details container
         self._device_list = widgets.Box(
             vertical=True,
             spacing=6,
@@ -139,10 +134,8 @@ class NetworkSection(widgets.Box):
             child=[wifi_section, ethernet_section, vpn_section],
         )
 
-        # Set children: pill button + device list
         self.child = [pill_button, self._device_list]
 
-        # Connect to network changes
         for obj, prop in [
             (wifi, "is_connected"),
             (wifi, "strength"),
@@ -165,7 +158,6 @@ class NetworkSection(widgets.Box):
         new_state = not self._device_list.visible
         self._device_list.visible = new_state
 
-        # Scan WiFi when opening
         if new_state and wifi.devices:
             asyncio.create_task(wifi.devices[0].scan())
 

@@ -15,9 +15,6 @@ CACHE_TTL = 600
 class WeatherPopup(widgets.Window):
 
     def __init__(self):
-        # ────────────────────────────────
-        # Header: big icon + city + temp
-        # ────────────────────────────────
         self._icon_label = widgets.Icon(
             image=icon_path("cloudy"),
             pixel_size=56,
@@ -29,13 +26,11 @@ class WeatherPopup(widgets.Window):
         self._desc_label = widgets.Label(label="—", css_classes=["weather-desc"])
         self._extra_label = widgets.Label(label="—", css_classes=["weather-extra"])
 
-        # Moon emoji (label)
         self._moon_label = widgets.Label(
             label="🌕",
             css_classes=["weather-moon-emoji"],
         )
 
-        # Hourly forecast row
         self._forecast_box = widgets.Box(
             spacing=16,
             halign="center",
@@ -45,18 +40,16 @@ class WeatherPopup(widgets.Window):
         self._weekly_box = widgets.Box(
             spacing=16,
             halign="center",
-            visible=False,  # Hidden by default
+            visible=False,
             css_classes=["weather-weekly-row"],
         )
 
-        # Arrow icon (rotates)
         self._weekly_arrow = widgets.Icon(
             image="pan-down-symbolic",
             pixel_size=16,
             css_classes=["weekly-arrow"],
         )
 
-        # Toggle button row
         self._weekly_toggle = widgets.Button(
             on_click=lambda x: self._toggle_weekly(),
             child=widgets.Box(
@@ -73,9 +66,6 @@ class WeatherPopup(widgets.Window):
             css_classes=["weather-weekly-toggle-btn", "unset"],
         )
 
-        # ────────────────────────────────
-        # Layout structure
-        # ────────────────────────────────
         left_row = widgets.Box(
             spacing=12,
             halign="start",
@@ -157,25 +147,17 @@ class WeatherPopup(widgets.Window):
             child=root_overlay,
         )
 
-        # internal state
         self._last_data: Optional[dict] = None
         self._update_task = None
         self._refresh_poll = None
 
-        # Connect to visibility for animation
         self.connect("notify::visible", self._on_visible_change)
 
-        # auto-refresh every CACHE_TTL seconds
         self._refresh_poll = utils.Poll(
             CACHE_TTL * 1000, lambda *_: self._update_weather()
         )
 
-        # Cleanup on destroy
         self.connect("destroy", self._cleanup)
-
-    # ───────────────────────────────────────────────
-    # Cleanup
-    # ───────────────────────────────────────────────
 
     def _cleanup(self, *_):
         """Cancel poll on destroy"""
@@ -193,10 +175,6 @@ class WeatherPopup(widgets.Window):
                 pass
             self._update_task = None
 
-    # ───────────────────────────────────────────────
-    # Animation handlers
-    # ───────────────────────────────────────────────
-
     def _on_visible_change(self, *_):
         """Handle reveal animation when window opens/closes"""
         if self.visible:
@@ -207,9 +185,6 @@ class WeatherPopup(widgets.Window):
             self._weekly_arrow.set_css_classes(["weekly-arrow"])
             self._weekly_toggle.child.child[0].label = "Show weekly forecast"
 
-    # ───────────────────────────────────────────────
-    # Public API
-    # ───────────────────────────────────────────────
     def toggle(self):
         if not self.visible:
             self.visible = True
@@ -220,30 +195,20 @@ class WeatherPopup(widgets.Window):
     def get_last_data(self):
         return self._last_data
 
-    # ───────────────────────────────────────────────
-    # Weekly toggle - simple show/hide (no animation)
-    # ───────────────────────────────────────────────
     def _toggle_weekly(self):
         """Toggle weekly forecast visibility"""
-        # ✅ FIX: Simple show/hide, no revealer
         current = self._weekly_box.visible
         new_state = not current
 
-        # Toggle visibility
         self._weekly_box.visible = new_state
 
-        # Update label
         label = "Hide weekly forecast" if new_state else "Show weekly forecast"
         self._weekly_toggle.child.child[0].label = label
 
-        # Rotate arrow icon
         self._weekly_arrow.set_css_classes(
             ["weekly-arrow", "rotated"] if new_state else ["weekly-arrow"]
         )
 
-    # ───────────────────────────────────────────────
-    # Weather update
-    # ───────────────────────────────────────────────
     def _update_weather(self):
         self._update_task = asyncio.create_task(self._update_weather_async())
         return True
@@ -256,7 +221,6 @@ class WeatherPopup(widgets.Window):
 
         self._last_data = data
 
-        # Header info
         self._icon_label.image = data["icon"]
         self._city_label.label = data["city"]
         self._temp_label.label = f"{data['temp']}°C"
@@ -272,9 +236,6 @@ class WeatherPopup(widgets.Window):
         if tip := data.get("moon_tooltip"):
             self._moon_label.set_tooltip_text(tip)
 
-        # ────────────────────────────────
-        # HOURLY FORECAST
-        # ────────────────────────────────
         hourly_items: List[widgets.Widget] = []
 
         for it in data["forecast"]:
@@ -301,7 +262,6 @@ class WeatherPopup(widgets.Window):
                 )
             )
 
-        # Sunrise & Sunset
         sunrise = format_time_hm(datetime.fromtimestamp(data["sunrise"]))
         sunset = format_time_hm(datetime.fromtimestamp(data["sunset"]))
 
@@ -331,9 +291,6 @@ class WeatherPopup(widgets.Window):
 
         self._forecast_box.child = hourly_items
 
-        # ────────────────────────────────
-        # WEEKLY FORECAST
-        # ────────────────────────────────
         weekly_items = []
         for it in data.get("weekly", []):
             weekly_items.append(
@@ -358,5 +315,4 @@ class WeatherPopup(widgets.Window):
                     ],
                 )
             )
-
         self._weekly_box.child = weekly_items

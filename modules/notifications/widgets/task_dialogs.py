@@ -16,21 +16,18 @@ class AddTaskDialog(widgets.Box):
 
         now = datetime.now()
 
-        # Time input
         self._time = widgets.Entry(
             placeholder_text="HH:MM",
             css_classes=["task-input", "task-time-input"],
         )
         self._time.text = ""
 
-        # Date input
         self._date = widgets.Entry(
             placeholder_text="DD-MM-YYYY",
             css_classes=["task-input", "task-date-input"],
         )
         self._date.text = now.strftime("%d-%m-%Y")
 
-        # Quick date button
         tomorrow_btn = widgets.Button(
             child=widgets.Label(label="Tomorrow"),
             css_classes=["date-quick-btn"],
@@ -48,7 +45,6 @@ class AddTaskDialog(widgets.Box):
             ],
         )
 
-        # Message input
         self._message = widgets.Entry(
             placeholder_text="What do you need to do?",
             css_classes=["task-input", "task-message-input"],
@@ -57,7 +53,6 @@ class AddTaskDialog(widgets.Box):
         )
         self._message.text = ""
 
-        # Buttons
         cancel_btn = widgets.Button(
             child=widgets.Label(label="Cancel"),
             css_classes=["task-dialog-btn", "cancel-btn"],
@@ -111,13 +106,11 @@ class AddTaskDialog(widgets.Box):
 
             dt = datetime(year, mon, day, hour, minute)
 
-            # If time is in the past, assume next occurrence
             if dt <= datetime.now():
                 dt += timedelta(days=1)
 
             self._on_add({"message": msg, "fire_at": int(dt.timestamp())})
         except Exception:
-            # Invalid input - silently ignore
             return
 
 
@@ -130,14 +123,12 @@ class EditTaskDialog(widgets.Box):
 
         fire_dt = datetime.fromtimestamp(task["fire_at"])
 
-        # Time input
         self._time = widgets.Entry(
             placeholder_text="HH:MM",
             css_classes=["task-input", "task-time-input"],
         )
         self._time.text = fire_dt.strftime("%H:%M")
 
-        # Date input
         self._date = widgets.Entry(
             placeholder_text="DD-MM-YYYY",
             css_classes=["task-input", "task-date-input"],
@@ -154,7 +145,6 @@ class EditTaskDialog(widgets.Box):
             ],
         )
 
-        # Message input
         self._message = widgets.Entry(
             placeholder_text="What do you need to do?",
             css_classes=["task-input", "task-message-input"],
@@ -163,7 +153,6 @@ class EditTaskDialog(widgets.Box):
         )
         self._message.text = task.get("message", "")
 
-        # Buttons
         cancel_btn = widgets.Button(
             child=widgets.Label(label="Cancel"),
             css_classes=["task-dialog-btn", "cancel-btn"],
@@ -212,7 +201,6 @@ class EditTaskDialog(widgets.Box):
 
             dt = datetime(year, mon, day, hour, minute)
 
-            # Don't allow setting task in the past
             if dt <= datetime.now():
                 return
 

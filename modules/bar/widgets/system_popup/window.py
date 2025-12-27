@@ -9,7 +9,7 @@ from modules.bar.widgets.bluetooth import BluetoothButton
 from settings import config
 
 from .audio_section import AudioSection
-from .network_section import NetworkSection  # ✅ Changed import
+from .network_section import NetworkSection
 from .system_info_section import SystemInfoWidget
 
 wm = WindowManager.get_default()
@@ -24,7 +24,6 @@ class SystemPopup(widgets.Window):
     """System menu popup with quick settings and network controls"""
 
     def __init__(self):
-        # Top row buttons
         record_btn = widgets.Button(
             css_classes=["sys-top-btn", "unset"],
             on_click=lambda x: (
@@ -69,7 +68,6 @@ class SystemPopup(widgets.Window):
             ],
         )
 
-        # Audio sliders
         speaker = AudioSection(stream=audio.speaker, device_type="speaker")
         mic = AudioSection(stream=audio.microphone, device_type="microphone")
 
@@ -80,7 +78,6 @@ class SystemPopup(widgets.Window):
             child=[speaker, mic],
         )
 
-        # Network section
         network_section = NetworkSection()
 
         network_content = widgets.Box(
@@ -90,10 +87,8 @@ class SystemPopup(widgets.Window):
             child=[network_section],
         )
 
-        # System info
         system_info = SystemInfoWidget()
 
-        # Main panel
         panel = widgets.Box(
             vertical=True,
             spacing=6,
@@ -106,7 +101,6 @@ class SystemPopup(widgets.Window):
             ],
         )
 
-        # Revealer for slide animation
         self._revealer = widgets.Revealer(
             child=panel,
             reveal_child=False,
@@ -114,7 +108,6 @@ class SystemPopup(widgets.Window):
             transition_duration=config.animations.revealer_duration,
         )
 
-        # Overlay click-to-close
         overlay_btn = widgets.Button(
             vexpand=True,
             hexpand=True,

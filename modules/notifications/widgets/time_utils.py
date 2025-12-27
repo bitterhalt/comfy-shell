@@ -8,40 +8,40 @@ import time
 def format_time_until(fire_at: int) -> str:
     """
     Format time remaining until a timestamp.
-    
+
     Args:
         fire_at: Unix timestamp
-        
+
     Returns:
         Human-readable time string (e.g., "2h 30m", "15m", "Overdue!")
     """
     now = int(time.time())
     diff = fire_at - now
-    
+
     if diff < 0:
         return "Overdue!"
-    
+
     hours = diff // 3600
     minutes = (diff % 3600) // 60
-    
+
     if hours >= 24:
         days = hours // 24
         hours = hours % 24
         return f"{days}d {hours}h"
-    
+
     if hours > 0:
         return f"{hours}h {minutes}m"
-    
+
     return f"{minutes}m"
 
 
 def format_time_ago(timestamp: int) -> str:
     """
     Format how long ago a timestamp was.
-    
+
     Args:
         timestamp: Unix timestamp
-        
+
     Returns:
         Human-readable time string (e.g., "5 minutes ago", "2 hours ago")
     """

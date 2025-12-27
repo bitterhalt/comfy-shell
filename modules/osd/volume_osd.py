@@ -49,7 +49,6 @@ class VolumeOSD(widgets.Window):
             child=content,
         )
 
-        # React when Ignis toggles visibility
         self.connect("notify::visible", self._on_visible_changed)
 
     # ---------------------------------------------------------------

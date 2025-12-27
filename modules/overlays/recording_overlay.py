@@ -17,7 +17,6 @@ class RecordingOverlay(widgets.Window):
     """Shadowplay-style recording overlay"""
 
     def __init__(self):
-        # Screenshot button
         self._screenshot_icon = widgets.Icon(
             image="camera-photo-symbolic",
             css_classes=["screenshot-icon"],
@@ -40,7 +39,6 @@ class RecordingOverlay(widgets.Window):
             ),
         )
 
-        # Screenshot Region button
         self._screenshot_region_icon = widgets.Icon(
             image="image-crop-symbolic",
             css_classes=["screenshot-region-icon"],
@@ -85,7 +83,6 @@ class RecordingOverlay(widgets.Window):
             ),
         )
 
-        # Record Region button
         self._record_region_icon = widgets.Icon(
             image="edit-select-all-symbolic",
             css_classes=["record-region-icon"],
@@ -108,7 +105,6 @@ class RecordingOverlay(widgets.Window):
             ),
         )
 
-        # Main content box
         buttons_box = widgets.Box(
             spacing=24,
             halign="center",
@@ -129,7 +125,6 @@ class RecordingOverlay(widgets.Window):
             child=[buttons_box],
         )
 
-        # Click outside to close
         overlay_btn = widgets.Button(
             vexpand=True,
             hexpand=True,
@@ -159,7 +154,6 @@ class RecordingOverlay(widgets.Window):
         recorder.connect("recording_started", lambda x: self._update_recording_state())
         recorder.connect("recording_stopped", lambda x: self._update_recording_state())
 
-        # Initial state
         self._update_recording_state()
 
     def _update_recording_state(self):

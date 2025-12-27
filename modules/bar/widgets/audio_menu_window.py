@@ -5,11 +5,6 @@ from modules.utils.signal_manager import SignalManager
 audio = AudioService.get_default()
 
 
-# ───────────────────────────────────────────────────────────────
-#  DEVICE ROW
-# ───────────────────────────────────────────────────────────────
-
-
 class AudioDeviceItem(widgets.Button):
     """Individual audio device button"""
 
@@ -37,11 +32,6 @@ class AudioDeviceItem(widgets.Button):
         )
 
 
-# ───────────────────────────────────────────────────────────────
-#  AUDIO SECTION
-# ───────────────────────────────────────────────────────────────
-
-
 class AudioSection(widgets.Box):
     """Audio section with slider and expandable device list."""
 
@@ -50,10 +40,7 @@ class AudioSection(widgets.Box):
 
         self.stream = stream
         self.device_type = device_type
-
-        # Signal manager for cleanup
         self._signals = SignalManager()
-
         mute_icon = widgets.Icon(
             image=stream.bind(
                 "is_muted",
@@ -76,9 +63,6 @@ class AudioSection(widgets.Box):
             on_click=lambda *_: setattr(stream, "is_muted", not stream.is_muted),
         )
 
-        # ─────────────────────────────────────────────
-        #  SLIDER
-        # ─────────────────────────────────────────────
         slider = widgets.Scale(
             min=0,
             max=100,
@@ -90,14 +74,10 @@ class AudioSection(widgets.Box):
             css_classes=["pill-audio-scale"],
         )
 
-        # Track volume changes for icon update
         self._signals.connect(
             stream, "notify::volume", lambda *_: self._update_icon(mute_icon)
         )
 
-        # ─────────────────────────────────────────────
-        #  EXPAND ARROW
-        # ─────────────────────────────────────────────
         self._arrow = widgets.Arrow(
             pixel_size=18,
             rotated=False,
@@ -110,13 +90,11 @@ class AudioSection(widgets.Box):
             on_click=lambda *_: self._toggle_list(),
         )
 
-        # Row layout
         row = widgets.Box(
             spacing=2,
             child=[mute_btn, slider, arrow_btn],
         )
 
-        # Device list container
         self._device_list = widgets.Box(
             vertical=True,
             spacing=8,
@@ -128,7 +106,6 @@ class AudioSection(widgets.Box):
 
         self._populate_devices()
 
-        # Track device changes through signal manager
         self._signals.connect(
             audio, f"{device_type}-added", lambda *_: self._populate_devices()
         )
@@ -136,9 +113,6 @@ class AudioSection(widgets.Box):
             audio, f"notify::{device_type}", lambda *_: self._populate_devices()
         )
 
-    # ─────────────────────────────────────────────
-    #  ICON LOGIC
-    # ─────────────────────────────────────────────
     def _volume_icon(self, vol: int):
         """Return correct volume icon based on volume percent."""
         if self.device_type == "microphone":
@@ -162,9 +136,6 @@ class AudioSection(widgets.Box):
         else:
             icon_widget.image = self._volume_icon(self.stream.volume)
 
-    # ─────────────────────────────────────────────
-    #  DEVICE LIST MANAGEMENT
-    # ─────────────────────────────────────────────
     def _toggle_list(self):
         new_state = not self._device_list.visible
         self._arrow.rotated = new_state

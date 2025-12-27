@@ -12,11 +12,6 @@ from settings import config
 wm = WindowManager.get_default()
 
 
-# ───────────────────────────────────────────────────────────────
-# Hyprland client helpers
-# ───────────────────────────────────────────────────────────────
-
-
 @dataclass
 class ClientEntry:
     sortkey: int
@@ -80,17 +75,12 @@ def _fetch_clients(reverse: bool = False) -> List[ClientEntry]:
     return entries
 
 
-# ───────────────────────────────────────────────────────────────
-# Row widget
-# ───────────────────────────────────────────────────────────────
-
-
 class WindowRow(widgets.Button):
     def __init__(self, client: ClientEntry):
         self._client = client
 
         super().__init__(
-            css_classes=["winlist-row", "unset"],  # unset to remove focus ring
+            css_classes=["winlist-row", "unset"],
             on_click=lambda *_: self._focus(),
             child=widgets.Box(
                 spacing=10,
@@ -117,11 +107,6 @@ class WindowRow(widgets.Button):
             check=False,
         )
         wm.close_window("ignis_WINDOW_SWITCHER")
-
-
-# ───────────────────────────────────────────────────────────────
-# Main popup
-# ───────────────────────────────────────────────────────────────
 
 
 class WindowSwitcher(widgets.Window):

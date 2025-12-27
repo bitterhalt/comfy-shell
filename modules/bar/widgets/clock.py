@@ -13,10 +13,7 @@ def clock():
     """Clock with notification indicator (fully correct & leak-safe)"""
 
     signals = SignalManager()
-
-    # ──────────────────────────────────────────────
-    # UI
-    # ──────────────────────────────────────────────
+    clock_poll = None
 
     clock_label = widgets.Label(css_classes=["clock"])
 
@@ -36,10 +33,6 @@ def clock():
         css_classes=["clock-button"],
         on_click=lambda *_: wm.open_window("ignis_INTEGRATED_CENTER"),
     )
-
-    # ──────────────────────────────────────────────
-    # Helpers
-    # ──────────────────────────────────────────────
 
     def update_time():
         return datetime.datetime.now().strftime("%H:%M")
@@ -64,7 +57,6 @@ def clock():
             notif_dot.visible = False
 
     def watch_notification(nt):
-        # Update dot when notification is removed
         signals.connect(nt, "closed", update_notifications)
         try:
             signals.connect(nt, "dismissed", update_notifications)
@@ -75,34 +67,25 @@ def clock():
         watch_notification(nt)
         update_notifications()
 
-    # ──────────────────────────────────────────────
-    # Clock update (safe Poll binding)
-    # ──────────────────────────────────────────────
-
-    clock_label.set_property(
-        "label",
-        utils.Poll(60000, lambda *_: update_time()).bind("output"),
-    )
-
-    # ──────────────────────────────────────────────
-    # Notification wiring (ADD + REMOVE)
-    # ──────────────────────────────────────────────
+    clock_poll = utils.Poll(60000, lambda *_: update_time())
+    clock_label.set_property("label", clock_poll.bind("output"))
 
     signals.connect(notifications, "notified", on_new_notification)
     signals.connect(notifications, "new_popup", on_new_notification)
 
-    # Track existing notifications (important on reload)
     for nt in notifications.notifications:
         watch_notification(nt)
 
-    # Cleanup when widget dies (reload-safe)
-    signals.connect(
-        clock_button,
-        "destroy",
-        lambda *_: signals.disconnect_all(),
-    )
+    def cleanup(*_):
+        signals.disconnect_all()
+        if clock_poll:
+            try:
+                clock_poll.cancel()
+            except:
+                pass
 
-    # Initial state
+    signals.connect(clock_button, "destroy", cleanup)
+
     update_notifications()
 
     return clock_button

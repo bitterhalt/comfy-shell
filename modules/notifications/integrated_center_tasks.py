@@ -27,18 +27,13 @@ class TaskList:
         self._storage = _storage_manager
         self._poll = None
         self._is_visible = False
-
-        # Task list container
         self._task_list = widgets.Box(vertical=True, css_classes=["content-list"])
-
-        # Empty state
         self._task_empty = widgets.Label(
             label="No tasks",
             css_classes=["empty-state"],
             valign="center",
         )
 
-        # Scrollable container
         self.scroll = widgets.Scroll(
             vexpand=True,
             vscrollbar_policy="automatic",
@@ -49,7 +44,6 @@ class TaskList:
             ),
         )
 
-        # Next task pill
         self._next_task_title = widgets.Label(
             label="No tasks for today",
             ellipsize="end",
@@ -80,13 +74,8 @@ class TaskList:
             ],
         )
 
-        # Initial load
         self.reload()
-
-        # Poll
         self._poll = utils.Poll(60000, lambda *_: self._poll_update())
-
-        # Cleanup
         self.scroll.connect("destroy", lambda *_: self._cleanup())
 
     def _cleanup(self, *_):
@@ -100,19 +89,14 @@ class TaskList:
 
     def _poll_update(self):
         """Periodic update - only if visible and has tasks"""
-        # Skip if not visible
         if not self._is_visible:
             return True
 
-        # Quick check: do we even have tasks?
         now = int(time.time())
         count = self._storage.get_pending_count(now)
 
         if count == 0:
-            # No tasks, skip expensive reload
             return True
-
-        # Only reload if we have tasks
         self.reload()
         return True
 
@@ -121,22 +105,16 @@ class TaskList:
         self._is_visible = visible
 
         if visible:
-            # Force refresh when opening
             self._storage.invalidate_cache()
             self.reload()
 
     def reload(self):
         """Reload tasks from storage (uses cache for performance)"""
         now = int(time.time())
-
-        # Single cached read
         all_tasks = self._storage.load_tasks()
-
-        # Filter and sort in memory
         pending_tasks = [task for task in all_tasks if task.get("fire_at", 0) > now]
         pending_tasks.sort(key=lambda t: t["fire_at"])
 
-        # Update UI
         self._task_list.child = [
             TaskItem(
                 task,
@@ -147,10 +125,7 @@ class TaskList:
             for task in pending_tasks
         ]
         self._task_empty.visible = len(pending_tasks) == 0
-
-        # Update next task pill
         self._update_next_task_pill(pending_tasks)
-
         return True
 
     def _update_next_task_pill(self, pending_tasks: list):
@@ -181,10 +156,6 @@ class TaskList:
         self._next_task_meta.label = f"{day_label} • {time_label} • {remaining}"
         self._next_task_meta.visible = True
 
-    # ═══════════════════════════════════════════════════════════════
-    # Task Operations
-    # ═══════════════════════════════════════════════════════════════
-
     def _add_task(self, task: Dict):
         """Add task with single write operation"""
         if self._storage.batch_update(lambda tasks: tasks + [task]):
@@ -212,7 +183,6 @@ class TaskList:
         """Mark task as complete"""
         self._delete_task(task)
 
-    # Dialog management
     def _open_add_dialog(self):
         dialog = AddTaskDialog(
             on_add=lambda task: (self._add_task(task), self._on_show_dialog(None)),

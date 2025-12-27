@@ -8,17 +8,6 @@ from gi.repository import GObject
 
 
 class SignalManager:
-    """
-    Manages signal connections to prevent memory leaks.
-
-    Usage:
-        self._signals = SignalManager()
-        self._signals.connect(obj, "signal-name", handler)
-
-        # Later:
-        self._signals.disconnect_all()
-    """
-
     def __init__(self):
         self._connections: List[Tuple[GObject.Object, int]] = []
 
@@ -36,7 +25,7 @@ class SignalManager:
             try:
                 obj.disconnect(handler_id)
             except:
-                pass  # Object may be destroyed
+                pass
 
         self._connections.clear()
 

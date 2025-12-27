@@ -9,9 +9,6 @@ from settings import config
 
 from .moon import moon_icon_for, moon_tooltip
 
-# ───────────────────────────────────────────────
-# CONFIG
-# ───────────────────────────────────────────────
 CACHE_FILE = config.paths.weather_cache
 CACHE_TTL = config.weather.cache_ttl
 USE_12H = config.weather.use_12h_format
@@ -20,18 +17,8 @@ API_KEY = config.weather.api_key
 CITY_ID = config.weather.city_id
 
 
-# ───────────────────────────────────────────────
-# ICON PATH
-# ───────────────────────────────────────────────
-
-
 def icon_path(name: str) -> str:
     return f"{ICON_BASE}/{name}.svg"
-
-
-# ───────────────────────────────────────────────
-# TIME FORMATTERS
-# ───────────────────────────────────────────────
 
 
 def format_time_hm(dt: datetime) -> str:
@@ -39,11 +26,6 @@ def format_time_hm(dt: datetime) -> str:
     if USE_12H:
         return dt.strftime("%-I:%M %p").lstrip("0")
     return dt.strftime("%H:%M")
-
-
-# ───────────────────────────────────────────────
-# CACHE HELPERS
-# ───────────────────────────────────────────────
 
 
 def _load_cache() -> Optional[Dict[str, Any]]:
@@ -63,11 +45,6 @@ def _save_cache(data: Dict[str, Any]):
         pass
 
 
-# ───────────────────────────────────────────────
-# OPENWEATHER FETCH HELPERS
-# ───────────────────────────────────────────────
-
-
 def _build_url(endpoint: str) -> Optional[str]:
     if not API_KEY:
         return None
@@ -83,11 +60,6 @@ async def _curl_json_async(url: str) -> Optional[dict]:
         return json.loads(res.stdout)
     except:
         return None
-
-
-# ───────────────────────────────────────────────
-# WEATHER → CUSTOM ICONS
-# ───────────────────────────────────────────────
 
 
 def _map_icon(code: str) -> str:
@@ -118,16 +90,10 @@ def _map_icon(code: str) -> str:
     return icon_path("not-available")
 
 
-# ───────────────────────────────────────────────
-# MAIN FETCH FUNCTION
-# ───────────────────────────────────────────────
-
-
 async def fetch_weather_async() -> Optional[Dict[str, Any]]:
     cached = _load_cache()
     now = int(time.time())
 
-    # valid cache?
     if cached and now - cached.get("timestamp", 0) < CACHE_TTL:
         return cached["data"]
 
@@ -145,7 +111,6 @@ async def fetch_weather_async() -> Optional[Dict[str, Any]]:
     if not now_json or not fc_json:
         return cached["data"] if cached else None
 
-    # Extract data
     try:
         main = now_json["main"]
         weather0 = now_json["weather"][0]
@@ -161,9 +126,6 @@ async def fetch_weather_async() -> Optional[Dict[str, Any]]:
         desc = weather0["description"].title()
         icon_code = weather0["icon"]
 
-        # ───────────────────────────────────────────────
-        # HOURLY FORECAST
-        # ───────────────────────────────────────────────
         forecast_list = fc_json["list"][:4]
         forecast = []
         for entry in forecast_list:
@@ -177,7 +139,6 @@ async def fetch_weather_async() -> Optional[Dict[str, Any]]:
                 }
             )
 
-        # Current date for moon phase
         current_date = datetime.now()
 
         data = {
@@ -195,10 +156,6 @@ async def fetch_weather_async() -> Optional[Dict[str, Any]]:
             "moon_icon": moon_icon_for(current_date),
             "moon_tooltip": moon_tooltip(current_date),
         }
-
-        # ───────────────────────────────────────────────
-        # WEEKLY FORECAST
-        # ───────────────────────────────────────────────
 
         daily_map = {}
         for entry in fc_json["list"]:
@@ -227,9 +184,8 @@ async def fetch_weather_async() -> Optional[Dict[str, Any]]:
             )
 
         weekly = weekly[:5]
-        data["weekly"] = weekly  # ← Added weekly forecast ⭐
+        data["weekly"] = weekly
 
-        # Save cache
         _save_cache({"timestamp": int(time.time()), "data": data})
         return data
 

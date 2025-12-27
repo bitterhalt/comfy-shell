@@ -85,21 +85,15 @@ def system_indicator():
         else:
             speaker_icon.remove_css_class("muted")
 
-    # Initial state
     refresh()
 
-    # Audio signals
     signals.connect(audio.speaker, "notify::is-muted", refresh)
     signals.connect(audio.speaker, "notify::volume", refresh)
     signals.connect(audio.microphone, "notify::is-muted", refresh)
-
-    # Network signals
     signals.connect(wifi, "notify::is-connected", refresh)
     signals.connect(wifi, "notify::icon-name", refresh)
     signals.connect(ethernet, "notify::is-connected", refresh)
     signals.connect(vpn, "notify::is-connected", refresh)
-
-    # Cleanup on widget destroy (reload-safe)
     signals.connect(
         button,
         "destroy",

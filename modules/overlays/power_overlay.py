@@ -19,19 +19,16 @@ class ConfirmDialog(widgets.Window):
         self.on_confirm_callback = on_confirm
         self.on_cancel_callback = on_cancel
 
-        # Title
         title_label = widgets.Label(
             label=title,
             css_classes=["confirm-dialog-title"],
         )
 
-        # Message
         message_label = widgets.Label(
             label=message,
             css_classes=["confirm-dialog-message"],
         )
 
-        # Cancel button
         cancel_btn = widgets.Button(
             label="Cancel",
             css_classes=["confirm-dialog-btn", "confirm-dialog-cancel"],
@@ -39,7 +36,6 @@ class ConfirmDialog(widgets.Window):
             can_focus=True,
         )
 
-        # Confirm button
         confirm_btn = widgets.Button(
             label="Confirm",
             css_classes=["confirm-dialog-btn", "confirm-dialog-confirm"],
@@ -47,14 +43,12 @@ class ConfirmDialog(widgets.Window):
             can_focus=True,
         )
 
-        # Buttons box
         buttons_box = widgets.Box(
             spacing=12,
             halign="center",
             child=[cancel_btn, confirm_btn],
         )
 
-        # Content box
         content_box = widgets.Box(
             vertical=True,
             spacing=24,
@@ -66,14 +60,12 @@ class ConfirmDialog(widgets.Window):
             ],
         )
 
-        # Center the content
         centered = widgets.Box(
             valign="center",
             halign="center",
             child=[content_box],
         )
 
-        # Background button to close on click
         background_btn = widgets.Button(
             vexpand=True,
             hexpand=True,
@@ -82,7 +74,6 @@ class ConfirmDialog(widgets.Window):
             on_click=lambda *_: self._cancel(),
         )
 
-        # Use Overlay like your other modules
         root = widgets.Overlay(
             child=background_btn,
             overlays=[centered],
@@ -100,10 +91,8 @@ class ConfirmDialog(widgets.Window):
             kb_mode="exclusive",
         )
 
-        # Setup keyboard controller
         self._setup_keyboard_controller()
 
-        # Focus confirm button by default
         confirm_btn.grab_focus()
 
     def _setup_keyboard_controller(self):
@@ -155,7 +144,6 @@ class PowerOverlay(widgets.Window):
     """Shadowplay-style power menu overlay"""
 
     def __init__(self):
-        # Lock button
         lock_btn = widgets.Button(
             css_classes=["power-overlay-btn"],
             on_click=lambda *_: self._lock(),
@@ -176,7 +164,6 @@ class PowerOverlay(widgets.Window):
             ),
         )
 
-        # Logout button
         logout_btn = widgets.Button(
             css_classes=["power-overlay-btn"],
             on_click=lambda *_: self._logout(),
@@ -197,7 +184,6 @@ class PowerOverlay(widgets.Window):
             ),
         )
 
-        # Suspend button
         suspend_btn = widgets.Button(
             css_classes=["power-overlay-btn"],
             on_click=lambda *_: self._suspend(),
@@ -218,7 +204,6 @@ class PowerOverlay(widgets.Window):
             ),
         )
 
-        # Reboot button
         reboot_btn = widgets.Button(
             css_classes=["power-overlay-btn", "power-overlay-btn-danger"],
             on_click=lambda *_: self._reboot(),
@@ -240,7 +225,6 @@ class PowerOverlay(widgets.Window):
             ),
         )
 
-        # Shutdown button
         shutdown_btn = widgets.Button(
             css_classes=["power-overlay-btn", "power-overlay-btn-danger"],
             on_click=lambda *_: self._shutdown(),
@@ -308,7 +292,6 @@ class PowerOverlay(widgets.Window):
             kb_mode="exclusive",
         )
 
-        # Setup keyboard controller
         self._setup_keyboard_controller()
 
     def _setup_keyboard_controller(self):
@@ -323,32 +306,26 @@ class PowerOverlay(widgets.Window):
         """Handle keyboard shortcuts"""
         keyname = Gdk.keyval_name(keyval)
 
-        # Escape to close
         if keyname == "Escape":
             self.toggle()
             return True
 
-        # L - Lock
         elif keyname.lower() == "l":
             self._lock()
             return True
 
-        # E - Exit (logout)
         elif keyname.lower() == "e":
             self._logout()
             return True
 
-        # Z - Sleep (suspend)
         elif keyname.lower() == "z":
             self._suspend()
             return True
 
-        # R - Reboot
         elif keyname.lower() == "r":
             self._reboot()
             return True
 
-        # S - Shutdown
         elif keyname.lower() == "s":
             self._shutdown()
             return True

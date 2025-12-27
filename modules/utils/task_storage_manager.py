@@ -18,7 +18,6 @@ class TaskStorageManager:
         self._cache_ttl: float = 30.0
         self._dirty: bool = False
 
-        # Ensure file exists
         if not self.storage_file.exists():
             self.storage_file.parent.mkdir(parents=True, exist_ok=True)
             self.storage_file.write_text("[]")
@@ -40,7 +39,6 @@ class TaskStorageManager:
         """
         now = time.time()
 
-        # Return cached data if valid and not forced
         if (
             not force_refresh
             and self._cache is not None
@@ -48,20 +46,17 @@ class TaskStorageManager:
         ):
             return self._cache.copy()
 
-        # Read from disk
         try:
             with self._locked_file("r") as f:
                 content = f.read()
                 tasks = json.loads(content) if content.strip() else []
 
-                # Update cache
                 self._cache = tasks
                 self._cache_time = now
                 self._dirty = False
 
                 return tasks.copy()
         except:
-            # On error, return stale cache if available
             if self._cache is not None:
                 return self._cache.copy()
             return []
@@ -72,7 +67,6 @@ class TaskStorageManager:
             with self._locked_file("w") as f:
                 json.dump(tasks, f, indent=2)
 
-            # Update cache
             self._cache = tasks.copy()
             self._cache_time = time.time()
             self._dirty = False

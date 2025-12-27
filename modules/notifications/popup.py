@@ -14,9 +14,9 @@ class NotificationWidget(widgets.Box):
         title_class = "notif-title"
         body_class = "notif-body"
 
-        if notification.urgency == 0:  # Low Urgency
+        if notification.urgency == 0:
             urgency_class = "notif-low"
-        elif notification.urgency == 2:  # Critical Urgency
+        elif notification.urgency == 2:
             urgency_class = "notif-critical"
             title_class = "notif-title-critical"
             body_class = "notif-body-critical"
@@ -109,27 +109,20 @@ class Popup(widgets.Revealer):
             child=widget,
         )
 
-        # Track notification signals through SignalManager
         self._signals.connect(notification, "dismissed", lambda *_: self.destroy())
         self._signals.connect(notification, "closed", lambda *_: self.destroy())
 
     def destroy(self):
         """Simple animated destruction with proper cleanup"""
-        # Disconnect all signals first
         self._signals.disconnect_all()
-
-        # Start close animation
         self.reveal_child = False
 
-        # Wait for animation to complete, then cleanup
         utils.Timeout(self.transition_duration, self._cleanup)
 
     def _cleanup(self):
         """Remove popup and check if window should hide"""
-        # Remove from parent
         self.unparent()
 
-        # Auto-hide window when last popup is gone
         visible_popups = [
             child
             for child in self._parent_box.child
@@ -153,20 +146,16 @@ class PopupBox(widgets.Box):
             halign="end",
         )
 
-        # Connect to new popup signal through SignalManager
         self._signals.connect(notifications, "new_popup", self._on_new_popup)
 
     def _on_new_popup(self, service, notification: Notification):
         """Add new notification popup"""
-        # Create popup
         popup = Popup(parent_box=self, notification=notification)
         self.prepend(popup)
 
-        # Show window if hidden
         if not self._window.visible:
             self._window.visible = True
 
-        # Reveal with small delay to ensure window is visible
         utils.Timeout(10, popup.set_reveal_child, True)
 
     def cleanup(self):

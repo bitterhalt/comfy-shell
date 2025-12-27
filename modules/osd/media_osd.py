@@ -5,9 +5,6 @@ from settings import config
 TIMEOUT = config.ui.media_osd_timeout
 mpris = MprisService.get_default()
 
-# --------------------------------------------------------------------
-# PLAYER ICON + NAME MAPPING
-# --------------------------------------------------------------------
 
 PLAYER_ICONS = {
     "spotify": "spotify-symbolic",
@@ -63,11 +60,6 @@ def get_player_name(player):
     return entry.replace("-", " ").title() if entry else PLAYER_NAMES[None]
 
 
-# --------------------------------------------------------------------
-# MPRIS HELPERS
-# --------------------------------------------------------------------
-
-
 def _active_player():
     players = mpris.players
     return players[0] if players else None
@@ -91,17 +83,12 @@ def mpris_toggle():
         player.play_pause()
 
 
-# --------------------------------------------------------------------
-# MEDIA OSD WINDOW
-# --------------------------------------------------------------------
-
-
 class MediaOsdWindow(widgets.Window):
     def __init__(self):
         self._timeout = None
         self._bound_player = None
+        self._player_signals = None
 
-        # ── Header
         self._app_icon = widgets.Icon(
             image=PLAYER_ICONS[None],
             pixel_size=20,
@@ -137,14 +124,12 @@ class MediaOsdWindow(widgets.Window):
             ],
         )
 
-        # ── Album art
         self._album_art = widgets.Icon(
             image="folder-music-symbolic",
             pixel_size=100,
             css_classes=["media-osd-art"],
         )
 
-        # ── Labels
         self._title_label = widgets.Label(
             label="No Title",
             ellipsize="end",
@@ -165,7 +150,6 @@ class MediaOsdWindow(widgets.Window):
             child=[self._title_label, self._artist_label],
         )
 
-        # ── Controls (under text)
         self._btn_prev = widgets.Button(
             css_classes=["media-osd-control"],
             on_click=lambda *_: mpris_prev(),
@@ -202,7 +186,6 @@ class MediaOsdWindow(widgets.Window):
             child=[self._btn_prev, self._btn_play, self._btn_next],
         )
 
-        # ── Text column (labels + controls)
         text_column = widgets.Box(
             vertical=True,
             spacing=6,
@@ -211,7 +194,6 @@ class MediaOsdWindow(widgets.Window):
             child=[labels, controls],
         )
 
-        # ── Main row
         main_row = widgets.Box(
             spacing=12,
             child=[self._album_art, text_column],
@@ -241,8 +223,20 @@ class MediaOsdWindow(widgets.Window):
         )
 
         self.connect("notify::visible", self._on_visible_changed)
+        self.connect("destroy", self._cleanup)
 
-    # ----------------------------------------------------------------
+    def _cleanup(self, *_):
+        """Cleanup on destroy"""
+        if self._timeout:
+            try:
+                self._timeout.cancel()
+            except:
+                pass
+            self._timeout = None
+
+        if self._player_signals:
+            self._player_signals.disconnect_all()
+            self._player_signals = None
 
     def _on_visible_changed(self, *_):
         if self.get_visible():
@@ -263,17 +257,24 @@ class MediaOsdWindow(widgets.Window):
     def show_osd(self):
         self.set_visible(True)
 
-    # ----------------------------------------------------------------
-
     def _bind_play_icon(self, player):
-        self._btn_play_icon.image = player.bind(
-            "playback_status",
-            lambda s: (
+        from modules.utils.signal_manager import SignalManager
+
+        if self._player_signals:
+            self._player_signals.disconnect_all()
+
+        self._player_signals = SignalManager()
+
+        def update_icon(*_):
+            status = player.playback_status
+            self._btn_play_icon.image = (
                 "media-playback-pause-symbolic"
-                if s == "Playing"
+                if status == "Playing"
                 else "media-playback-start-symbolic"
-            ),
-        )
+            )
+
+        self._player_signals.connect(player, "notify::playback-status", update_icon)
+        update_icon()
 
     def _update_content(self):
         player = _active_player()
@@ -290,20 +291,16 @@ class MediaOsdWindow(widgets.Window):
             self._btn_next.set_sensitive(False)
             return
 
-        # App info
         self._app_icon.image = get_player_icon(player)
         self._app_name.label = get_player_name(player)
 
-        # Track info
         self._title_label.label = player.title or "Unknown Title"
         self._artist_label.label = player.artist or "Unknown Artist"
         self._album_art.image = player.art_url or "folder-music-symbolic"
 
-        # Bind playback state once per player
         if self._bound_player != player:
             self._bind_play_icon(player)
             self._bound_player = player
 
-        # Capabilities
         self._btn_prev.set_sensitive(player.can_go_previous)
         self._btn_next.set_sensitive(player.can_go_next)

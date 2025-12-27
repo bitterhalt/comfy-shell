@@ -46,15 +46,8 @@ class WeatherPill:
             ),
         )
 
-        # Initial update
         self.update()
-
-        # OWNED poll (every 10 minutes)
         self._poll = utils.Poll(600000, self.update)
-
-    # ──────────────────────────────────────────────
-    # Lifecycle
-    # ──────────────────────────────────────────────
 
     def destroy(self):
         if self._poll:
@@ -63,10 +56,6 @@ class WeatherPill:
             except Exception:
                 pass
             self._poll = None
-
-    # ──────────────────────────────────────────────
-    # Updates
-    # ──────────────────────────────────────────────
 
     def update(self, *_):
         asyncio.create_task(self._update_async())
@@ -91,10 +80,6 @@ class WeatherPill:
             "\nClick to open weather details"
         )
         self._weather_icon.set_tooltip_text(tooltip)
-
-    # ──────────────────────────────────────────────
-    # Actions
-    # ──────────────────────────────────────────────
 
     def _open_weather_popup(self):
         try:

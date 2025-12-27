@@ -55,10 +55,6 @@ class WorkspaceOSD(widgets.Window):
 
         self.connect("destroy", self._cleanup)
 
-    # ──────────────────────────────────────────────────────────
-    # CLEANUP
-    # ──────────────────────────────────────────────────────────
-
     def _cleanup(self, *_):
         """Cleanup all signal connections and timeouts"""
         self._signals.disconnect_all()
@@ -68,10 +64,6 @@ class WorkspaceOSD(widgets.Window):
             except:
                 pass
             self._timeout = None
-
-    # ──────────────────────────────────────────────────────────
-    # VISIBILITY HANDLING
-    # ──────────────────────────────────────────────────────────
 
     def _on_visible_changed(self, *_):
         if self.get_visible():
@@ -90,16 +82,8 @@ class WorkspaceOSD(widgets.Window):
             self._timeout.cancel()
             self._timeout = None
 
-    # ──────────────────────────────────────────────────────────
-    # OSD TRIGGERING
-    # ──────────────────────────────────────────────────────────
-
     def show_osd(self):
         self.set_visible(True)
-
-    # ──────────────────────────────────────────────────────────
-    # WORKSPACE CHANGES
-    # ──────────────────────────────────────────────────────────
 
     def _on_workspace_change(self, *_):
         if _bar_visible:
@@ -124,11 +108,6 @@ class WorkspaceOSD(widgets.Window):
             return str(niri.active_workspace.idx)
 
         return None
-
-
-# ───────────────────────────────────────────────────────────────
-# EXTERNAL API (called from config.py)
-# ───────────────────────────────────────────────────────────────
 
 
 def init_workspace_osd():

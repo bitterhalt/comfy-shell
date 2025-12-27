@@ -17,17 +17,9 @@ wm = WindowManager.get_default()
 class IntegratedCenter(widgets.Window):
 
     def __init__(self):
-        # -------------------------------------------------------
-        # LEFT COLUMN: NOTIFICATIONS + MEDIA
-        # -------------------------------------------------------
-
-        # Media pill
         self._media_pill = MediaCenterWidget()
-
-        # Notification list
         self._notification_list = NotificationList()
 
-        # DND toggle
         dnd_switch = widgets.Switch(
             active=options.notifications.bind("dnd"),
             on_change=lambda _, s: options.notifications.set_dnd(s),
@@ -44,7 +36,6 @@ class IntegratedCenter(widgets.Window):
             ],
         )
 
-        # Clear button
         clear_btn = widgets.Button(
             child=widgets.Label(label="Clear All"),
             css_classes=["header-action-btn"],
@@ -67,21 +58,13 @@ class IntegratedCenter(widgets.Window):
             ],
         )
 
-        # -------------------------------------------------------
-        # RIGHT COLUMN: WEATHER + CALENDAR + TASKS
-        # -------------------------------------------------------
-
-        # Weather pill
         self._weather_pill = WeatherPill()
-
-        # Calendar
         self._calendar = widgets.Calendar(
             css_classes=["center-calendar"],
             show_day_names=True,
             show_heading=False,
         )
         self._calendar_expanded = False
-
         self._calendar_expander_button = widgets.Button(
             css_classes=["calendar-expander"],
             on_click=lambda *_: self._toggle_calendar(),
@@ -99,7 +82,6 @@ class IntegratedCenter(widgets.Window):
             child=[self._calendar],
         )
 
-        # Task list
         self._task_list = TaskList(on_show_dialog=self._show_dialog)
 
         right_column = widgets.Box(
@@ -114,17 +96,12 @@ class IntegratedCenter(widgets.Window):
             ],
         )
 
-        # -------------------------------------------------------
-        # MAIN LAYOUT
-        # -------------------------------------------------------
-
         two_columns = widgets.Box(
             css_classes=["integrated-center"],
             child=[left_column, right_column],
         )
         self._main_content = two_columns
 
-        # Revealer for slide animation
         self._revealer = widgets.Revealer(
             child=two_columns,
             reveal_child=False,
@@ -132,7 +109,6 @@ class IntegratedCenter(widgets.Window):
             transition_duration=config.animations.revealer_duration,
         )
 
-        # Overlay button
         overlay_button = widgets.Button(
             vexpand=True,
             hexpand=True,
@@ -165,10 +141,7 @@ class IntegratedCenter(widgets.Window):
             kb_mode="on_demand",
         )
 
-        # Handle visibility changes for reveal animation
         self.connect("notify::visible", self._on_visible_change)
-
-        # Cleanup on destroy
         self.connect("destroy", self._cleanup)
 
     def _cleanup(self, *_):
@@ -182,14 +155,11 @@ class IntegratedCenter(widgets.Window):
     def _on_visible_change(self, *_):
         """Handle reveal animation when window opens/closes"""
         if self.visible:
-            # Notify task list that we're visible
             self._task_list.set_visible(True)
 
             utils.Timeout(10, lambda: setattr(self._revealer, "reveal_child", True))
         else:
-            # Notify task list that we're hidden
             self._task_list.set_visible(False)
-
             self._revealer.reveal_child = False
 
     def _toggle_calendar(self):

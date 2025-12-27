@@ -6,7 +6,6 @@ Uses improved algorithm for accurate phase calculation
 import math
 from datetime import datetime
 
-# Moon phase emojis (Unicode)
 MOON_EMOJIS = {
     "new": "🌑",  # New Moon
     "waxing_crescent": "🌒",  # Waxing Crescent
@@ -26,16 +25,9 @@ def moon_phase_accurate(date: datetime) -> float:
 
     Returns fraction of lunar cycle (0.0 to 1.0)
     """
-    # Known new moon: January 6, 2000, 18:14 UTC (J2000.0 epoch)
     known_new_moon = datetime(2000, 1, 6, 18, 14)
-
-    # Synodic month (new moon to new moon) = 29.53058867 days
     synodic_month = 29.53058867
-
-    # Calculate days since known new moon
     days_diff = (date - known_new_moon).total_seconds() / 86400.0
-
-    # Calculate phase as fraction of synodic month
     phase = (days_diff % synodic_month) / synodic_month
 
     return phase
@@ -47,9 +39,6 @@ def moon_illumination(date: datetime) -> float:
     0% = New Moon, 100% = Full Moon
     """
     phase = moon_phase_accurate(date)
-
-    # Illumination follows cosine curve:
-    # 0.0 (new) -> 0%, 0.5 (full) -> 100%, 1.0 (new) -> 0%
     illumination = (1 - math.cos(phase * 2 * math.pi)) / 2 * 100
 
     return illumination
@@ -63,12 +52,9 @@ def days_until_full_moon(date: datetime) -> float:
     phase = moon_phase_accurate(date)
     synodic_month = 29.53058867
 
-    # Full moon is at phase 0.5
     if phase < 0.5:
-        # Before full moon in current cycle
         days_until = (0.5 - phase) * synodic_month
     else:
-        # After full moon, wait for next cycle
         days_until = (1.0 - phase + 0.5) * synodic_month
 
     return days_until
@@ -81,8 +67,6 @@ def days_until_new_moon(date: datetime) -> float:
     """
     phase = moon_phase_accurate(date)
     synodic_month = 29.53058867
-
-    # New moon is at phase 0.0/1.0
     days_until = (1.0 - phase) * synodic_month
 
     return days_until
@@ -102,9 +86,6 @@ def moon_phase_index(date: datetime) -> int:
     7 = Waning Crescent
     """
     phase = moon_phase_accurate(date)
-
-    # Convert to 0-7 index
-    # Add 0.0625 (1/16) to center phases around their midpoints
     index = int((phase + 0.0625) * 8) % 8
 
     return index
@@ -172,11 +153,9 @@ def moon_tooltip(date: datetime) -> str:
     Generate formatted tooltip text for moon phase
     """
     info = moon_info(date)
-
     tooltip = f"{info['phase_name']} {info['emoji']}\n"
     tooltip += f"Illumination: {info['illumination']:.1f}%\n"
 
-    # Show whichever is closer
     if info["days_to_full"] < info["days_to_new"]:
         days = info["days_to_full"]
         if days < 1:

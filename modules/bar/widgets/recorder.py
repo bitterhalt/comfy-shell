@@ -29,7 +29,6 @@ def recording_indicator():
     recorder.connect("recording_started", on_start)
     recorder.connect("recording_stopped", on_stop)
 
-    # Initial state check
     if recorder.active:
         on_start()
     else:

@@ -10,10 +10,6 @@ TITLE_EXCEPTIONS = ["firefox", "zen"]
 
 
 def window_title(monitor_name: str):
-    # ───────────────────────────────────────────────
-    # LABEL
-    # ───────────────────────────────────────────────
-
     if hypr.is_available:
         title_label = widgets.Label(
             css_classes=["window-title"],
@@ -59,10 +55,6 @@ def window_title(monitor_name: str):
     window_signals = SignalManager()
     current = {"win": None}
 
-    # ───────────────────────────────────────────────
-    # Update logic
-    # ───────────────────────────────────────────────
-
     def update_display(*_):
         try:
             if hypr.is_available:
@@ -103,10 +95,6 @@ def window_title(monitor_name: str):
             icon.visible = False
             title_label.label = ""
 
-    # ───────────────────────────────────────────────
-    # Active window rewiring
-    # ───────────────────────────────────────────────
-
     def rewire_active_window(*_):
         if hypr.is_available:
             win = hypr.active_window
@@ -135,10 +123,6 @@ def window_title(monitor_name: str):
 
         update_display()
 
-    # ───────────────────────────────────────────────
-    # Compositor-level signals
-    # ───────────────────────────────────────────────
-
     if hypr.is_available:
         compositor_signals.connect(hypr, "notify::active-window", rewire_active_window)
         compositor_signals.connect(
@@ -150,7 +134,6 @@ def window_title(monitor_name: str):
             niri, "notify::active-workspace", rewire_active_window
         )
 
-    # Cleanup when widget dies
     compositor_signals.connect(
         box,
         "destroy",

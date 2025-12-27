@@ -7,7 +7,6 @@ import asyncio
 from ignis import utils, widgets
 from ignis.services.notifications import Notification
 from ignis.window_manager import WindowManager
-
 from modules.notifications.widgets.cache import (
     delete_cached_preview,
     get_cached_preview,
@@ -41,20 +40,15 @@ def is_screenshot(notification: Notification) -> bool:
 
 
 class ScreenshotHistoryItem(widgets.Box):
-    """Screenshot notification with cached preview and action buttons"""
+    """Screenshot notification with ASYNC cached preview and action buttons"""
 
     def __init__(self, notification: Notification):
         self._signals = SignalManager()
         self._poll = None
+        self._preview_task = None
 
-        preview_path = get_cached_preview(
-            notification.icon,
-            size=(340, 191),
-            crop=False,
-        )
-
-        preview = widgets.Picture(
-            image=preview_path,
+        self._preview = widgets.Picture(
+            image="image-loading",
             content_fit="cover",
             width=340,
             height=191,
@@ -102,25 +96,44 @@ class ScreenshotHistoryItem(widgets.Box):
             spacing=14,
             hexpand=True,
             css_classes=["screenshot-history-item"],
-            child=[preview, self._timestamp, path_label, actions],
+            child=[self._preview, self._timestamp, path_label, actions],
         )
 
-        # Poll owned (cancelled in destroy)
+        self._preview_task = asyncio.create_task(self._load_preview_async(notification))
         self._poll = utils.Poll(60000, lambda *_: self._update_timestamp(notification))
-
-        # Notification closed -> hide
         self._signals.connect(
             notification, "closed", lambda *_: setattr(self, "visible", False)
         )
         self._signals.connect(self, "destroy", lambda *_: self.destroy())
 
+    async def _load_preview_async(self, notification):
+        """Load preview in thread pool to avoid blocking UI"""
+        try:
+            loop = asyncio.get_event_loop()
+            preview_path = await loop.run_in_executor(
+                None,
+                get_cached_preview,
+                notification.icon,
+                (340, 191),
+                False,
+            )
+
+            if self._preview and preview_path:
+                self._preview.image = preview_path
+        except Exception as e:
+            print(f"Failed to load screenshot preview: {e}")
+
     def destroy(self):
+        if self._preview_task and not self._preview_task.done():
+            self._preview_task.cancel()
+
         if self._poll:
             try:
                 self._poll.cancel()
             except Exception:
                 pass
             self._poll = None
+
         self._signals.disconnect_all()
         super().destroy()
 
@@ -219,7 +232,6 @@ class NormalHistoryItem(widgets.Box):
         )
 
         self._poll = utils.Poll(60000, lambda *_: self._update_timestamp(notification))
-
         self._signals.connect(
             notification, "closed", lambda *_: setattr(self, "visible", False)
         )

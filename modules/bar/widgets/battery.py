@@ -15,7 +15,6 @@ class BatteryWidget(widgets.Box):
             spacing=4,
         )
 
-        # Get battery device
         batteries = [dev for dev in upower.devices if dev.type == "battery"]
         if not batteries:
             self.visible = False
@@ -24,7 +23,6 @@ class BatteryWidget(widgets.Box):
         self._battery = batteries[0]
         self._signals = SignalManager()
 
-        # Create widgets
         self._icon = widgets.Icon(
             image=self._battery.icon_name,
             pixel_size=22,
@@ -36,17 +34,18 @@ class BatteryWidget(widgets.Box):
 
         self.child = [self._icon, self._label]
 
-        # Setup signal connections
         self._setup_signals()
-
-        # Initial update
         self._update_all()
+        self.connect("destroy", lambda *_: self._cleanup())
+
+    def _cleanup(self):
+        """Cleanup on destroy"""
+        self._signals.disconnect_all()
 
     def _setup_signals(self):
         """Setup all signal connections through manager"""
         battery = self._battery
 
-        # Connect all relevant signals to single handler
         for signal in [
             "notify::percentage",
             "notify::is-charging",

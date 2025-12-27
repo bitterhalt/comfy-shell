@@ -19,7 +19,6 @@ class TaskPopup(widgets.Revealer):
         self._task = task
         self._parent_window = parent_window
 
-        # Task icon
         icon = widgets.Icon(
             image="alarm-symbolic",
             pixel_size=48,
@@ -28,7 +27,6 @@ class TaskPopup(widgets.Revealer):
             css_classes=["task-popup-icon"],
         )
 
-        # Task message
         title = widgets.Label(
             label="Task Reminder",
             halign="start",
@@ -43,7 +41,6 @@ class TaskPopup(widgets.Revealer):
             css_classes=["task-popup-message"],
         )
 
-        # Time info
         fire_dt = datetime.fromtimestamp(task.get("fire_at", time.time()))
         time_str = fire_dt.strftime("%H:%M")
 
@@ -60,7 +57,6 @@ class TaskPopup(widgets.Revealer):
             child=[title, message, time_label],
         )
 
-        # Close button
         close_btn = widgets.Button(
             child=widgets.Icon(image="window-close-symbolic", pixel_size=20),
             css_classes=["task-popup-close"],
@@ -68,13 +64,11 @@ class TaskPopup(widgets.Revealer):
             on_click=lambda x: self._dismiss(),
         )
 
-        # Content header
         header = widgets.Box(
             spacing=12,
             child=[icon, text_box, close_btn],
         )
 
-        # Action button
         complete_btn = widgets.Button(
             child=widgets.Label(label="Complete"),
             css_classes=["task-popup-action", "complete-btn"],
@@ -88,7 +82,6 @@ class TaskPopup(widgets.Revealer):
             child=[complete_btn],
         )
 
-        # Main container
         container = widgets.Box(
             vertical=True,
             spacing=12,
@@ -132,7 +125,7 @@ class TaskPopupWindow(widgets.Window):
             valign="start",
             halign="end",
         )
-        self._shown_tasks = set()  # Track shown tasks to avoid duplicates
+        self._shown_tasks = set()
 
         super().__init__(
             anchor=["right", "top"],
@@ -146,8 +139,6 @@ class TaskPopupWindow(widgets.Window):
 
         self._check_tasks()
         self._check_poll = utils.Poll(60000, self._check_tasks)
-
-        # Cleanup on destroy
         self.connect("destroy", self._cleanup)
 
     def _cleanup(self, *_):
@@ -161,7 +152,6 @@ class TaskPopupWindow(widgets.Window):
 
     def _check_tasks(self, *args):
         """Check for tasks that are due and show popups"""
-        # Force fresh read to catch new tasks
         all_tasks = _storage_manager.load_tasks(force_refresh=True)
         now = int(time.time())
 
@@ -169,16 +159,13 @@ class TaskPopupWindow(widgets.Window):
             fire_at = task.get("fire_at", 0)
             task_id = (task.get("message", ""), fire_at)
 
-            # Check if task is due
             if fire_at <= now and fire_at > (now - 120):
-                # Skip if already shown
                 if task_id in self._shown_tasks:
                     continue
 
                 self._show_popup(task)
                 self._shown_tasks.add(task_id)
 
-        # Clean up old entries from shown_tasks
         cutoff = now - 300
         self._shown_tasks = {(msg, t) for msg, t in self._shown_tasks if t > cutoff}
 
@@ -191,7 +178,6 @@ class TaskPopupWindow(widgets.Window):
         popup = TaskPopup(task, self)
         self._popup_box.prepend(popup)
 
-        # Reveal after adding to DOM
         utils.Timeout(10, popup.set_reveal_child, True)
 
     def _check_if_empty(self):
@@ -203,13 +189,11 @@ class TaskPopupWindow(widgets.Window):
             self.visible = False
 
 
-# Global instance
 _task_popup_window = None
 
 
 def init_task_popup():
     global _task_popup_window
-
     if _task_popup_window is None:
         monitor = config.ui.notifications_monitor
         _task_popup_window = TaskPopupWindow(monitor)

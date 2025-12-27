@@ -12,6 +12,7 @@ class NotificationList:
 
     def __init__(self):
         self._signals = SignalManager()
+        self._item_signals = {}
         self._notif_list = widgets.Box(vertical=True, css_classes=["content-list"])
 
         self._notif_empty = widgets.Label(
@@ -33,41 +34,53 @@ class NotificationList:
         )
 
         self._load_notifications()
-
-        # Track main service connection
         self._signals.connect(notifications, "notified", self._on_notified)
+        self.scroll.connect("destroy", lambda *_: self._cleanup())
 
     def _load_notifications(self):
-        """Load existing notifications"""
-        items = notifications.notifications[:MAX_NOTIFICATIONS]
-        self._notif_list.child = [NotificationHistoryItem(n) for n in items]
+        """Load existing notifications with proper cleanup"""
+        self._clear_items()
 
-        # Track notification connections
+        items = notifications.notifications[:MAX_NOTIFICATIONS]
+
         for notif in items:
-            self._signals.connect(
+            item = NotificationHistoryItem(notif)
+            self._notif_list.append(item)
+
+            sig_manager = SignalManager()
+            sig_manager.connect(
                 notif, "closed", lambda *_: self._on_notification_closed()
             )
+            self._item_signals[id(notif)] = sig_manager
 
         self._update_empty_state()
+
+    def _clear_items(self):
+        """Clear all items and their signal connections"""
+        for sig_manager in self._item_signals.values():
+            sig_manager.disconnect_all()
+        self._item_signals.clear()
+
+        self._notif_list.child = []
 
     def _on_notified(self, _, notif):
         """Handle new notification"""
-        self._notif_list.prepend(NotificationHistoryItem(notif))
+        item = NotificationHistoryItem(notif)
+        self._notif_list.prepend(item)
 
-        # Track new notification connection
-        self._signals.connect(
-            notif, "closed", lambda *_: self._on_notification_closed()
-        )
+        sig_manager = SignalManager()
+        sig_manager.connect(notif, "closed", lambda *_: self._on_notification_closed())
+        self._item_signals[id(notif)] = sig_manager
 
         if len(self._notif_list.child) > MAX_NOTIFICATIONS:
-            last = self._notif_list.child[-1]
-            last.visible = False
-            last.unparent()
+            excess_item = self._notif_list.child[-1]
 
+            excess_item.visible = False
+            excess_item.unparent()
         self._update_empty_state()
 
     def _on_notification_closed(self):
-        """Handle notification close"""
+        """Handle notification close - reload to sync"""
         self._load_notifications()
 
     def _update_empty_state(self):
@@ -78,5 +91,10 @@ class NotificationList:
     def clear_all(self):
         """Clear all notifications"""
         notifications.clear_all()
-        self._notif_list.child = []
+        self._clear_items()
         self._update_empty_state()
+
+    def _cleanup(self, *_):
+        """Full cleanup on destroy"""
+        self._clear_items()
+        self._signals.disconnect_all()

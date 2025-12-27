@@ -11,14 +11,11 @@ def hypr_btn(ws: HyprlandWorkspace):
 
     if label_text.isdigit():
         pass
-
     elif label_text.startswith("special:"):
         clean_name = label_text.split(":")[-1]
         label_text = clean_name[0].upper()
-
     else:
         label_text = label_text[0].upper()
-
     btn = widgets.Button(
         css_classes=["ws-btn"],
         on_click=lambda *_: ws.switch_to(),

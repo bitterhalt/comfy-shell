@@ -39,18 +39,15 @@ class TimeOsdWindow(widgets.Window):
             child=pill,
         )
 
-        # Listen to GTK-visible changes (triggered by Ignis toggle-window)
         self.connect("notify::visible", self._on_visible_changed)
 
     # ------------------------------------------------------------------
 
     def _on_visible_changed(self, *_):
         if self.get_visible():
-            # Update time
             now = datetime.datetime.now()
             self._time_label.set_label(now.strftime("%d.%m  %H:%M"))
 
-            # Restart timeout
             if self._timeout:
                 self._timeout.cancel()
 

@@ -67,7 +67,6 @@ class AudioSection(widgets.Box):
             on_click=lambda *_: setattr(stream, "is_muted", not stream.is_muted),
         )
 
-        # Slider
         slider = widgets.Scale(
             min=0,
             max=100,
@@ -79,12 +78,10 @@ class AudioSection(widgets.Box):
             css_classes=["pill-audio-scale"],
         )
 
-        # Track volume changes for icon update
         self._signals.connect(
             stream, "notify::volume", lambda *_: self._update_icon(mute_icon)
         )
 
-        # Expand arrow
         self._arrow = widgets.Arrow(
             pixel_size=18,
             rotated=False,
@@ -97,13 +94,11 @@ class AudioSection(widgets.Box):
             on_click=lambda *_: self._toggle_list(),
         )
 
-        # Row layout
         row = widgets.Box(
             spacing=2,
             child=[mute_btn, slider, arrow_btn],
         )
 
-        # Device list container
         self._device_list = widgets.Box(
             vertical=True,
             spacing=8,
@@ -115,7 +110,6 @@ class AudioSection(widgets.Box):
 
         self._populate_devices()
 
-        # Track device changes
         self._signals.connect(
             audio, f"{device_type}-added", lambda *_: self._populate_devices()
         )
@@ -123,7 +117,6 @@ class AudioSection(widgets.Box):
             audio, f"notify::{device_type}", lambda *_: self._populate_devices()
         )
 
-        # Cleanup
         self.connect("destroy", lambda *_: self._signals.disconnect_all())
 
     def _volume_icon(self, vol: int):

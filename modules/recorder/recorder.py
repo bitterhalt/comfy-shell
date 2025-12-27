@@ -9,7 +9,6 @@ recorder = RecorderService.get_default()
 
 
 async def _start_recording_task(source: str, file_path: str, **kwargs):
-    # Ensure file_path is a string (convert Path to str if needed)
     file_path_str = str(file_path) if not isinstance(file_path, str) else file_path
     rec_config = RecorderConfig(source=source, path=file_path_str, **kwargs)
     await recorder.start_recording(config=rec_config)
@@ -30,7 +29,6 @@ def record_screen():
         / f"recording_{timestamp}.{config.recorder.video_format}"
     )
 
-    # Ensure directory exists
     config.paths.recordings_dir.mkdir(parents=True, exist_ok=True)
 
     asyncio.create_task(
@@ -64,7 +62,6 @@ async def _record_region_async():
         / f"region_{timestamp}.{config.recorder.video_format}"
     )
 
-    # Ensure directory exists
     config.paths.recordings_dir.mkdir(parents=True, exist_ok=True)
 
     await _start_recording_task(

@@ -5,9 +5,6 @@ from ignis.window_manager import WindowManager
 mpris = MprisService.get_default()
 wm = WindowManager.get_default()
 
-# ────────────────────────────────────────────────────────────────
-# PLAYER ICON + NAME MAPPING
-# ────────────────────────────────────────────────────────────────
 
 PLAYER_ICONS = {
     "spotify": "spotify-symbolic",
@@ -29,11 +26,9 @@ def get_player_icon(player) -> str:
 
     entry = player.desktop_entry
 
-    # Direct match
     if entry in PLAYER_ICONS:
         return PLAYER_ICONS[entry]
 
-    # Detect chrome/chromium via track_id
     if player.track_id:
         tid = player.track_id.lower()
         if "chromium" in tid:
@@ -42,11 +37,6 @@ def get_player_icon(player) -> str:
             return PLAYER_ICONS["chrome"]
 
     return PLAYER_ICONS[None]
-
-
-# ────────────────────────────────────────────────────────────────
-# MEDIA PILL
-# ────────────────────────────────────────────────────────────────
 
 
 class MediaPill(widgets.Box):
@@ -59,7 +49,6 @@ class MediaPill(widgets.Box):
             hexpand=True,
         )
 
-        # ── ICON ──
         self._icon = widgets.Icon(
             image=get_player_icon(player),
             pixel_size=28,
@@ -69,7 +58,6 @@ class MediaPill(widgets.Box):
         player.connect("notify::desktop-entry", lambda *_: self._update_icon(player))
         player.connect("notify::track-id", lambda *_: self._update_icon(player))
 
-        # ── TITLE & ARTIST ──
         title = widgets.Label(
             label=player.bind("title", lambda t: t or "Unknown"),
             ellipsize="end",

@@ -68,10 +68,9 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 
 ## TODO
 
-> _02.12.27_
+> _28.12.25_
 
-- [ ] In settings: add option to remember bar state after restart
+- [x] In settings: add option to remember bar state after restart
 - [x] add bluetooth in panel
-- [ ] cleanup the code and make syntax more consistenta
 - [x] add small time stamps to notifications
 - [x] Parts of of notications are super ugly -> fix when rainy day
