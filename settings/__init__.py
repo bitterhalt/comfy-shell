@@ -18,8 +18,6 @@ from .loader import colored_info, load_user_config
 
 @dataclass
 class AppConfig:
-    """Main application configuration"""
-
     paths: PathConfig = field(default_factory=PathConfig)
     weather: WeatherConfig = field(default_factory=WeatherConfig)
     ui: UIConfig = field(default_factory=UIConfig)
@@ -48,7 +46,6 @@ config = AppConfig.from_user_config()
 colored_info("Configuration loaded successfully")
 
 
-# Convenience exports
 __all__ = [
     "config",
     "AppConfig",

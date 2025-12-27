@@ -10,7 +10,6 @@
       "primary": 0,
       "bar": 0,
       "osd": 0,
-      "launcher": 0,
       "notifications": 0,
       "recording_overlay": 0,
       "window_switcher": 0,
@@ -25,6 +24,9 @@
       "media_osd": 5000,
       "time_osd": 8000,
       "workspace_osd": 1500
+    },
+    "bar": {
+      "remember_state": true
     }
   },
   "recorder": {

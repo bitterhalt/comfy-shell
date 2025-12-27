@@ -120,7 +120,6 @@ class UIConfig:
     primary_monitor: int = 0
     bar_monitor: int = 0
     osd_monitor: int = 0
-    launcher_monitor: int = 0
     notifications_monitor: int = 0
     recording_overlay_monitor: int = 0
     window_switcher_monitor: int = 0
@@ -136,6 +135,9 @@ class UIConfig:
     time_osd_timeout: int = 8000
     workspace_osd_timeout: int = 1500
 
+    # Bar settings
+    bar_remember_state: bool = True
+
     def __post_init__(self):
         """Validate monitor configuration"""
         from ignis import utils
@@ -148,7 +150,6 @@ class UIConfig:
                 ("primary_monitor", self.primary_monitor),
                 ("bar_monitor", self.bar_monitor),
                 ("osd_monitor", self.osd_monitor),
-                ("launcher_monitor", self.launcher_monitor),
                 ("notifications_monitor", self.notifications_monitor),
                 ("recording_overlay_monitor", self.recording_overlay_monitor),
                 ("window_switcher_monitor", self.window_switcher_monitor),
@@ -178,12 +179,12 @@ class UIConfig:
         """Create UIConfig from dictionary"""
         monitors = data.get("monitors", {})
         timeouts = data.get("timeouts", {})
+        bar_settings = data.get("bar", {})
 
         return cls(
             primary_monitor=monitors.get("primary", 0),
             bar_monitor=monitors.get("bar", 0),
             osd_monitor=monitors.get("osd", 0),
-            launcher_monitor=monitors.get("launcher", 0),
             notifications_monitor=monitors.get("notifications", 0),
             recording_overlay_monitor=monitors.get("recording_overlay", 0),
             window_switcher_monitor=monitors.get("window_switcher", 0),
@@ -196,6 +197,7 @@ class UIConfig:
             media_osd_timeout=timeouts.get("media_osd", 5000),
             time_osd_timeout=timeouts.get("time_osd", 8000),
             workspace_osd_timeout=timeouts.get("workspace_osd", 1500),
+            bar_remember_state=bar_settings.get("remember_state", True),
         )
 
 

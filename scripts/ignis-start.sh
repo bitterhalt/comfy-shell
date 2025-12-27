@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-log="$HOME/.cache/ignis.log"
-
 kill() {
   pkill ignis
 }
@@ -14,9 +12,9 @@ stop)
   if pgrep -x "ignis" >/dev/null; then
     pkill ignis
     sleep 1
-    ignis init >"$log" 2>&1 &
+    ignis init &
   else
-    ignis init >"$log" 2>&1 &
+    ignis init &
   fi
   ;;
 

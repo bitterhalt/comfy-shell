@@ -7,6 +7,7 @@ import asyncio
 from ignis import utils, widgets
 from ignis.services.notifications import Notification
 from ignis.window_manager import WindowManager
+
 from modules.notifications.widgets.cache import (
     delete_cached_preview,
     get_cached_preview,

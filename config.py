@@ -2,11 +2,9 @@ import os
 
 from ignis import utils
 from ignis.command_manager import CommandManager
-from ignis.config_manager import ConfigManager
 from ignis.css_manager import CssInfoPath, CssManager
 
-# Package imports
-from modules.bar import Bar, register_bar
+from modules.bar import Bar, register_bar, toggle_bars
 from modules.bar.widgets import SystemPopup
 from modules.notifications import IntegratedCenter, init_notifications, init_task_popup
 from modules.osd import (
@@ -23,11 +21,7 @@ from modules.windowlist import WindowSwitcher
 from settings import config
 
 css = CssManager.get_default()
-
-config_manager = ConfigManager.get_default()
-
-# Delete or "True" if you want autoreload
-config_manager.autoreload_config = False
+command_manager = CommandManager.get_default()
 
 
 # Custom compiler function that removes @charset
@@ -77,7 +71,23 @@ def _on_visible_changed(window, *_):
 
 bar.connect("notify::visible", _on_visible_changed)
 
-# Initialize all components
+
+# ═══════════════════════════════════════════════════════════════
+# Handle initial bar state
+# ═══════════════════════════════════════════════════════════════
+def _handle_initial_bar_state():
+    """Show workspace OSD on startup if bar starts hidden"""
+    if not bar.visible:
+        set_bar_visibility(False)
+        from modules.osd.workspace_osd import _osd_window
+
+        if _osd_window:
+            utils.Timeout(500, lambda: _osd_window.show_osd())
+
+
+utils.Timeout(100, _handle_initial_bar_state)
+
+# Initialize components
 TimeOsdWindow()
 VolumeOSD()
 MediaOsdWindow()
@@ -89,5 +99,5 @@ IntegratedCenter()
 WindowSwitcher()
 
 # Register commands
-command_manager = CommandManager.get_default()
+command_manager.add_command("toggle-bar", toggle_bars)
 register_recorder_commands()

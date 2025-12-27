@@ -1,5 +1,5 @@
 from ignis import utils, widgets
-
+from modules.utils import load_bar_state
 from settings import config
 
 from .widgets.battery import battery_widget
@@ -52,12 +52,14 @@ class Bar(widgets.Window):
 
     def __init__(self, monitor_id: int = 0):
         monitor_name = utils.get_monitor(monitor_id).get_connector()
+        initial_visible = load_bar_state()
 
         super().__init__(
             namespace=f"ignis_bar_{monitor_id}",
             monitor=monitor_id,
             anchor=["left", "top", "right"],
             exclusivity="exclusive",
+            visible=initial_visible,
             child=widgets.CenterBox(
                 css_classes=["bar"],
                 start_widget=left_section(monitor_name),
