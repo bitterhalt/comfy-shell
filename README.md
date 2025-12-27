@@ -6,7 +6,7 @@ _A modular Wayland shell powered by Ignis_
 >
 > My first ever python project so don't kill me...
 >
-> Don't try this at home! But if you do, a basic Linux knowledge and common sense required!
+> **Don't try this at home!** But if you do anyway, a basic Linux knowledge and common sense required.
 >
 > I repeat **VERY WIP** at the moment!
 
