@@ -1,5 +1,7 @@
 import asyncio
 
+from gi.repository import Gdk
+
 from ignis import utils, widgets
 from ignis.services.recorder import RecorderService
 from ignis.window_manager import WindowManager
@@ -14,7 +16,7 @@ def exec_async(cmd: str):
 
 
 class RecordingOverlay(widgets.Window):
-    """Shadowplay-style recording overlay"""
+    """Shadowplay-style recording overlay with keyboard shortcuts"""
 
     def __init__(self):
         self._screenshot_icon = widgets.Icon(
@@ -24,7 +26,7 @@ class RecordingOverlay(widgets.Window):
         )
 
         self._screenshot_label = widgets.Label(
-            label="Screenshot",
+            label="[1] Screenshot",
             css_classes=["overlay-label"],
         )
 
@@ -46,7 +48,7 @@ class RecordingOverlay(widgets.Window):
         )
 
         self._screenshot_region_label = widgets.Label(
-            label="Screenshot Region",
+            label="[2] Screenshot Region",
             css_classes=["overlay-label"],
         )
 
@@ -68,7 +70,7 @@ class RecordingOverlay(widgets.Window):
         )
 
         self._record_screen_label = widgets.Label(
-            label="Record",
+            label="[3] Record",
             css_classes=["overlay-label"],
         )
 
@@ -90,7 +92,7 @@ class RecordingOverlay(widgets.Window):
         )
 
         self._record_region_label = widgets.Label(
-            label="Record Region",
+            label="[4] Record Region",
             css_classes=["overlay-label"],
         )
 
@@ -154,7 +156,38 @@ class RecordingOverlay(widgets.Window):
         recorder.connect("recording_started", lambda x: self._update_recording_state())
         recorder.connect("recording_stopped", lambda x: self._update_recording_state())
 
+        self._setup_keyboard_controller()
         self._update_recording_state()
+
+    def _setup_keyboard_controller(self):
+        """Setup keyboard event controller for GTK4"""
+        from gi.repository import Gtk
+
+        key_controller = Gtk.EventControllerKey()
+        key_controller.connect("key-pressed", self._on_key_pressed)
+        self.add_controller(key_controller)
+
+    def _on_key_pressed(self, controller, keyval, keycode, state):
+        """Handle keyboard shortcuts"""
+        keyname = Gdk.keyval_name(keyval)
+
+        if keyname == "Escape":
+            self.toggle()
+            return True
+        elif keyname in ["1", "KP_1"]:
+            self._take_screenshot()
+            return True
+        elif keyname in ["2", "KP_2"]:
+            self._screenshot_region()
+            return True
+        elif keyname in ["3", "KP_3"]:
+            self._record_screen()
+            return True
+        elif keyname in ["4", "KP_4"]:
+            self._record_region()
+            return True
+
+        return False
 
     def _update_recording_state(self):
         """Update UI based on recording state"""
@@ -162,12 +195,12 @@ class RecordingOverlay(widgets.Window):
 
         if is_recording:
             self._record_screen_icon.image = "media-playback-stop-symbolic"
-            self._record_screen_label.label = "Stop Recording"
+            self._record_screen_label.label = "[3] Stop Recording"
             self._record_screen_btn.remove_css_class("overlay-btn")
             self._record_screen_btn.add_css_class("overlay-btn-stop")
         else:
             self._record_screen_icon.image = "media-record-symbolic"
-            self._record_screen_label.label = "Record"
+            self._record_screen_label.label = "[3] Record"
             self._record_screen_btn.remove_css_class("overlay-btn-stop")
             self._record_screen_btn.add_css_class("overlay-btn")
 
