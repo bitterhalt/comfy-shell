@@ -78,7 +78,7 @@ warning_threshold = 30
 # ANIMATIONS
 # ══════════════════════════════════════════════════════════════
 [animations]
-revealer_duration = 180
+revealer_duration = 300
 revealer_type = "slide_down"
 # valid: slide_down, slide_up, slide_left, slide_right, crossfade, none
 

@@ -119,6 +119,8 @@ class WeatherConfig:
 # ───────────────────────────────────────────────────────────────
 # UI · MONITORS
 # ───────────────────────────────────────────────────────────────
+
+
 @dataclass
 class MonitorConfig:
     primary: int = 0
@@ -131,6 +133,31 @@ class MonitorConfig:
     power_overlay: int = 0
     system_menu: int = 0
     integrated_center: int = 0
+
+    def __post_init__(self):
+        """Validate monitor IDs and fallback to 0 if invalid"""
+        try:
+            from ignis import utils
+
+            monitors = utils.get_monitors()
+            monitor_count = len(monitors)
+
+            # Check each monitor assignment
+            for field_name in self.__dataclass_fields__:
+                monitor_id = getattr(self, field_name)
+
+                if monitor_id >= monitor_count or monitor_id < 0:
+                    log_warning(
+                        f"Monitor ID {monitor_id} for '{field_name}' is invalid. "
+                        f"Only {monitor_count} monitor(s) detected. Falling back to monitor 0."
+                    )
+                    setattr(self, field_name, 0)
+
+        except Exception as e:
+            log_warning(
+                f"Could not validate monitor configuration: {e}. "
+                "All windows will default to primary monitor."
+            )
 
     @classmethod
     def from_dict(cls, data: Dict) -> "MonitorConfig":
