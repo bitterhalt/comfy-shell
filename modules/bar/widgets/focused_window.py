@@ -2,11 +2,10 @@ from ignis import utils, widgets
 from ignis.services.hyprland import HyprlandService
 from ignis.services.niri import NiriService
 from modules.utils.signal_manager import SignalManager
+from settings import config
 
 hypr = HyprlandService.get_default()
 niri = NiriService.get_default()
-
-TITLE_EXCEPTIONS = ["firefox", "zen"]
 
 
 def window_title(monitor_name: str):
@@ -81,7 +80,9 @@ def window_title(monitor_name: str):
                 return
 
             title_label.label = (
-                win_title if win_class.lower() in TITLE_EXCEPTIONS else win_class
+                win_title
+                if win_class.lower() in config.ui.bar_window_title_exceptions
+                else win_class
             )
 
             icon_name = utils.get_app_icon_name(win_class)
