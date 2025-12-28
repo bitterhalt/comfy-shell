@@ -2,6 +2,7 @@ from .settings import (
     AnimationConfig,
     AppConfig,
     BatteryConfig,
+    NotificationConfig,
     PathConfig,
     RecorderConfig,
     UIConfig,
@@ -18,4 +19,5 @@ __all__ = [
     "RecorderConfig",
     "BatteryConfig",
     "AnimationConfig",
+    "NotificationConfig",
 ]

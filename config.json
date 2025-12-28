@@ -25,6 +25,10 @@
       "time_osd": 8000,
       "workspace_osd": 1500
     },
+    "notifications": {
+      "max_history": 10,
+      "popup_timeout": 5000
+    },
     "bar": {
       "remember_state": true
     }

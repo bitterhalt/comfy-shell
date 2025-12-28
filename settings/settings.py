@@ -165,12 +165,26 @@ class BarConfig:
 
 
 @dataclass
+class NotificationConfig:
+    """Notification settings"""
+
+    max_history: int = 10
+    popup_timeout: int = 5000
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "NotificationConfig":
+        """Create from config dict"""
+        return cls(**{k: v for k, v in data.items() if k in cls.__annotations__})
+
+
+@dataclass
 class UIConfig:
     """UI and appearance settings"""
 
     monitors: MonitorConfig = field(default_factory=MonitorConfig)
     timeouts: TimeoutConfig = field(default_factory=TimeoutConfig)
     bar: BarConfig = field(default_factory=BarConfig)
+    notifications: NotificationConfig = field(default_factory=NotificationConfig)
 
     # Convenience properties for backward compatibility
     @property
@@ -237,6 +251,14 @@ class UIConfig:
     def bar_remember_state(self) -> bool:
         return self.bar.remember_state
 
+    @property
+    def max_notifications(self) -> int:
+        return self.notifications.max_history
+
+    @property
+    def notification_popup_timeout(self) -> int:
+        return self.notifications.popup_timeout
+
     @classmethod
     def from_dict(cls, data: Dict) -> "UIConfig":
         """Create from config dict"""
@@ -244,6 +266,7 @@ class UIConfig:
             monitors=MonitorConfig.from_dict(data.get("monitors", {})),
             timeouts=TimeoutConfig.from_dict(data.get("timeouts", {})),
             bar=BarConfig.from_dict(data.get("bar", {})),
+            notifications=NotificationConfig.from_dict(data.get("notifications", {})),
         )
 
 

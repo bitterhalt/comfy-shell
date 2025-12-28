@@ -4,6 +4,7 @@ from ignis import utils
 from ignis.command_manager import CommandManager
 from ignis.config_manager import ConfigManager
 from ignis.css_manager import CssInfoPath, CssManager
+from ignis.options import options
 from modules.bar import Bar, register_bar, toggle_bars
 from modules.bar.widgets import SystemPopup
 from modules.notifications import IntegratedCenter, init_notifications, init_task_popup
@@ -21,6 +22,7 @@ from modules.weather import WeatherPopup
 from modules.windowlist import WindowSwitcher
 from settings import config
 
+options.notifications.popup_timeout = config.ui.notification_popup_timeout
 css = CssManager.get_default()
 command_manager = CommandManager.get_default()
 config_manager = ConfigManager.get_default()
