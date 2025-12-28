@@ -59,7 +59,7 @@ class NotificationWidget(widgets.Box):
             halign="end",
             valign="start",
             hexpand=True,
-            css_classes=["notif-close", "unset"],
+            css_classes=["notif-close-btn"],
             on_click=lambda x: notification.close(),
         )
 

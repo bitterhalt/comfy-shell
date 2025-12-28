@@ -105,9 +105,9 @@ class MediaOsdWindow(widgets.Window):
         close_btn = widgets.Button(
             child=widgets.Icon(
                 image="window-close-symbolic",
-                pixel_size=18,
+                pixel_size=20,
             ),
-            css_classes=["media-osd-close", "unset"],
+            css_classes=["notif-close-btn"],
             halign="end",
             valign="center",
             on_click=lambda *_: self.set_visible(False),

@@ -81,7 +81,7 @@ class WindowRow(widgets.Button):
 
         super().__init__(
             css_classes=["winlist-row", "unset"],
-            on_click=lambda *_: self._focus(),
+            on_click=lambda x: self._focus(),
             child=widgets.Box(
                 spacing=10,
                 child=[
@@ -131,7 +131,7 @@ class WindowSwitcher(widgets.Window):
             hexpand=True,
             can_focus=False,
             css_classes=["winlist-overlay", "unset"],
-            on_click=lambda *_: wm.close_window("ignis_WINDOW_SWITCHER"),
+            on_click=lambda x: wm.close_window("ignis_WINDOW_SWITCHER"),
         )
 
         root = widgets.Overlay(

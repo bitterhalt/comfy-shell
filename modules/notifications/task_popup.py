@@ -59,7 +59,7 @@ class TaskPopup(widgets.Revealer):
 
         close_btn = widgets.Button(
             child=widgets.Icon(image="window-close-symbolic", pixel_size=20),
-            css_classes=["task-popup-close"],
+            css_classes=["close-btn"],
             valign="start",
             on_click=lambda x: self._dismiss(),
         )

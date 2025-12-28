@@ -32,14 +32,14 @@ class ConfirmDialog(widgets.Window):
         cancel_btn = widgets.Button(
             label="Cancel",
             css_classes=["confirm-dialog-btn", "confirm-dialog-cancel"],
-            on_click=lambda *_: self._cancel(),
+            on_click=lambda x: self._cancel(),
             can_focus=True,
         )
 
         confirm_btn = widgets.Button(
             label="Confirm",
             css_classes=["confirm-dialog-btn", "confirm-dialog-confirm"],
-            on_click=lambda *_: self._confirm(),
+            on_click=lambda x: self._confirm(),
             can_focus=True,
         )
 
@@ -71,7 +71,7 @@ class ConfirmDialog(widgets.Window):
             hexpand=True,
             can_focus=False,
             css_classes=["confirm-dialog-background"],
-            on_click=lambda *_: self._cancel(),
+            on_click=lambda x: self._cancel(),
         )
 
         root = widgets.Overlay(
@@ -166,7 +166,7 @@ class PowerOverlay(widgets.Window):
 
         logout_btn = widgets.Button(
             css_classes=["power-overlay-btn"],
-            on_click=lambda *_: self._logout(),
+            on_click=lambda x: self._logout(),
             can_focus=True,
             child=widgets.Box(
                 vertical=True,
@@ -186,7 +186,7 @@ class PowerOverlay(widgets.Window):
 
         suspend_btn = widgets.Button(
             css_classes=["power-overlay-btn"],
-            on_click=lambda *_: self._suspend(),
+            on_click=lambda x: self._suspend(),
             can_focus=True,
             child=widgets.Box(
                 vertical=True,
@@ -206,7 +206,7 @@ class PowerOverlay(widgets.Window):
 
         reboot_btn = widgets.Button(
             css_classes=["power-overlay-btn", "power-overlay-btn-danger"],
-            on_click=lambda *_: self._reboot(),
+            on_click=lambda x: self._reboot(),
             can_focus=True,
             child=widgets.Box(
                 vertical=True,
@@ -227,7 +227,7 @@ class PowerOverlay(widgets.Window):
 
         shutdown_btn = widgets.Button(
             css_classes=["power-overlay-btn", "power-overlay-btn-danger"],
-            on_click=lambda *_: self._shutdown(),
+            on_click=lambda x: self._shutdown(),
             can_focus=True,
             child=widgets.Box(
                 vertical=True,
@@ -272,7 +272,7 @@ class PowerOverlay(widgets.Window):
             hexpand=True,
             can_focus=False,
             css_classes=["power-overlay-background"],
-            on_click=lambda *_: self.toggle(),
+            on_click=lambda x: self.toggle(),
         )
 
         root_overlay = widgets.Overlay(

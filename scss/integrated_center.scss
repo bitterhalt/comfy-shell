@@ -73,6 +73,7 @@
 }
 
 .dnd-box switch {
+  all: unset;
   background-color: $ui-1;
   border-radius: 10px;
   padding: 0 6px;
@@ -80,6 +81,7 @@
 }
 
 .dnd-box switch trough {
+  all: unset;
   background-color: $ui-2;
   border-radius: 10px;
   transition: background-color 0.2s;
@@ -131,7 +133,7 @@
 }
 
 /* ───────────────────────────────────────────────────────────────
-   MEDIA WIDGET (MPRIS pill) - Now in left column
+   MEDIA WIDGET
    ─────────────────────────────────────────────────────────────── */
 
 .media-center-wrapper {
@@ -179,7 +181,7 @@
   }
 }
 /* ───────────────────────────────────────────────────────────────
-   CALENDAR (hidden behind expander)
+   CALENDAR
    ─────────────────────────────────────────────────────────────── */
 
 .calendar-expander {
@@ -251,7 +253,7 @@
 }
 
 .next-task-text-column {
-  min-width: 0; // allow ellipsize
+  min-width: 0;
 }
 
 .next-task-title {
@@ -329,13 +331,6 @@
   font-weight: 400;
 }
 
-.notif-history-close {
-  border-radius: 8px;
-  color: $tx-3;
-}
-.notif-history-close:hover {
-  background: $ui-3;
-}
 .notif-history-item:hover .notif-timestamp {
   opacity: 0.8;
 }
@@ -540,49 +535,68 @@
 
 .screenshot-history-item {
   background: $bg-2;
-  padding: 14px;
+  padding: 12px;
   border-radius: 8px;
-  margin-bottom: 10px;
-
-  &:hover {
-    background: $bg-2;
-  }
-}
-
-.screenshot-preview {
-  border-radius: 8px;
-  background: $bg-1;
-}
-
-.screenshot-timestamp {
-  font-size: 12px;
-  color: $tx-3;
-}
-
-.screenshot-path {
-  font-size: 13px;
-  color: $tx-2;
-}
-
-.screenshot-actions {
-  margin-top: 6px;
-}
-
-.pill-btn {
-  background: $ui-1;
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: 13px;
+  margin-bottom: 8px;
+  transition: background-color 0.2s;
 
   &:hover {
     background: $ui-2;
   }
 }
 
-.pill-btn-danger {
-  background: $red;
+.screenshot-preview-small {
+  border-radius: 6px;
+  background: $bg-1;
+  border: 1px solid $ui-1;
+}
+
+.screenshot-preview-large {
+  border-radius: 8px;
+  background: $bg-1;
+  border: 1px solid $ui-1;
+  margin-top: 8px;
+}
+
+.screenshot-filename {
+  font-size: 14px;
+  font-weight: 600;
+  color: $tx-2;
+}
+
+.screenshot-timestamp {
+  font-size: 12px;
+  color: $tx-3;
+  opacity: 0.9;
+}
+
+.screenshot-action-btn {
+  padding: 6px;
+  border-radius: 6px;
+  color: $tx-3;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 
   &:hover {
-    background-color: $ui-2;
+    background: $ui-3;
+    color: $tx-1;
   }
+}
+
+.screenshot-delete-btn:hover {
+  background: $red;
+  color: $bg-1;
+}
+
+/* ─────────────────────────────────────────────
+   EXPANDABLE NORMAL NOTIFICATIONS
+   ───────────────────────────────────────────── */
+
+.notif-history-body-expanded {
+  all: unset;
+  font-size: 13px;
+  color: $tx-2;
+  margin-top: 4px;
+  line-height: 1.5;
 }

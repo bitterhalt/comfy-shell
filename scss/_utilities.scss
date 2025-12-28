@@ -2,3 +2,54 @@
 .unset {
   all: unset;
 }
+
+// Buttons
+.close-btn {
+  all: unset;
+  color: $tx-1;
+}
+.close-btn:hover {
+  all: unset;
+  color: $tx-3;
+}
+
+.expand-btn {
+  all: unset;
+  color: $tx-1;
+
+  &:hover {
+    background: unset;
+    color: $tx-3;
+  }
+}
+
+.notif-close-btn {
+  all: unset;
+  background: unset;
+  color: $tx-2;
+  border-radius: 50%;
+  padding: 4px;
+}
+
+.notif-close-btn:hover {
+  background: $ui-2;
+}
+
+// all tooltips
+tooltip,
+.tooltip {
+  all: unset;
+  background: $bg-2;
+  border-radius: 8px;
+  margin: 4px;
+  padding: 15px;
+  border: solid 1px $ui-1;
+}
+
+tooltip label,
+.tooltip label {
+  all: unset;
+  color: $tx-2;
+  font-size: 15px;
+  font-weight: 400;
+}

@@ -1,16 +1,8 @@
-"""
-Notification history item widgets
-"""
-
 import asyncio
 
 from ignis import utils, widgets
 from ignis.services.notifications import Notification
 from ignis.window_manager import WindowManager
-from modules.notifications.widgets.cache import (
-    delete_cached_preview,
-    get_cached_preview,
-)
 from modules.notifications.widgets.time_utils import format_time_ago
 from modules.utils.signal_manager import SignalManager
 
@@ -40,93 +32,121 @@ def is_screenshot(notification: Notification) -> bool:
 
 
 class ScreenshotHistoryItem(widgets.Box):
-    """Screenshot notification with ASYNC cached preview and action buttons"""
+    """Simplified screenshot notification with small preview and action buttons"""
 
     def __init__(self, notification: Notification):
         self._signals = SignalManager()
         self._poll = None
-        self._preview_task = None
+        self._expanded = False
 
+        # Small preview (96x54 - 16:9 aspect ratio)
         self._preview = widgets.Picture(
-            image="image-loading",
+            image=notification.icon,
             content_fit="cover",
-            width=340,
-            height=191,
-            css_classes=["screenshot-preview"],
+            width=96,
+            height=54,
+            css_classes=["screenshot-preview-small"],
+        )
+
+        # Large preview (hidden by default)
+        self._large_preview = widgets.Picture(
+            image=notification.icon,
+            content_fit="cover",
+            width=352,
+            height=198,
+            css_classes=["screenshot-preview-large"],
+            visible=False,
         )
 
         self._timestamp = widgets.Label(
             label=format_time_ago(notification.time),
-            halign="center",
+            halign="start",
             css_classes=["screenshot-timestamp"],
         )
 
-        path_label = widgets.Label(
-            label=f"Saved to {notification.icon}",
-            halign="center",
-            ellipsize="middle",
-            css_classes=["screenshot-path"],
+        self._filename_label = widgets.Label(
+            label="Screenshot",
+            halign="start",
+            css_classes=["screenshot-filename"],
+        )
+
+        # Action buttons
+        expand_btn = widgets.Button(
+            child=widgets.Icon(image="pan-down-symbolic", pixel_size=20),
+            css_classes=["expand-btn"],
+            tooltip_text="Expand preview",
+            on_click=lambda *_: self._toggle_expand(),
         )
 
         view_btn = widgets.Button(
-            child=widgets.Label(label="View"),
-            css_classes=["pill-btn", "unset"],
+            child=widgets.Icon(image="document-open-symbolic", pixel_size=16),
+            css_classes=["screenshot-action-btn", "unset"],
+            tooltip_text="Open",
             on_click=lambda *_: self._open_screenshot(notification),
         )
+
         copy_btn = widgets.Button(
-            child=widgets.Label(label="Copy"),
-            css_classes=["pill-btn", "unset"],
+            child=widgets.Icon(image="edit-copy-symbolic", pixel_size=16),
+            css_classes=["screenshot-action-btn", "unset"],
+            tooltip_text="Copy to clipboard",
             on_click=lambda *_: self._copy_screenshot(notification),
         )
+
         delete_btn = widgets.Button(
-            child=widgets.Label(label="Delete"),
-            css_classes=["pill-btn", "pill-btn-danger", "unset"],
+            child=widgets.Icon(image="user-trash-symbolic", pixel_size=16),
+            css_classes=["screenshot-action-btn", "screenshot-delete-btn", "unset"],
+            tooltip_text="Delete",
             on_click=lambda *_: self._delete(notification),
         )
 
         actions = widgets.Box(
-            spacing=10,
-            halign="center",
+            spacing=4,
+            halign="end",
+            valign="start",
+            child=[view_btn, copy_btn, delete_btn, expand_btn],
+        )
+
+        # Text and actions column
+        info_column = widgets.Box(
+            vertical=True,
+            spacing=4,
             hexpand=True,
-            child=[view_btn, copy_btn, delete_btn],
+            child=[
+                widgets.Box(
+                    child=[
+                        widgets.Box(
+                            vertical=True,
+                            spacing=2,
+                            hexpand=True,
+                            child=[self._filename_label, self._timestamp],
+                        ),
+                        actions,
+                    ]
+                ),
+            ],
+        )
+
+        # Main row with small preview
+        self._compact_row = widgets.Box(
+            spacing=12,
+            child=[self._preview, info_column],
         )
 
         super().__init__(
             vertical=True,
-            spacing=14,
+            spacing=10,
             hexpand=True,
             css_classes=["screenshot-history-item"],
-            child=[self._preview, self._timestamp, path_label, actions],
+            child=[self._compact_row],
         )
 
-        self._preview_task = asyncio.create_task(self._load_preview_async(notification))
         self._poll = utils.Poll(60000, lambda *_: self._update_timestamp(notification))
         self._signals.connect(
             notification, "closed", lambda *_: setattr(self, "visible", False)
         )
         self._signals.connect(self, "destroy", lambda *_: self.destroy())
 
-    async def _load_preview_async(self, notification):
-        """Load preview in thread pool to avoid blocking UI"""
-        try:
-            loop = asyncio.get_event_loop()
-            preview_path = await loop.run_in_executor(
-                None,
-                get_cached_preview,
-                notification.icon,
-                (340, 191),
-                False,
-            )
-
-            if self._preview and preview_path:
-                self._preview.image = preview_path
-        except Exception as e:
-            print(f"Failed to load screenshot preview: {e}")
-
     def destroy(self):
-        if self._preview_task and not self._preview_task.done():
-            self._preview_task.cancel()
-
         if self._poll:
             try:
                 self._poll.cancel()
@@ -136,6 +156,16 @@ class ScreenshotHistoryItem(widgets.Box):
 
         self._signals.disconnect_all()
         super().destroy()
+
+    def _toggle_expand(self):
+        """Toggle expanded preview"""
+        self._expanded = not self._expanded
+        self._large_preview.visible = self._expanded
+
+        if self._expanded and self._large_preview not in self.child:
+            self.append(self._large_preview)
+        elif not self._expanded and self._large_preview in self.child:
+            self._large_preview.unparent()
 
     def _update_timestamp(self, notification):
         self._timestamp.label = format_time_ago(notification.time)
@@ -153,16 +183,17 @@ class ScreenshotHistoryItem(widgets.Box):
     def _delete(self, notification):
         if notification.icon:
             asyncio.create_task(utils.exec_sh_async(f"rm '{notification.icon}'"))
-            delete_cached_preview(notification.icon)
             notification.close()
 
 
 class NormalHistoryItem(widgets.Box):
-    """Standard notification history item"""
+    """Standard notification history item with expandable content"""
 
     def __init__(self, notification: Notification):
         self._signals = SignalManager()
         self._poll = None
+        self._expanded = False
+        self._notification = notification
 
         if notification.icon:
             icon_widget = widgets.Icon(
@@ -200,35 +231,69 @@ class NormalHistoryItem(widgets.Box):
             css_classes=["notif-timestamp"],
         )
 
-        body = widgets.Label(
+        # Collapsed body (ellipsized)
+        self._body_collapsed = widgets.Label(
             label=notification.body,
             halign="start",
             ellipsize="end",
             max_width_chars=40,
             css_classes=["notif-history-body"],
             visible=notification.body != "",
-            wrap=True,
+            wrap=False,
         )
 
-        close_btn = widgets.Button(
-            child=widgets.Icon(image="window-close-symbolic", pixel_size=18),
-            css_classes=["notif-history-close", "unset"],
-            valign="start",
-            on_click=lambda *_: notification.close(),
+        # Expanded body (full text, wrapped)
+        self._body_expanded = widgets.Label(
+            label=notification.body,
+            halign="start",
+            css_classes=["notif-history-body-expanded"],
+            visible=False,
+            wrap=True,
+            wrap_mode="word",
         )
 
         text_box = widgets.Box(
             vertical=True,
             spacing=2,
-            child=[summary, self._timestamp_label, body],
+            child=[
+                summary,
+                self._timestamp_label,
+                self._body_collapsed,
+                self._body_expanded,
+            ],
             hexpand=True,
+        )
+
+        # Action buttons
+        expand_btn = widgets.Button(
+            child=widgets.Icon(image="pan-down-symbolic", pixel_size=20),
+            css_classes=["expand-btn"],
+            valign="start",
+            tooltip_text="Expand",
+            visible=len(notification.body) > 80 or len(notification.summary) > 70,
+            on_click=lambda *_: self._toggle_expand(),
+        )
+
+        close_btn = widgets.Button(
+            child=widgets.Icon(image="window-close-symbolic", pixel_size=20),
+            css_classes=["close-btn"],
+            valign="start",
+            tooltip_text="Close",
+            on_click=lambda *_: notification.close(),
+        )
+
+        actions = widgets.Box(
+            vertical=True,
+            spacing=4,
+            valign="start",
+            child=[close_btn, expand_btn] if expand_btn.visible else [close_btn],
         )
 
         super().__init__(
             css_classes=["notif-history-item"],
             spacing=12,
             hexpand=True,
-            child=[icon_widget, text_box, close_btn],
+            child=[icon_widget, text_box, actions],
         )
 
         self._poll = utils.Poll(60000, lambda *_: self._update_timestamp(notification))
@@ -236,6 +301,12 @@ class NormalHistoryItem(widgets.Box):
             notification, "closed", lambda *_: setattr(self, "visible", False)
         )
         self._signals.connect(self, "destroy", lambda *_: self.destroy())
+
+    def _toggle_expand(self):
+        """Toggle between collapsed and expanded view"""
+        self._expanded = not self._expanded
+        self._body_collapsed.visible = not self._expanded
+        self._body_expanded.visible = self._expanded
 
     def destroy(self):
         if self._poll:
