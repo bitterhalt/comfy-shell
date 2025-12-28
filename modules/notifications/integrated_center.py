@@ -15,11 +15,9 @@ wm = WindowManager.get_default()
 
 
 class IntegratedCenter(widgets.Window):
-
     def __init__(self):
         self._media_pill = MediaCenterWidget()
         self._notification_list = NotificationList()
-
         dnd_switch = widgets.Switch(
             active=options.notifications.bind("dnd"),
             on_change=lambda _, s: options.notifications.set_dnd(s),
