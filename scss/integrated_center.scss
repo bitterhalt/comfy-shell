@@ -200,7 +200,6 @@
 }
 
 .calendar-box {
-  margin-bottom: 10px;
 }
 
 .center-calendar {
@@ -213,10 +212,12 @@
 }
 
 .center-calendar .day-number {
+  all: unset;
   color: $tx-2;
 }
 
 .center-calendar .today {
+  all: unset;
   background-color: $bg-2;
   color: $magenta;
   font-weight: 600;
@@ -224,6 +225,7 @@
 }
 
 .center-calendar .other-month {
+  all: unset;
   color: $tx-3;
   opacity: 0.5;
 }
