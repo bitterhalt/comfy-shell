@@ -271,7 +271,7 @@ class NormalHistoryItem(widgets.Box):
             valign="start",
             tooltip_text="Expand",
             visible=len(notification.body) > 80 or len(notification.summary) > 70,
-            on_click=lambda *_: self._toggle_expand(),
+            on_click=lambda x: self._toggle_expand(),
         )
 
         close_btn = widgets.Button(
@@ -279,7 +279,7 @@ class NormalHistoryItem(widgets.Box):
             css_classes=["close-btn"],
             valign="start",
             tooltip_text="Close",
-            on_click=lambda *_: notification.close(),
+            on_click=lambda x: notification.close(),
         )
 
         actions = widgets.Box(

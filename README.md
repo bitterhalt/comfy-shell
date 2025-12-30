@@ -68,8 +68,10 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 
 ## TODO
 
-> _28.12.25_
+> _30.12.25_
 
+- [ ] Styles are at mess! Make some tidying for values + maybe add few more themes
+- [ ] Theme option for config.toml
 - [x] In settings: add option to remember bar state after restart
 - [x] add bluetooth in panel
 - [x] add small time stamps to notifications
