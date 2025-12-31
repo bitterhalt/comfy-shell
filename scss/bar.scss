@@ -1,7 +1,7 @@
 .bar {
   background-color: $bg-1;
   color: $tx-1;
-  padding: 0px 6px;
+  margin: 0px 4px;
 }
 
 .workspaces {
@@ -10,8 +10,8 @@
 .ws-btn {
   all: unset;
   min-width: 16px;
-  padding: 2px 6px;
-  margin: 2px 0px;
+  padding: 0px 6px;
+  margin: 2px 0;
   border-radius: 6px;
   background: transparent;
   color: $tx-1;
@@ -24,36 +24,35 @@
 }
 
 .window-title {
-  all: unset;
+  padding: 0px 6px;
 }
 
 .clock,
 .clock-button {
   all: unset;
+  margin: 2px 0;
   padding: 2px 6px;
-  margin: 2px 0px;
   border-radius: 6px;
 }
 
 .recording-icon {
-  all: unset;
-  padding: 2px 6px;
-  margin: 2px 0px;
+  margin: 2px 0;
+  padding: 2px 12px;
   border-radius: 6px;
   color: $red;
-  animation: blink 2s infinite;
+  animation: blink 1s infinite;
 }
 
 .system-indicator-button {
-  all: unset;
-  color: $tx-1;
+  margin: 2px 2px;
   padding: 2px 6px;
-  margin: 2px 0px;
+  color: $tx-1;
+  background-color: unset;
   border-radius: 8px;
 }
 
 .system-indicator-speaker.muted {
-  color: $tx-2; /* or whatever “muted” gray you like */
+  color: $tx-2;
 }
 
 .clock-notif-dot {
@@ -70,21 +69,32 @@
   color: $red;
 }
 
-@keyframes blink {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 1;
-  }
-  60% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 0;
+// Caffeine widget
+.caffeine-button {
+  all: unset;
+  color: $tx-1;
+  margin: 2px 0;
+  padding: 2px 6px;
+  border-radius: 8px;
+
+  &:hover {
+    background: $ui-1;
+    color: $tx-2;
   }
 }
 
+.caffeine-button.caffeine-active {
+  color: $yellow;
+  background: $bg-2;
+
+  &:hover {
+    background: $ui-2;
+  }
+}
+
+.caffeine-icon {
+  opacity: 0.9;
+}
 .audio-widget:hover,
 .clock-button:hover,
 .clock:hover,

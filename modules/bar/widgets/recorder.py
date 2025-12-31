@@ -18,7 +18,7 @@ def recording_indicator():
 
     def on_start(*_):
         icon.set_label("󰻂")
-        icon.set_tooltip_text("Recording...\nClick to stop")
+        icon.set_tooltip_text("Recording...\n\nClick to stop")
         container.set_visible(True)
 
     def on_stop(*_):

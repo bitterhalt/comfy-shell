@@ -3,6 +3,7 @@ from modules.utils import load_bar_state
 from settings import config
 
 from .widgets.battery import battery_widget
+from .widgets.caffeine import caffeine_widget
 from .widgets.clock import clock
 from .widgets.focused_window import window_title
 from .widgets.recorder import recording_indicator
@@ -33,11 +34,11 @@ def center_section():
 
 def right_section():
     return widgets.Box(
-        spacing=12,
         child=[
             recording_indicator(),
             system_indicator(),
             battery_widget(),
+            caffeine_widget(),
         ],
     )
 

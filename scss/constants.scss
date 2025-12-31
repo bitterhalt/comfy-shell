@@ -53,3 +53,19 @@ tooltip label,
   font-size: 15px;
   font-weight: 400;
 }
+
+// Annouing blinker
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
