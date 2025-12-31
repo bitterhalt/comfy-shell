@@ -2,8 +2,6 @@
   background-color: $bg-1;
   color: $tx-1;
   padding: 0px 6px;
-  font-family: "Adwaita Sans", "Symbols Nerd Font Mono";
-  font-size: 11pt;
 }
 
 .workspaces {
@@ -26,7 +24,7 @@
 }
 
 .window-title {
-  padding: 2px 6px;
+  all: unset;
 }
 
 .clock,
@@ -55,7 +53,7 @@
 }
 
 .system-indicator-speaker.muted {
-  color: $tx-1; /* or whatever “muted” gray you like */
+  color: $tx-2; /* or whatever “muted” gray you like */
 }
 
 .clock-notif-dot {

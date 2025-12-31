@@ -43,7 +43,7 @@ def window_title(monitor_name: str):
     )
 
     box = widgets.Box(
-        spacing=6,
+        spacing=10,
         halign="start",
         valign="center",
         css_classes=["window-title-box"],
