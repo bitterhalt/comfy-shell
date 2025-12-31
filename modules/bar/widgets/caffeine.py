@@ -4,8 +4,6 @@ from ignis import utils, widgets
 
 
 class CaffeineWidget(widgets.Button):
-    """Toggle hypridle on/off (caffeine mode)"""
-
     def __init__(self):
         self._enabled = True
         self._poll = None

@@ -85,16 +85,12 @@
 
 .caffeine-button.caffeine-active {
   color: $yellow;
-  background: $bg-2;
 
   &:hover {
-    background: $ui-2;
+    background: $ui-1;
   }
 }
 
-.caffeine-icon {
-  opacity: 0.9;
-}
 .audio-widget:hover,
 .clock-button:hover,
 .clock:hover,
