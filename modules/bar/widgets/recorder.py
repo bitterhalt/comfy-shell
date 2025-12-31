@@ -11,7 +11,7 @@ def recording_indicator():
         child=[
             widgets.Label(label="", css_classes=["recording-icon"]),
         ],
-        on_click=lambda *_: (recorder.stop_recording() if recorder.active else None),
+        on_click=lambda x: (recorder.stop_recording() if recorder.active else None),
     )
 
     icon = container.child[0]
