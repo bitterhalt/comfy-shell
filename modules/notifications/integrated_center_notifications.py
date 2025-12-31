@@ -2,9 +2,10 @@ from ignis import widgets
 from ignis.services.notifications import NotificationService
 from modules.notifications.widgets import NotificationHistoryItem
 from modules.utils.signal_manager import SignalManager
+from settings import config
 
 notifications = NotificationService.get_default()
-MAX_NOTIFICATIONS = 10
+MAX_NOTIFICATIONS = config.ui.notifications.max_history
 
 
 class NotificationList:

@@ -61,7 +61,7 @@ class Bar(widgets.Window):
             exclusivity="exclusive",
             visible=initial_visible,
             child=widgets.CenterBox(
-                css_classes=["bar", "unset"],
+                css_classes=["bar"],
                 start_widget=left_section(monitor_name),
                 center_widget=center_section(),
                 end_widget=right_section(),
