@@ -52,14 +52,12 @@ class CaffeineWidget(widgets.Button):
         if self._enabled:
             self._icon.image = "weather-clear-night-symbolic"
             self.remove_css_class("caffeine-active")
-            self.set_tooltip_text(
-                "Idle timeout enabled\n\nClick to disable idle timeout"
-            )
+            self.set_tooltip_text("Idle timeout enabled\n\nClick to disable")
         else:
             self._icon.image = "my-caffeine-on-symbolic"
             self.add_css_class("caffeine-active")
             self.set_tooltip_text(
-                "Caffee mode active ☕\n\nClick to re-enable idle timeout"
+                "Caffee mode active ☕\n\nClick to enable idle timeout"
             )
 
     def _toggle(self):

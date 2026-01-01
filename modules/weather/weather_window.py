@@ -9,7 +9,7 @@ from settings import config
 from .weather_data import fetch_weather_async, format_time_hm, icon_path
 
 wm = WindowManager.get_default()
-CACHE_TTL = 600
+CACHE_TTL = config.weather.cache_ttl
 
 
 class WeatherPopup(widgets.Window):
