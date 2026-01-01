@@ -1,10 +1,5 @@
-"""
-Task popup
-"""
-
 import time
 from datetime import datetime
-
 from ignis import utils, widgets
 from modules.utils.task_storage_manager import TaskStorageManager
 from settings import config

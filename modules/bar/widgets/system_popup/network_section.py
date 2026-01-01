@@ -1,7 +1,4 @@
-"""Network control section with WiFi/Ethernet/VPN"""
-
 import asyncio
-
 from ignis import widgets
 from ignis.services.network import NetworkService
 from modules.bar.widgets.network_items import (
@@ -112,9 +109,7 @@ class NetworkSection(widgets.Box):
         ethernet_section = widgets.Box(
             vertical=True,
             spacing=4,
-            child=ethernet.bind(
-                "devices", transform=lambda devs: [EthernetItem(d) for d in devs]
-            ),
+            child=ethernet.bind("devices", transform=lambda devs: [EthernetItem(d) for d in devs]),
         )
 
         vpn_section = widgets.Box(

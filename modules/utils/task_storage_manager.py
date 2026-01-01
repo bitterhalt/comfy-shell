@@ -39,11 +39,7 @@ class TaskStorageManager:
         """
         now = time.time()
 
-        if (
-            not force_refresh
-            and self._cache is not None
-            and (now - self._cache_time) < self._cache_ttl
-        ):
+        if not force_refresh and self._cache is not None and (now - self._cache_time) < self._cache_ttl:
             return self._cache.copy()
 
         try:

@@ -73,7 +73,6 @@ def save_bar_state(visible: bool):
 
     if not config.ui.bar_remember_state:
         return
-
     manager = get_bar_state_manager()
     manager.save_state(visible)
 

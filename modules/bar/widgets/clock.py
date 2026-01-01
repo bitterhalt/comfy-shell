@@ -1,5 +1,4 @@
 import datetime
-
 from ignis import utils, widgets
 from ignis.services.notifications import NotificationService
 from ignis.window_manager import WindowManager
@@ -43,7 +42,6 @@ def clock():
         return not config.ui.notifications.should_filter(notif)
 
     def update_notifications(*_):
-        # Filter out notifications that match keywords
         all_notifs = notifications.notifications
         visible_notifs = [n for n in all_notifs if _should_show_notification(n)]
         count = len(visible_notifs)
@@ -92,7 +90,5 @@ def clock():
                 pass
 
     signals.connect(clock_button, "destroy", cleanup)
-
     update_notifications()
-
     return clock_button

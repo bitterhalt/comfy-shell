@@ -1,5 +1,3 @@
-"""Audio control section with device switching"""
-
 from ignis import widgets
 from ignis.services.audio import AudioService
 from modules.utils.signal_manager import SignalManager
@@ -78,9 +76,7 @@ class AudioSection(widgets.Box):
             css_classes=["pill-audio-scale"],
         )
 
-        self._signals.connect(
-            stream, "notify::volume", lambda *_: self._update_icon(mute_icon)
-        )
+        self._signals.connect(stream, "notify::volume", lambda *_: self._update_icon(mute_icon))
 
         self._arrow = widgets.Arrow(
             pixel_size=18,
@@ -110,12 +106,8 @@ class AudioSection(widgets.Box):
 
         self._populate_devices()
 
-        self._signals.connect(
-            audio, f"{device_type}-added", lambda *_: self._populate_devices()
-        )
-        self._signals.connect(
-            audio, f"notify::{device_type}", lambda *_: self._populate_devices()
-        )
+        self._signals.connect(audio, f"{device_type}-added", lambda *_: self._populate_devices())
+        self._signals.connect(audio, f"notify::{device_type}", lambda *_: self._populate_devices())
 
         self.connect("destroy", lambda *_: self._signals.disconnect_all())
 
@@ -151,9 +143,7 @@ class AudioSection(widgets.Box):
         self._device_list.child = []
         streams = getattr(audio, f"{self.device_type}s", [])
         current = getattr(audio, self.device_type)
-        streams = sorted(
-            streams, key=lambda s: (0 if s == current else 1, s.description.lower())
-        )
+        streams = sorted(streams, key=lambda s: (0 if s == current else 1, s.description.lower()))
 
         for s in streams:
             item = AudioDeviceItem(s, self.device_type)

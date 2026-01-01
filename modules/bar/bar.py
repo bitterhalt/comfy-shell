@@ -1,7 +1,6 @@
 from ignis import utils, widgets
 from modules.utils import load_bar_state
 from settings import config
-
 from .widgets.battery import battery_widget
 from .widgets.caffeine import caffeine_widget
 from .widgets.clock import clock

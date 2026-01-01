@@ -38,10 +38,7 @@ class TimeOsdWindow(widgets.Window):
             css_classes=["time-osd-window"],
             child=pill,
         )
-
         self.connect("notify::visible", self._on_visible_changed)
-
-    # ------------------------------------------------------------------
 
     def _on_visible_changed(self, *_):
         if self.get_visible():

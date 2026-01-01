@@ -1,5 +1,4 @@
 import asyncio
-
 from ignis import widgets
 from ignis.services.network import EthernetDevice, VpnConnection, WifiAccessPoint
 
@@ -40,9 +39,7 @@ class VpnNetworkItem(widgets.Button):
                     widgets.Icon(image="network-vpn-symbolic", pixel_size=22),
                     widgets.Label(label=conn.name, ellipsize="end", max_width_chars=20),
                     widgets.Label(
-                        label=conn.bind(
-                            "is_connected", lambda c: "Disconnect" if c else "Connect"
-                        ),
+                        label=conn.bind("is_connected", lambda c: "Disconnect" if c else "Connect"),
                         hexpand=True,
                         halign="end",
                     ),
@@ -68,13 +65,10 @@ class EthernetItem(widgets.Button):
                     widgets.Icon(image="network-wired-symbolic"),
                     widgets.Label(label=dev.name or "Ethernet", ellipsize="end"),
                     widgets.Label(
-                        label=dev.bind(
-                            "is_connected", lambda c: "Disconnect" if c else "Connect"
-                        ),
+                        label=dev.bind("is_connected", lambda c: "Disconnect" if c else "Connect"),
                         hexpand=True,
                         halign="end",
                     ),
                 ],
             ),
         )
-

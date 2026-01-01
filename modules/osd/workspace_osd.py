@@ -17,7 +17,6 @@ class WorkspaceOSD(widgets.Window):
     def __init__(self):
         self._timeout = None
         self._signals = SignalManager()
-
         self._label = widgets.Label(css_classes=["workspace-osd-label"])
 
         icon = widgets.Icon(
@@ -45,13 +44,9 @@ class WorkspaceOSD(widgets.Window):
         self.connect("notify::visible", self._on_visible_changed)
 
         if hypr.is_available:
-            self._signals.connect(
-                hypr, "notify::active-workspace", self._on_workspace_change
-            )
+            self._signals.connect(hypr, "notify::active-workspace", self._on_workspace_change)
         elif niri.is_available:
-            self._signals.connect(
-                niri, "notify::active-workspace", self._on_workspace_change
-            )
+            self._signals.connect(niri, "notify::active-workspace", self._on_workspace_change)
 
         self.connect("destroy", self._cleanup)
 
@@ -74,7 +69,6 @@ class WorkspaceOSD(widgets.Window):
     def _start_timeout(self):
         if self._timeout:
             self._timeout.cancel()
-
         self._timeout = utils.Timeout(TIMEOUT, lambda: self.set_visible(False))
 
     def _cancel_timeout(self):

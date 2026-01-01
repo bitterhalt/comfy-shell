@@ -1,5 +1,4 @@
 import asyncio
-
 from ignis import utils, widgets
 
 
@@ -21,9 +20,7 @@ class CaffeineWidget(widgets.Button):
 
         asyncio.create_task(self._update_state())
 
-        self._poll = utils.Poll(
-            10000, lambda x: asyncio.create_task(self._update_state())
-        )
+        self._poll = utils.Poll(10000, lambda x: asyncio.create_task(self._update_state()))
 
         self.connect("destroy", self._cleanup)
 
@@ -56,9 +53,7 @@ class CaffeineWidget(widgets.Button):
         else:
             self._icon.image = "my-caffeine-on-symbolic"
             self.add_css_class("caffeine-active")
-            self.set_tooltip_text(
-                "Caffee mode active ☕\n\nClick to enable idle timeout"
-            )
+            self.set_tooltip_text("Caffee mode active ☕\n\nClick to enable idle timeout")
 
     def _toggle(self):
         """Toggle hypridle on/off"""

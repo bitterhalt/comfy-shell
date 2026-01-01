@@ -24,9 +24,7 @@ def _mic_visible():
 
 def _mic_icon():
     return (
-        "microphone-sensitivity-muted-symbolic"
-        if audio.microphone.is_muted
-        else "microphone-sensitivity-high-symbolic"
+        "microphone-sensitivity-muted-symbolic" if audio.microphone.is_muted else "microphone-sensitivity-high-symbolic"
     )
 
 

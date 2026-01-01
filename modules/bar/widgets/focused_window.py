@@ -79,11 +79,7 @@ def window_title(monitor_name: str):
             else:
                 return
 
-            title_label.label = (
-                win_title
-                if win_class.lower() in config.ui.bar_window_title_exceptions
-                else win_class
-            )
+            title_label.label = win_title if win_class.lower() in config.ui.bar_window_title_exceptions else win_class
 
             icon_name = utils.get_app_icon_name(win_class)
             if icon_name:
@@ -126,14 +122,10 @@ def window_title(monitor_name: str):
 
     if hypr.is_available:
         compositor_signals.connect(hypr, "notify::active-window", rewire_active_window)
-        compositor_signals.connect(
-            hypr, "notify::active-workspace", rewire_active_window
-        )
+        compositor_signals.connect(hypr, "notify::active-workspace", rewire_active_window)
     elif niri.is_available:
         compositor_signals.connect(niri, "notify::active-window", rewire_active_window)
-        compositor_signals.connect(
-            niri, "notify::active-workspace", rewire_active_window
-        )
+        compositor_signals.connect(niri, "notify::active-workspace", rewire_active_window)
 
     compositor_signals.connect(
         box,

@@ -268,9 +268,7 @@ class MediaOsdWindow(widgets.Window):
         def update_icon(*_):
             status = player.playback_status
             self._btn_play_icon.image = (
-                "media-playback-pause-symbolic"
-                if status == "Playing"
-                else "media-playback-start-symbolic"
+                "media-playback-pause-symbolic" if status == "Playing" else "media-playback-start-symbolic"
             )
 
         self._player_signals.connect(player, "notify::playback-status", update_icon)

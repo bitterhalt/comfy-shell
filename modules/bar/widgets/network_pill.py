@@ -99,9 +99,7 @@ class NetworkPill(widgets.Button):
             (ethernet, "is_connected"),
             (vpn, "is_connected"),
         ]:
-            obj.connect(
-                f"notify::{prop. replace('_', '-')}", lambda *_: self._refresh()
-            )
+            obj.connect(f"notify::{prop.replace('_', '-')}", lambda *_: self._refresh())
 
         self._refresh()
 

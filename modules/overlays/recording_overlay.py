@@ -1,7 +1,5 @@
 import asyncio
-
 from gi.repository import Gdk
-
 from ignis import utils, widgets
 from ignis.services.recorder import RecorderService
 from ignis.window_manager import WindowManager

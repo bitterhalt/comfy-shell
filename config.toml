@@ -41,7 +41,6 @@ workspace_osd = 1500
 remember_state = true
 
 # Apps that show window title instead of app class
-# Matches WM_CLASS / app_id (case-insensitive usage is up to caller)
 window_title_exceptions = [
   "firefox",
   "zen",
@@ -57,7 +56,7 @@ popup_timeout = 5000 # Milliseconds
 
 #  Hide useless stuff from history
 filter_keywords = [
-    "Hyprland config",
+  "Hyprland config",
   "Color-picker",
   "Smart-gaps",
   "Hyprpicker",

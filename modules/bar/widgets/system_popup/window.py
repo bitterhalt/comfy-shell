@@ -1,13 +1,9 @@
-"""Main system popup window"""
-
 import asyncio
-
 from ignis import utils, widgets
 from ignis.services.audio import AudioService
 from ignis.window_manager import WindowManager
 from modules.bar.widgets.bluetooth import BluetoothButton
 from settings import config
-
 from .audio_section import AudioSection
 from .network_section import NetworkSection
 from .system_info_section import SystemInfoWidget

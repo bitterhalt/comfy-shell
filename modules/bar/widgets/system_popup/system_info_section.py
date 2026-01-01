@@ -48,15 +48,9 @@ class SystemInfoWidget(widgets.Box):
             ],
         )
 
-        self._os_label = widgets.Label(
-            label="Loading…", halign="start", css_classes=["system-info-text"]
-        )
-        self._kernel_label = widgets.Label(
-            label="Loading…", halign="start", css_classes=["system-info-text"]
-        )
-        self._uptime_label = widgets.Label(
-            label="Loading…", halign="start", css_classes=["system-info-text"]
-        )
+        self._os_label = widgets.Label(label="Loading…", halign="start", css_classes=["system-info-text"])
+        self._kernel_label = widgets.Label(label="Loading…", halign="start", css_classes=["system-info-text"])
+        self._uptime_label = widgets.Label(label="Loading…", halign="start", css_classes=["system-info-text"])
 
         info_box = widgets.Box(
             vertical=True,

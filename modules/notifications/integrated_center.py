@@ -1,7 +1,3 @@
-"""
-Integrated center
-"""
-
 from ignis import utils, widgets
 from ignis.options import options
 from ignis.window_manager import WindowManager

@@ -4,7 +4,6 @@ from settings import config
 
 audio = AudioService.get_default()
 TIMEOUT = config.ui.volume_osd_timeout
-
 _osd_window = None
 
 
@@ -13,9 +12,7 @@ class VolumeOSD(widgets.Window):
 
     def __init__(self):
         self._timeout = None
-
         speaker = audio.speaker
-
         icon = widgets.Icon(
             pixel_size=26,
             image=speaker.bind("icon_name"),
@@ -25,9 +22,7 @@ class VolumeOSD(widgets.Window):
         slider = widgets.Scale(
             min=0,
             max=100,
-            value=speaker.bind(
-                "volume", lambda v: 0 if speaker.is_muted else int(v or 0)
-            ),
+            value=speaker.bind("volume", lambda v: 0 if speaker.is_muted else int(v or 0)),
             sensitive=False,
             hexpand=True,
             css_classes=["vol-track", "unset"],
@@ -69,10 +64,7 @@ class VolumeOSD(widgets.Window):
 
 
 def show_volume_osd():
-    """External API for triggering the Volume OSD."""
     global _osd_window
-
     if _osd_window is None:
         _osd_window = VolumeOSD()
-
     _osd_window.show_osd()

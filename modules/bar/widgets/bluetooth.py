@@ -1,5 +1,4 @@
 import asyncio
-
 from ignis import utils, widgets
 from ignis.services.bluetooth import BluetoothService
 from modules.utils.signal_manager import SignalManager
@@ -33,13 +32,9 @@ class BluetoothButton(widgets.Button):
         self._update()
 
         self._signals.connect(bluetooth, "notify::powered", lambda *_: self._update())
-        self._signals.connect(
-            bluetooth, "notify::connected-devices", lambda *_: self._update()
-        )
+        self._signals.connect(bluetooth, "notify::connected-devices", lambda *_: self._update())
 
-        self._signals.connect(
-            self, "destroy", lambda *_: self._signals.disconnect_all()
-        )
+        self._signals.connect(self, "destroy", lambda *_: self._signals.disconnect_all())
 
     def _toggle(self):
         bluetooth.powered = not bluetooth.powered
@@ -61,8 +56,4 @@ class BluetoothButton(widgets.Button):
         else:
             self.add_css_class("sys-top-btn-active")
             self._icon.image = "bluetooth-disabled-symbolic"
-            self.set_tooltip_text(
-                "Bluetooth: OFF\n"
-                "Click to open Blueman Manager\n"
-                "Right-click to enable"
-            )
+            self.set_tooltip_text("Bluetooth: OFF\nClick to open Blueman Manager\nRight-click to enable")

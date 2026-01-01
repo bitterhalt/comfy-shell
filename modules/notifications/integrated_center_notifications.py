@@ -46,7 +46,6 @@ class NotificationList:
         """Load existing notifications with proper cleanup"""
         self._clear_items()
 
-        # Filter notifications based on keywords
         all_notifs = notifications.notifications
         filtered_notifs = [n for n in all_notifs if self._should_show_notification(n)]
         items = filtered_notifs[:MAX_NOTIFICATIONS]
@@ -56,9 +55,7 @@ class NotificationList:
             self._notif_list.append(item)
 
             sig_manager = SignalManager()
-            sig_manager.connect(
-                notif, "closed", lambda *_: self._on_notification_closed()
-            )
+            sig_manager.connect(notif, "closed", lambda *_: self._on_notification_closed())
             self._item_signals[id(notif)] = sig_manager
 
         self._update_empty_state()
@@ -82,13 +79,7 @@ class NotificationList:
         sig_manager.connect(notif, "closed", lambda *_: self._on_notification_closed())
         self._item_signals[id(notif)] = sig_manager
 
-        visible_count = len(
-            [
-                n
-                for n in notifications.notifications
-                if self._should_show_notification(n)
-            ]
-        )
+        visible_count = len([n for n in notifications.notifications if self._should_show_notification(n)])
 
         if visible_count > MAX_NOTIFICATIONS:
             excess_item = self._notif_list.child[-1]
@@ -103,9 +94,7 @@ class NotificationList:
 
     def _update_empty_state(self):
         """Update empty state visibility"""
-        visible_notifs = [
-            n for n in notifications.notifications if self._should_show_notification(n)
-        ]
+        visible_notifs = [n for n in notifications.notifications if self._should_show_notification(n)]
         has_notifications = len(visible_notifs) > 0
         self._notif_empty.visible = not has_notifications
 

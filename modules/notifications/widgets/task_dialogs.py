@@ -1,9 +1,4 @@
-"""
-Task add/edit dialog widgets
-"""
-
 from datetime import datetime, timedelta
-
 from ignis import widgets
 
 

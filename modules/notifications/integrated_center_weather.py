@@ -1,9 +1,4 @@
-"""
-Weather pill widget for integrated center
-"""
-
 import asyncio
-
 from ignis import utils, widgets
 from ignis.window_manager import WindowManager
 

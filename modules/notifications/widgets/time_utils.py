@@ -1,20 +1,7 @@
-"""
-Time formatting utilities for notifications and tasks
-"""
-
 import time
 
 
 def format_time_until(fire_at: int) -> str:
-    """
-    Format time remaining until a timestamp.
-
-    Args:
-        fire_at: Unix timestamp
-
-    Returns:
-        Human-readable time string (e.g., "2h 30m", "15m", "Overdue!")
-    """
     now = int(time.time())
     diff = fire_at - now
 
@@ -36,15 +23,6 @@ def format_time_until(fire_at: int) -> str:
 
 
 def format_time_ago(timestamp: int) -> str:
-    """
-    Format how long ago a timestamp was.
-
-    Args:
-        timestamp: Unix timestamp
-
-    Returns:
-        Human-readable time string (e.g., "5 minutes ago", "2 hours ago")
-    """
     now = int(time.time())
     diff = now - timestamp
 

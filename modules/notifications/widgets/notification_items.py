@@ -1,5 +1,4 @@
 import asyncio
-
 from ignis import utils, widgets
 from ignis.services.notifications import Notification
 from ignis.window_manager import WindowManager
@@ -21,10 +20,7 @@ def is_screenshot(notification: Notification) -> bool:
     }
 
     return (
-        (
-            notification.app_name.lower() in SCREENSHOT_APPS
-            or notification.summary.lower() == "screenshot"
-        )
+        (notification.app_name.lower() in SCREENSHOT_APPS or notification.summary.lower() == "screenshot")
         and notification.icon
         and notification.icon.startswith("/")
         and notification.icon.endswith(".png")
@@ -39,7 +35,6 @@ class ScreenshotHistoryItem(widgets.Box):
         self._poll = None
         self._expanded = False
 
-        # Small preview (96x54 - 16:9 aspect ratio)
         self._preview = widgets.Picture(
             image=notification.icon,
             content_fit="cover",
@@ -48,7 +43,6 @@ class ScreenshotHistoryItem(widgets.Box):
             css_classes=["screenshot-preview-small"],
         )
 
-        # Large preview (hidden by default)
         self._large_preview = widgets.Picture(
             image=notification.icon,
             content_fit="cover",
@@ -70,7 +64,6 @@ class ScreenshotHistoryItem(widgets.Box):
             css_classes=["screenshot-filename"],
         )
 
-        # Action buttons
         expand_btn = widgets.Button(
             child=widgets.Icon(image="pan-down-symbolic", pixel_size=20),
             css_classes=["expand-btn"],
@@ -106,7 +99,6 @@ class ScreenshotHistoryItem(widgets.Box):
             child=[view_btn, copy_btn, delete_btn, expand_btn],
         )
 
-        # Text and actions column
         info_column = widgets.Box(
             vertical=True,
             spacing=4,
@@ -126,7 +118,6 @@ class ScreenshotHistoryItem(widgets.Box):
             ],
         )
 
-        # Main row with small preview
         self._compact_row = widgets.Box(
             spacing=12,
             child=[self._preview, info_column],
@@ -141,9 +132,7 @@ class ScreenshotHistoryItem(widgets.Box):
         )
 
         self._poll = utils.Poll(60000, lambda *_: self._update_timestamp(notification))
-        self._signals.connect(
-            notification, "closed", lambda *_: setattr(self, "visible", False)
-        )
+        self._signals.connect(notification, "closed", lambda *_: setattr(self, "visible", False))
         self._signals.connect(self, "destroy", lambda *_: self.destroy())
 
     def destroy(self):
@@ -297,9 +286,7 @@ class NormalHistoryItem(widgets.Box):
         )
 
         self._poll = utils.Poll(60000, lambda *_: self._update_timestamp(notification))
-        self._signals.connect(
-            notification, "closed", lambda *_: setattr(self, "visible", False)
-        )
+        self._signals.connect(notification, "closed", lambda *_: setattr(self, "visible", False))
         self._signals.connect(self, "destroy", lambda *_: self.destroy())
 
     def _toggle_expand(self):

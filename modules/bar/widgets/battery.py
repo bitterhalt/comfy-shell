@@ -64,11 +64,7 @@ class BatteryWidget(widgets.Box):
         """Update tooltip with battery info"""
         battery = self._battery
 
-        status = (
-            "Charging"
-            if battery.is_charging
-            else "Discharging" if battery.is_discharging else "Full"
-        )
+        status = "Charging" if battery.is_charging else "Discharging" if battery.is_discharging else "Full"
 
         time_str = ""
         if battery.is_charging and battery.time_to_full > 0:
@@ -80,9 +76,7 @@ class BatteryWidget(widgets.Box):
             mins = (battery.time_to_empty % 3600) // 60
             time_str = f"\nTime remaining: {hours}h {mins}m"
 
-        self.set_tooltip_text(
-            f"{battery.device_name}\n{status}: {int(battery.percentage)}%{time_str}"
-        )
+        self.set_tooltip_text(f"{battery.device_name}\n{status}: {int(battery.percentage)}%{time_str}")
 
     def _update_warning_class(self):
         """Update CSS classes based on battery level"""
