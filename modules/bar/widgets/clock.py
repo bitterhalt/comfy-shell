@@ -4,6 +4,7 @@ from ignis import utils, widgets
 from ignis.services.notifications import NotificationService
 from ignis.window_manager import WindowManager
 from modules.utils.signal_manager import SignalManager
+from settings import config
 
 wm = WindowManager.get_default()
 notifications = NotificationService.get_default()
@@ -37,10 +38,16 @@ def clock():
     def update_time():
         return datetime.datetime.now().strftime("%H:%M")
 
+    def _should_show_notification(notif) -> bool:
+        """Check if notification should be shown (not filtered)"""
+        return not config.ui.notifications.should_filter(notif)
+
     def update_notifications(*_):
-        notifs = notifications.notifications
-        count = len(notifs)
-        has_critical = any(n.urgency == 2 for n in notifs)
+        # Filter out notifications that match keywords
+        all_notifs = notifications.notifications
+        visible_notifs = [n for n in all_notifs if _should_show_notification(n)]
+        count = len(visible_notifs)
+        has_critical = any(n.urgency == 2 for n in visible_notifs)
 
         tooltip = datetime.datetime.now().strftime("%A, %d.%m %Y")
         if count > 0:

@@ -55,6 +55,15 @@ window_title_exceptions = [
 max_history = 10
 popup_timeout = 5000 # Milliseconds
 
+#  Hide useless stuff from history
+filter_keywords = [
+    "Hyprland config",
+  "Color-picker",
+  "Smart-gaps",
+  "Hyprpicker",
+  "Hypridle",
+]
+
 # ══════════════════════════════════════════════════════════════
 # RECORDER
 # ══════════════════════════════════════════════════════════════

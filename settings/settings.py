@@ -204,6 +204,27 @@ class BarConfig:
 class NotificationConfig:
     max_history: int = 10
     popup_timeout: int = 5000
+    filter_keywords: list[str] | None = None
+
+    def __post_init__(self):
+        if self.filter_keywords is None:
+            self.filter_keywords = []
+        # Convert to lowercase for case-insensitive matching
+        self.filter_keywords = [kw.lower() for kw in self.filter_keywords]
+
+    def should_filter(self, notification) -> bool:
+        """Check if notification should be filtered from history"""
+        if not self.filter_keywords:
+            return False
+
+        summary = (notification.summary or "").lower()
+        body = (notification.body or "").lower()
+
+        for keyword in self.filter_keywords:
+            if keyword in summary or keyword in body:
+                return True
+
+        return False
 
     @classmethod
     def from_dict(cls, data: Dict) -> "NotificationConfig":

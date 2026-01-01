@@ -38,11 +38,18 @@ class NotificationList:
         self._signals.connect(notifications, "notified", self._on_notified)
         self.scroll.connect("destroy", lambda *_: self._cleanup())
 
+    def _should_show_notification(self, notif) -> bool:
+        """Check if notification should be shown in history"""
+        return not config.ui.notifications.should_filter(notif)
+
     def _load_notifications(self):
         """Load existing notifications with proper cleanup"""
         self._clear_items()
 
-        items = notifications.notifications[:MAX_NOTIFICATIONS]
+        # Filter notifications based on keywords
+        all_notifs = notifications.notifications
+        filtered_notifs = [n for n in all_notifs if self._should_show_notification(n)]
+        items = filtered_notifs[:MAX_NOTIFICATIONS]
 
         for notif in items:
             item = NotificationHistoryItem(notif)
@@ -66,18 +73,28 @@ class NotificationList:
 
     def _on_notified(self, _, notif):
         """Handle new notification"""
+        if not self._should_show_notification(notif):
+            return
+
         item = NotificationHistoryItem(notif)
         self._notif_list.prepend(item)
-
         sig_manager = SignalManager()
         sig_manager.connect(notif, "closed", lambda *_: self._on_notification_closed())
         self._item_signals[id(notif)] = sig_manager
 
-        if len(self._notif_list.child) > MAX_NOTIFICATIONS:
-            excess_item = self._notif_list.child[-1]
+        visible_count = len(
+            [
+                n
+                for n in notifications.notifications
+                if self._should_show_notification(n)
+            ]
+        )
 
+        if visible_count > MAX_NOTIFICATIONS:
+            excess_item = self._notif_list.child[-1]
             excess_item.visible = False
             excess_item.unparent()
+
         self._update_empty_state()
 
     def _on_notification_closed(self):
@@ -86,7 +103,10 @@ class NotificationList:
 
     def _update_empty_state(self):
         """Update empty state visibility"""
-        has_notifications = len(notifications.notifications) > 0
+        visible_notifs = [
+            n for n in notifications.notifications if self._should_show_notification(n)
+        ]
+        has_notifications = len(visible_notifs) > 0
         self._notif_empty.visible = not has_notifications
 
     def clear_all(self):
