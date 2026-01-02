@@ -22,7 +22,16 @@ weather = 0
 power_overlay = 0
 system_menu = 0
 integrated_center = 0
+# ══════════════════════════════════════════════════════════════
+# SYSTEM
+# ══════════════════════════════════════════════════════════════
+[system]
+# Idle daemon for caffeine widget
+# Options: "hypridle", "swayidle", or custom command
+idle_daemon = "hypridle"
 
+# Custom toggle command (if idle_daemon is set to something other than hypridle/swayidle)
+idle_toggle_command = ""
 # ══════════════════════════════════════════════════════════════
 # OSD · TIMEOUTS (milliseconds)
 # ══════════════════════════════════════════════════════════════
@@ -45,7 +54,6 @@ window_title_exceptions = [
   "firefox",
   "zen",
 ]
-
 
 # ══════════════════════════════════════════════════════════════
 # UI · NOTIFICATIONS

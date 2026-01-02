@@ -321,6 +321,38 @@ class UIConfig:
 
 
 # ───────────────────────────────────────────────────────────────
+# SYSTEM
+# ───────────────────────────────────────────────────────────────
+@dataclass
+class SystemConfig:
+    idle_daemon: str = "hypridle"
+    idle_toggle_command: str = ""
+
+    def get_idle_check_command(self) -> str:
+        """Get command to check if idle daemon is running"""
+        if self.idle_daemon in ["hypridle", "swayidle"]:
+            return f"pgrep -x {self.idle_daemon}"
+        daemon_binary = self.idle_daemon.split()[0]
+        return f"pgrep -x {daemon_binary}"
+
+    def get_idle_toggle_command(self) -> str:
+        """Get command to toggle idle daemon"""
+        if self.idle_toggle_command:
+            return self.idle_toggle_command
+
+        if self.idle_daemon == "hypridle":
+            return "hypridle_toggle"
+        elif self.idle_daemon == "swayidle":
+            return "killall -SIGUSR1 swayidle"
+
+        return f"pkill {self.idle_daemon} || {self.idle_daemon} &"
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "SystemConfig":
+        return cls(**{k: v for k, v in data.items() if k in cls.__annotations__})
+
+
+# ───────────────────────────────────────────────────────────────
 # OTHER SECTIONS
 # ───────────────────────────────────────────────────────────────
 @dataclass
@@ -381,6 +413,7 @@ class AppConfig:
     paths: PathConfig = field(default_factory=PathConfig)
     weather: WeatherConfig = field(default_factory=WeatherConfig)
     ui: UIConfig = field(default_factory=UIConfig)
+    system: SystemConfig = field(default_factory=SystemConfig)
     recorder: RecorderConfig = field(default_factory=RecorderConfig)
     battery: BatteryConfig = field(default_factory=BatteryConfig)
     animations: AnimationConfig = field(default_factory=AnimationConfig)
@@ -421,6 +454,7 @@ class AppConfig:
             paths=PathConfig.from_dict(data.get("paths", {})),
             weather=WeatherConfig.from_dict(data.get("weather", {})),
             ui=UIConfig.from_dict(data.get("ui", {})),
+            system=SystemConfig.from_dict(data.get("system", {})),
             recorder=RecorderConfig.from_dict(data.get("recorder", {})),
             battery=BatteryConfig.from_dict(data.get("battery", {})),
             animations=AnimationConfig.from_dict(data.get("animations", {})),

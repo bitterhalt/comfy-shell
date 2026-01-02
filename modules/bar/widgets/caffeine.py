@@ -1,5 +1,6 @@
 import asyncio
 from ignis import utils, widgets
+from settings import config
 
 
 class CaffeineWidget(widgets.Button):
@@ -34,9 +35,10 @@ class CaffeineWidget(widgets.Button):
             self._poll = None
 
     async def _update_state(self):
-        """Check if hypridle is running"""
+        """Check if idle daemon is running"""
         try:
-            result = await utils.exec_sh_async("pgrep -x hypridle")
+            check_cmd = config.system.get_idle_check_command()
+            result = await utils.exec_sh_async(check_cmd)
             self._enabled = result.returncode == 0
         except:
             self._enabled = False
@@ -46,25 +48,26 @@ class CaffeineWidget(widgets.Button):
 
     def _update_ui(self):
         """Update icon and styling based on state"""
+        daemon_name = config.system.idle_daemon
+
         if self._enabled:
             self._icon.image = "weather-clear-night-symbolic"
             self.remove_css_class("caffeine-active")
-            self.set_tooltip_text("Idle timeout enabled\n\nClick to disable")
+            self.set_tooltip_text(f"Idle timeout enabled ({daemon_name})\n\nClick to disable")
         else:
             self._icon.image = "my-caffeine-on-symbolic"
             self.add_css_class("caffeine-active")
-            self.set_tooltip_text("Caffee mode active ☕\n\nClick to enable idle timeout")
+            self.set_tooltip_text(f"Caffeine mode active ☕\n({daemon_name} disabled)\n\nClick to enable idle timeout")
 
     def _toggle(self):
-        """Toggle hypridle on/off"""
+        """Toggle idle daemon on/off"""
         asyncio.create_task(self._toggle_async())
 
     async def _toggle_async(self):
-        """Toggle hypridle state"""
-        if self._enabled:
-            await utils.exec_sh_async("hypridle_toggle")
-        else:
-            await utils.exec_sh_async("hypridle_toggle")
+        """Toggle idle daemon state"""
+        toggle_cmd = config.system.get_idle_toggle_command()
+        await utils.exec_sh_async(toggle_cmd)
+        await asyncio.sleep(0.3)
         await self._update_state()
 
 
