@@ -13,30 +13,55 @@ class BatteryWidget(widgets.Box):
         super().__init__(
             css_classes=["battery"],
             spacing=4,
+            visible=False,
         )
 
-        batteries = [dev for dev in upower.devices if dev.type == "battery"]
-        if not batteries:
-            self.visible = False
-            return
-
-        self._battery = batteries[0]
+        self._battery = None
         self._signals = SignalManager()
-
         self._icon = widgets.Icon(
-            image=self._battery.icon_name,
+            image="battery-missing-symbolic",
             pixel_size=22,
         )
 
         self._label = widgets.Label(
-            label=self._battery.bind("percentage", lambda p: f"{int(p)}%"),
+            label="--",
         )
 
         self.child = [self._icon, self._label]
+        self._signals.connect(upower, "battery-added", lambda _, device: self._on_battery_added(device))
+        self._check_existing_batteries()
+        self.connect("destroy", lambda *_: self._cleanup())
 
+    def _check_existing_batteries(self):
+        """Check if any batteries already exist on startup"""
+        for device in upower.devices:
+            if hasattr(device, "percentage") and hasattr(device, "is_charging"):
+                self._on_battery_added(device)
+                break
+
+    def _on_battery_added(self, device):
+        """Handle battery device being added"""
+        if self._battery is not None:
+            return
+
+        self._battery = device
+        self.visible = True
+
+        self._icon.image = device.icon_name
+        self._label.label = f"{int(device.percentage)}%"
+        self._label.label = device.bind("percentage", lambda p: f"{int(p)}%")
         self._setup_signals()
         self._update_all()
-        self.connect("destroy", lambda *_: self._cleanup())
+
+        # Handle battery removal
+        self._signals.connect(device, "removed", lambda *_: self._on_battery_removed())
+
+    def _on_battery_removed(self):
+        """Handle battery being removed"""
+        self._battery = None
+        self.visible = False
+        self._icon.image = "battery-missing-symbolic"
+        self._label.label = "--"
 
     def _cleanup(self):
         """Cleanup on destroy"""
@@ -44,6 +69,9 @@ class BatteryWidget(widgets.Box):
 
     def _setup_signals(self):
         """Setup all signal connections through manager"""
+        if not self._battery:
+            return
+
         battery = self._battery
 
         for signal in [
@@ -57,6 +85,8 @@ class BatteryWidget(widgets.Box):
 
     def _update_all(self):
         """Update all battery UI elements"""
+        if not self._battery:
+            return
         self._update_tooltip()
         self._update_warning_class()
 
