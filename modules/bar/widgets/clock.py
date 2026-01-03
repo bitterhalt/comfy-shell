@@ -35,7 +35,17 @@ def clock():
     )
 
     def update_time():
-        return datetime.datetime.now().strftime("%H:%M")
+        time_str = datetime.datetime.now().strftime("%H:%M")
+
+        # Also update barless clock if it exists
+        try:
+            from modules.osd.barless_clock import update_barless_clock
+
+            update_barless_clock()
+        except:
+            pass
+
+        return time_str
 
     def _should_show_notification(notif) -> bool:
         """Check if notification should be shown (not filtered)"""

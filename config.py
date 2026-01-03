@@ -14,6 +14,8 @@ from modules.osd import (
     VolumeOSD,
     init_workspace_osd,
     set_bar_visibility,
+    init_barless_clock,
+    set_barless_clock_visibility,
 )
 from modules.osd.workspace_osd import _osd_window
 from modules.overlays import PowerOverlay, RecordingOverlay
@@ -54,11 +56,13 @@ init_task_popup()
 
 # Initialize rest
 init_workspace_osd()
+init_barless_clock()
 register_bar(bar)
 
 
 def _on_visible_changed(window, *_):
     set_bar_visibility(window.visible)
+    set_barless_clock_visibility(window.visible)
     if not window.visible and _osd_window:
         _osd_window.show_osd()
 
@@ -70,6 +74,7 @@ def _handle_initial_bar_state():
     """Show workspace OSD on startup if bar starts hidden"""
     if not bar.visible:
         set_bar_visibility(False)
+        set_barless_clock_visibility(False)
         from modules.osd.workspace_osd import _osd_window
 
         if _osd_window:

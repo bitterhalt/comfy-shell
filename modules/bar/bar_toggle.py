@@ -1,4 +1,5 @@
 from modules.osd.workspace_osd import set_bar_visibility
+from modules.osd.barless_clock import set_barless_clock_visibility
 from modules.utils import save_bar_state
 
 _bar_windows = []
@@ -22,6 +23,7 @@ def toggle_bars():
         bar.set_visible(new_state)
 
     set_bar_visibility(new_state)
+    set_barless_clock_visibility(new_state)
     save_bar_state(new_state)
 
 
@@ -32,6 +34,7 @@ def show_bars():
         bar.set_visible(True)
 
     set_bar_visibility(True)
+    set_barless_clock_visibility(True)
     save_bar_state(True)
 
 
@@ -42,6 +45,7 @@ def hide_bars():
         bar.set_visible(False)
 
     set_bar_visibility(False)
+    set_barless_clock_visibility(False)
     save_bar_state(False)
 
 
