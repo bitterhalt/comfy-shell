@@ -69,6 +69,9 @@ filter_keywords = [
   "Smart-gaps",
   "Hyprpicker",
   "Hypridle",
+  "BT: Attempting to connect to",
+  "BT: Failed to Connect",
+  "BT: Disconnected",
 ]
 
 # ══════════════════════════════════════════════════════════════
