@@ -32,6 +32,9 @@ idle_daemon = "hypridle"
 
 # Custom toggle command (if idle_daemon is set to something other than hypridle/swayidle)
 idle_toggle_command = ""
+
+# Bluetooth manager
+bluetooth_manager = "fuzzel_bt"
 # ══════════════════════════════════════════════════════════════
 # OSD · TIMEOUTS (milliseconds)
 # ══════════════════════════════════════════════════════════════

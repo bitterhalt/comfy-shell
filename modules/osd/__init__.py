@@ -1,4 +1,4 @@
-from .barless_clock import (
+from .clock_osd import (
     init_barless_clock,
     init_barless_clock_overlay,
     set_barless_clock_visibility,

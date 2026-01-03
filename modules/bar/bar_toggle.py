@@ -1,5 +1,5 @@
 from modules.osd.workspace_osd import set_bar_visibility
-from modules.osd.barless_clock import set_barless_clock_visibility
+from modules.osd.clock_osd import set_barless_clock_visibility
 from modules.utils import save_bar_state
 
 _bar_windows = []

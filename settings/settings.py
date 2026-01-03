@@ -327,6 +327,7 @@ class UIConfig:
 class SystemConfig:
     idle_daemon: str = "hypridle"
     idle_toggle_command: str = ""
+    bluetooth_manager: str = "blueman-manager"
 
     def get_idle_check_command(self) -> str:
         """Get command to check if idle daemon is running"""

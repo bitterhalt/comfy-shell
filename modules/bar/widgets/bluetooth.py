@@ -4,6 +4,7 @@ from ignis import utils, widgets
 from ignis.services.bluetooth import BluetoothService
 from ignis.window_manager import WindowManager
 from modules.utils.signal_manager import SignalManager
+from settings import config
 
 wm = WindowManager.get_default()
 
@@ -16,7 +17,7 @@ bluetooth = BluetoothService.get_default()
 
 
 class BluetoothButton(widgets.Button):
-    """Bluetooth toggle button with device connection status and battery - always visible"""
+    """Bluetooth toggle button with device connection status and battery"""
 
     def __init__(self):
         self._signals = SignalManager()
@@ -38,8 +39,6 @@ class BluetoothButton(widgets.Button):
         self._signals.connect(bluetooth, "notify::powered", lambda *_: self._update())
         self._signals.connect(bluetooth, "notify::connected-devices", lambda *_: self._on_devices_changed())
         self._signals.connect(self, "destroy", lambda *_: self._cleanup())
-
-        # Set up initial device monitoring
         self._on_devices_changed()
 
     def _cleanup(self):
@@ -52,7 +51,7 @@ class BluetoothButton(widgets.Button):
 
     def _open_blueman(self):
         """Open blueman-manager and close system menu"""
-        exec_async("blueman-manager")
+        exec_async(config.system.bluetooth_manager)
         try:
             wm.close_window("ignis_SYSTEM_MENU")
         except:
