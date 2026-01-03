@@ -16,7 +16,7 @@ class CaffeineWidget(widgets.Button):
         super().__init__(
             css_classes=["caffeine-button"],
             child=self._icon,
-            on_click=lambda x: self._toggle(),
+            on_right_click=lambda x: self._toggle(),
         )
 
         asyncio.create_task(self._update_state())
