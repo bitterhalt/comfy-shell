@@ -16,10 +16,12 @@ bluetooth = BluetoothService.get_default()
 
 
 class BluetoothButton(widgets.Button):
-    """Bluetooth toggle button with device connection status - always visible"""
+    """Bluetooth toggle button with device connection status and battery - always visible"""
 
     def __init__(self):
         self._signals = SignalManager()
+        self._device_signals = SignalManager()
+
         self._icon = widgets.Icon(
             image="bluetooth-symbolic",
             pixel_size=22,
@@ -34,8 +36,16 @@ class BluetoothButton(widgets.Button):
 
         self._update()
         self._signals.connect(bluetooth, "notify::powered", lambda *_: self._update())
-        self._signals.connect(bluetooth, "notify::connected-devices", lambda *_: self._update())
-        self._signals.connect(self, "destroy", lambda *_: self._signals.disconnect_all())
+        self._signals.connect(bluetooth, "notify::connected-devices", lambda *_: self._on_devices_changed())
+        self._signals.connect(self, "destroy", lambda *_: self._cleanup())
+
+        # Set up initial device monitoring
+        self._on_devices_changed()
+
+    def _cleanup(self):
+        """Cleanup all signal connections"""
+        self._signals.disconnect_all()
+        self._device_signals.disconnect_all()
 
     def _toggle(self):
         bluetooth.powered = not bluetooth.powered
@@ -48,6 +58,20 @@ class BluetoothButton(widgets.Button):
         except:
             pass
 
+    def _on_devices_changed(self):
+        """Handle connected devices list changing - set up battery monitoring"""
+        self._device_signals.disconnect_all()
+
+        try:
+            devices = bluetooth.connected_devices
+            if devices:
+                for dev in devices:
+                    self._device_signals.connect(dev, "notify::battery-percentage", lambda *_: self._update())
+        except Exception:
+            pass
+
+        self._update()
+
     def _update(self):
         """Update icon and styling based on Bluetooth state"""
         try:
@@ -55,10 +79,7 @@ class BluetoothButton(widgets.Button):
         except Exception:
             powered = False
 
-        # Always visible now - removed self.visible = powered
-
         if powered:
-            # Bluetooth is ON
             self._icon.image = "bluetooth-symbolic"
             self.remove_css_class("sys-top-btn-inactive")
 
@@ -68,16 +89,27 @@ class BluetoothButton(widgets.Button):
                 devices = None
 
             if devices:
-                dev = devices[0]
-                self.set_tooltip_text(
-                    f"Bluetooth: ON\nConnected to: {dev.name}\n\nClick: Open Bluetooth Manager\nRight-click: Turn OFF"
-                )
+                tooltip_parts = ["Bluetooth: ON"]
+
+                for dev in devices:
+                    device_info = f"\nConnected: {dev.name}"
+
+                    try:
+                        battery = dev.battery_percentage
+                        if battery is not None and battery >= 0:
+                            device_info += f" ({int(battery)}%)"
+                    except:
+                        pass
+
+                    tooltip_parts.append(device_info)
+
+                tooltip_parts.append("\n\nClick: Open Bluetooth Manager\nRight-click: Turn OFF")
+                self.set_tooltip_text("".join(tooltip_parts))
             else:
                 self.set_tooltip_text(
                     "Bluetooth: ON\nNo devices connected\n\nClick: Open Bluetooth Manager\nRight-click: Turn OFF"
                 )
         else:
-            # Bluetooth is OFF
             self._icon.image = "bluetooth-disabled-symbolic"
             self.add_css_class("sys-top-btn-inactive")
             self.set_tooltip_text("Bluetooth: OFF\n\nClick: Open Bluetooth Manager\nRight-click: Turn ON")
