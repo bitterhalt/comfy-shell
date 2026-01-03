@@ -10,12 +10,13 @@ from modules.bar.widgets import SystemPopup
 from modules.notifications import IntegratedCenter, init_notifications, init_task_popup
 from modules.osd import (
     MediaOsdWindow,
-    TimeOsdWindow,
     VolumeOSD,
     init_workspace_osd,
     set_bar_visibility,
     init_barless_clock,
+    init_barless_clock_overlay,
     set_barless_clock_visibility,
+    toggle_barless_clock_overlay,
 )
 from modules.osd.workspace_osd import _osd_window
 from modules.overlays import PowerOverlay, RecordingOverlay
@@ -57,6 +58,7 @@ init_task_popup()
 # Initialize rest
 init_workspace_osd()
 init_barless_clock()
+init_barless_clock_overlay()
 register_bar(bar)
 
 
@@ -84,7 +86,6 @@ def _handle_initial_bar_state():
 utils.Timeout(100, _handle_initial_bar_state)
 
 # Initialize components
-TimeOsdWindow()
 VolumeOSD()
 MediaOsdWindow()
 WeatherPopup()
@@ -96,4 +97,5 @@ WindowSwitcher()
 
 # Register custom commands
 command_manager.add_command("toggle-bar", toggle_bars)
+command_manager.add_command("toggle-barless-clock", toggle_barless_clock_overlay)
 register_recorder_commands()
