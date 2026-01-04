@@ -75,6 +75,7 @@ filter_keywords = [
   "BT: Attempting to connect to",
   "BT: Failed to Connect",
   "BT: Disconnected",
+  "Bluez Menu",
 ]
 
 # ══════════════════════════════════════════════════════════════
