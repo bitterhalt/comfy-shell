@@ -26,12 +26,12 @@ integrated_center = 0
 # SYSTEM
 # ══════════════════════════════════════════════════════════════
 [system]
-# Idle daemon for caffeine widget
-# Options: "hypridle", "swayidle", or custom command
-idle_daemon = "hypridle"
+# Command to toggle idle daemon on/off (REQUIRED to show widget)
+idle_toggle_command = "hypridle_toggle"
 
-# Custom toggle command (if idle_daemon is set to something other than hypridle/swayidle)
-idle_toggle_command = ""
+# Command to check if idle daemon is running (OPTIONAL - for icon state)
+# TODO: make this smarter :D
+idle_check_command = "pgrep -x hypridle"
 
 # Bluetooth manager
 bluetooth_manager = "fuzzel_bt"

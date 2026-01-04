@@ -325,28 +325,9 @@ class UIConfig:
 # ───────────────────────────────────────────────────────────────
 @dataclass
 class SystemConfig:
-    idle_daemon: str = "hypridle"
     idle_toggle_command: str = ""
+    idle_check_command: str = ""
     bluetooth_manager: str = "blueman-manager"
-
-    def get_idle_check_command(self) -> str:
-        """Get command to check if idle daemon is running"""
-        if self.idle_daemon in ["hypridle", "swayidle"]:
-            return f"pgrep -x {self.idle_daemon}"
-        daemon_binary = self.idle_daemon.split()[0]
-        return f"pgrep -x {daemon_binary}"
-
-    def get_idle_toggle_command(self) -> str:
-        """Get command to toggle idle daemon"""
-        if self.idle_toggle_command:
-            return self.idle_toggle_command
-
-        if self.idle_daemon == "hypridle":
-            return "hypridle_toggle"
-        elif self.idle_daemon == "swayidle":
-            return "killall -SIGUSR1 swayidle"
-
-        return f"pkill {self.idle_daemon} || {self.idle_daemon} &"
 
     @classmethod
     def from_dict(cls, data: Dict) -> "SystemConfig":

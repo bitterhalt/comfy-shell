@@ -16,12 +16,21 @@ class CaffeineWidget(widgets.Button):
         super().__init__(
             css_classes=["caffeine-button"],
             child=self._icon,
-            on_right_click=lambda x: self._toggle(),
+            on_click=lambda x: self._toggle(),
+            visible=False,
         )
 
-        asyncio.create_task(self._update_state())
+        if not config.system.idle_toggle_command:
+            return
 
-        self._poll = utils.Poll(10000, lambda x: asyncio.create_task(self._update_state()))
+        self.visible = True
+
+        if config.system.idle_check_command:
+            asyncio.create_task(self._update_state())
+            self._poll = utils.Poll(10000, lambda x: asyncio.create_task(self._update_state()))
+        else:
+            self._enabled = True
+            self._update_ui()
 
         self.connect("destroy", self._cleanup)
 
@@ -36,9 +45,11 @@ class CaffeineWidget(widgets.Button):
 
     async def _update_state(self):
         """Check if idle daemon is running"""
+        if not config.system.idle_check_command:
+            return True
+
         try:
-            check_cmd = config.system.get_idle_check_command()
-            result = await utils.exec_sh_async(check_cmd)
+            result = await utils.exec_sh_async(config.system.idle_check_command)
             self._enabled = result.returncode == 0
         except:
             self._enabled = False
@@ -48,16 +59,14 @@ class CaffeineWidget(widgets.Button):
 
     def _update_ui(self):
         """Update icon and styling based on state"""
-        daemon_name = config.system.idle_daemon
-
         if self._enabled:
             self._icon.image = "weather-clear-night-symbolic"
             self.remove_css_class("caffeine-active")
-            self.set_tooltip_text(f"Idle timeout enabled ({daemon_name})\n\nClick to disable")
+            self.set_tooltip_text("Idle timeout enabled\n\nClick to disable")
         else:
             self._icon.image = "my-caffeine-on-symbolic"
             self.add_css_class("caffeine-active")
-            self.set_tooltip_text(f"Caffeine mode active ☕\n({daemon_name} disabled)\n\nClick to enable idle timeout")
+            self.set_tooltip_text("Caffeine mode active ☕\nIdle timeout disabled\n\nClick to enable")
 
     def _toggle(self):
         """Toggle idle daemon on/off"""
@@ -65,10 +74,17 @@ class CaffeineWidget(widgets.Button):
 
     async def _toggle_async(self):
         """Toggle idle daemon state"""
-        toggle_cmd = config.system.get_idle_toggle_command()
-        await utils.exec_sh_async(toggle_cmd)
-        await asyncio.sleep(0.3)
-        await self._update_state()
+        if not config.system.idle_toggle_command:
+            return
+
+        await utils.exec_sh_async(config.system.idle_toggle_command)
+
+        if config.system.idle_check_command:
+            await asyncio.sleep(0.3)
+            await self._update_state()
+        else:
+            self._enabled = not self._enabled
+            self._update_ui()
 
 
 def caffeine_widget():
