@@ -327,6 +327,7 @@ class UIConfig:
 class SystemConfig:
     idle_toggle_command: str = ""
     idle_check_command: str = ""
+    idle_show_only_when_active: bool = False
     bluetooth_manager: str = "blueman-manager"
 
     @classmethod

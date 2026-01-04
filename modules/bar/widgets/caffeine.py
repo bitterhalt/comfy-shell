@@ -17,7 +17,7 @@ class CaffeineWidget(widgets.Button):
             css_classes=["caffeine-button"],
             child=self._icon,
             on_click=lambda x: self._toggle(),
-            visible=False,
+            visible=False,  # Hidden by default
         )
 
         if not config.system.idle_toggle_command:
@@ -59,14 +59,25 @@ class CaffeineWidget(widgets.Button):
 
     def _update_ui(self):
         """Update icon and styling based on state"""
-        if self._enabled:
-            self._icon.image = "weather-clear-night-symbolic"
-            self.remove_css_class("caffeine-active")
-            self.set_tooltip_text("Idle timeout enabled\n\nClick to disable")
+        if config.system.idle_show_only_when_active:
+            if self._enabled:
+                # Idle is enabled (normal mode) - hide widget
+                self.visible = False
+            else:
+                self.visible = True
+                self._icon.image = "my-caffeine-on-symbolic"
+                self.add_css_class("caffeine-active")
+                self.set_tooltip_text("Caffeine mode active ☕\nIdle timeout disabled\n\nClick to enable")
         else:
-            self._icon.image = "my-caffeine-on-symbolic"
-            self.add_css_class("caffeine-active")
-            self.set_tooltip_text("Caffeine mode active ☕\nIdle timeout disabled\n\nClick to enable")
+            self.visible = True
+            if self._enabled:
+                self._icon.image = "weather-clear-night-symbolic"
+                self.remove_css_class("caffeine-active")
+                self.set_tooltip_text("Idle timeout enabled\n\nClick to disable")
+            else:
+                self._icon.image = "my-caffeine-on-symbolic"
+                self.add_css_class("caffeine-active")
+                self.set_tooltip_text("Caffeine mode active ☕\nIdle timeout disabled\n\nClick to enable")
 
     def _toggle(self):
         """Toggle idle daemon on/off"""
