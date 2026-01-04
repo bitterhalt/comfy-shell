@@ -49,14 +49,20 @@ class SystemInfoWidget(widgets.Box):
         )
 
         self._os_label = widgets.Label(label="Loading…", halign="start", css_classes=["system-info-text"])
-        self._kernel_label = widgets.Label(label="Loading…", halign="start", css_classes=["system-info-text"])
+        self._cpu_model_label = widgets.Label(label="Loading…", halign="start", css_classes=["system-info-text"])
+        self._mem_total_label = widgets.Label(label="Loading…", halign="start", css_classes=["system-info-text"])
         self._uptime_label = widgets.Label(label="Loading…", halign="start", css_classes=["system-info-text"])
 
         info_box = widgets.Box(
             vertical=True,
             spacing=4,
             css_classes=["system-info-details"],
-            child=[self._os_label, self._kernel_label, self._uptime_label],
+            child=[
+                self._os_label,
+                self._cpu_model_label,
+                self._mem_total_label,
+                self._uptime_label,
+            ],
         )
 
         super().__init__(
@@ -139,12 +145,24 @@ class SystemInfoWidget(widgets.Box):
         return True
 
     def _update_info(self, *_):
-        self._os_label.label = f"OS: {fetch.os_name or 'Unknown'}"
-        self._kernel_label.label = f"Kernel: {fetch.kernel or 'Unknown'}"
+        self._os_label.label = f"SYS: {fetch.os_name or 'Unknown'}"
+        cpu = fetch.cpu or "Unknown"
+        # Shorten CPU name if too long
+        if len(cpu) > 40:
+            cpu = cpu[:37] + "..."
+        self._cpu_model_label.label = f"CPU: {cpu}"
+
+        # Add total memory
+        mem_total = fetch.mem_total or 0
+        if mem_total > 0:
+            mem_gb = mem_total / (1024 * 1024)  # Convert KB to GB
+            self._mem_total_label.label = f"RAM: {mem_gb:.1f} GB"
+        else:
+            self._mem_total_label.label = "Memory: Unknown"
 
         uptime = fetch.uptime
         if uptime:
-            self._uptime_label.label = "Uptime: " + self._format_uptime(*uptime)
+            self._uptime_label.label = "UP: " + self._format_uptime(*uptime)
         else:
             self._uptime_label.label = "Uptime: Unknown"
         return True
