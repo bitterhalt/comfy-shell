@@ -1,20 +1,15 @@
-"""
-Moon phase calculation with emoji icons
-Uses improved algorithm for accurate phase calculation
-"""
-
 import math
 from datetime import datetime
 
 MOON_EMOJIS = {
-    "new": "🌑",  # New Moon
-    "waxing_crescent": "🌒",  # Waxing Crescent
-    "first_quarter": "🌓",  # First Quarter
-    "waxing_gibbous": "🌔",  # Waxing Gibbous
-    "full": "🌕",  # Full Moon
-    "waning_gibbous": "🌖",  # Waning Gibbous
-    "last_quarter": "🌗",  # Last Quarter
-    "waning_crescent": "🌘",  # Waning Crescent
+    "new": "🌑",
+    "waxing_crescent": "🌒",
+    "first_quarter": "🌓",
+    "waxing_gibbous": "🌔",
+    "full": "🌕",
+    "waning_gibbous": "🌖",
+    "last_quarter": "🌗",
+    "waning_crescent": "🌘",
 }
 
 

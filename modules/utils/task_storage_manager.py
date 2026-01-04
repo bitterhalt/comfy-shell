@@ -1,7 +1,3 @@
-"""
-Storage manager for tasks
-"""
-
 import fcntl
 import json
 import time

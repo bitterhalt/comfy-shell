@@ -1,7 +1,3 @@
-"""
-Signal connection manager to prevent memory leaks
-"""
-
 from typing import Callable, List, Tuple
 from gi.repository import GObject
 

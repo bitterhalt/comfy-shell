@@ -78,13 +78,11 @@ def init_bars():
     primary_monitor = config.ui.bar_monitor
     bar = Bar(primary_monitor)
 
-    # Attach visibility listener for barless mode
     def _on_visible_changed(window, *_):
         from modules.osd.workspace_osd import _osd_window, set_bar_visibility
 
         set_bar_visibility(window.visible)
 
-        # Show workspace OSD when bar hides
         if not window.visible and _osd_window:
             _osd_window.show_osd()
 
