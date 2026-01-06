@@ -48,7 +48,10 @@ def _bluetooth_icon():
 def _bluetooth_visible():
     """Visible when bluetooth is powered on and service is available."""
     try:
-        return bool(bluetooth.powered)
+        if not bluetooth.powered:
+            return False
+        devices = getattr(bluetooth, "connected_devices", None)
+        return bool(devices)
     except Exception:
         return False
 
@@ -61,7 +64,6 @@ def system_indicator():
     speaker_icon = widgets.Icon(
         image=_speaker_icon(),
         pixel_size=22,
-        css_classes=["system-indicator-speaker"],
     )
 
     mic_icon = widgets.Icon(

@@ -53,27 +53,15 @@ class IntegratedCenter(widgets.Window):
         )
 
         self._weather_pill = WeatherPill()
-        self._calendar = widgets.Calendar(
-            css_classes=["center-calendar"],
-            show_day_names=True,
-            show_heading=False,
-        )
-        self._calendar_expanded = False
-        self._calendar_expander_button = widgets.Button(
-            css_classes=["calendar-expander"],
-            on_click=lambda *_: self._toggle_calendar(),
+        self._tasks_expanded = False
+        self._tasks_expander_button = widgets.Button(
+            css_classes=["tasks-expander"],
+            on_click=lambda *_: self._toggle_tasks(),
             child=widgets.Icon(
                 image="pan-down-symbolic",
                 pixel_size=16,
-                css_classes=["calendar-expander-icon"],
+                css_classes=["tasks-expander-icon"],
             ),
-        )
-
-        self._calendar_box = widgets.Box(
-            vertical=True,
-            visible=False,
-            css_classes=["calendar-box"],
-            child=[self._calendar],
         )
 
         self._task_list = TaskList(on_show_dialog=self._show_dialog)
@@ -83,9 +71,8 @@ class IntegratedCenter(widgets.Window):
             css_classes=["right-column"],
             child=[
                 self._weather_pill.button,
-                self._calendar_expander_button,
-                self._calendar_box,
                 self._task_list.next_task_box,
+                self._tasks_expander_button,
                 self._task_list.scroll,
             ],
         )
@@ -150,20 +137,18 @@ class IntegratedCenter(widgets.Window):
         """Handle reveal animation when window opens/closes"""
         if self.visible:
             self._task_list.set_visible(True)
-
             utils.Timeout(10, lambda: setattr(self._revealer, "reveal_child", True))
         else:
             self._task_list.set_visible(False)
             self._revealer.reveal_child = False
 
-    def _toggle_calendar(self):
-        """Toggle calendar visibility"""
-        self._calendar_expanded = not self._calendar_expanded
-        self._calendar_box.visible = self._calendar_expanded
-        self._task_list.scroll.visible = self._calendar_expanded
+    def _toggle_tasks(self):
+        """Toggle task list visibility"""
+        self._tasks_expanded = not self._tasks_expanded
+        self._task_list.scroll.visible = self._tasks_expanded
 
-        icon = "pan-up-symbolic" if self._calendar_expanded else "pan-down-symbolic"
-        icon_widget = self._calendar_expander_button.child
+        icon = "pan-up-symbolic" if self._tasks_expanded else "pan-down-symbolic"
+        icon_widget = self._tasks_expander_button.child
         if isinstance(icon_widget, widgets.Icon):
             icon_widget.image = icon
 

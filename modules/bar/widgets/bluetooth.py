@@ -22,7 +22,6 @@ class BluetoothButton(widgets.Button):
     def __init__(self):
         self._signals = SignalManager()
         self._device_signals = SignalManager()
-
         self._icon = widgets.Icon(
             image="bluetooth-symbolic",
             pixel_size=22,

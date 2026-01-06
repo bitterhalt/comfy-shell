@@ -181,55 +181,23 @@
   }
 }
 /* ───────────────────────────────────────────────────────────────
-   CALENDAR
+   TASK LIST EXPANDER
    ─────────────────────────────────────────────────────────────── */
 
-.calendar-expander {
+.tasks-expander {
   all: unset;
-  background-color: rgba($tx-1, 0.06);
+  background-color: rgba($tx-1, 0.09);
   border-radius: 8px;
   padding: 4px;
   margin: 8px 12px 4px 12px;
-  transition: background-color 0.15s;
 
-  .calendar-expander-icon {
+  .tasks-expander-icon {
     opacity: 0.7;
   }
 
   &:hover {
     background-color: $ui-2;
   }
-}
-
-.calendar-box {
-}
-
-.center-calendar {
-  all: unset;
-  background-color: $bg-2;
-  border: unset;
-  border-radius: 8px;
-  padding: 8px;
-  margin: 12px;
-}
-
-.center-calendar .day-number {
-  all: unset;
-  color: $tx-2;
-}
-
-.center-calendar .today {
-  all: unset;
-  background-color: $bg-2;
-  color: $magenta;
-  font-weight: 600;
-  border-radius: 4px;
-}
-
-.center-calendar .other-month {
-  all: unset;
-  color: $tx-3;
-  opacity: 0.5;
 }
 
 /* ───────────────────────────────────────────────────────────────
@@ -241,7 +209,7 @@
   // border: 1px solid $ui-1;
   border-radius: 8px;
   padding: 10px 12px;
-  margin: 6px 12px 10px 12px;
+  margin: 12px 12px 0px 12px;
   min-height: 52px;
   transition:
     background-color 0.15s,
