@@ -1,6 +1,5 @@
 from .battery import battery_widget
 from .bluetooth import BluetoothButton
-from .caffeine import caffeine_widget
 from .clock import clock
 from .focused_window import window_title
 from .network_items import EthernetItem, VpnNetworkItem, WifiNetworkItem
@@ -15,7 +14,6 @@ __all__ = [
     "AudioSection",
     "battery_widget",
     "BluetoothButton",
-    "caffeine_widget",
     "clock",
     "EthernetItem",
     "NetworkPill",

@@ -26,15 +26,6 @@ integrated_center = 0
 # SYSTEM
 # ══════════════════════════════════════════════════════════════
 [system]
-# Command to toggle idle daemon on/off (REQUIRED to show widget)
-idle_toggle_command = "hypridle_toggle"
-# Command to check if idle daemon is running (OPTIONAL - for icon state)
-# TODO: make this smarter!
-idle_check_command = "pgrep -x hypridle"
-
-# Only show caffeine icon when idle is disabled
-idle_show_only_when_active = true
-
 # Bluetooth manager
 bluetooth_manager = "fuzzel_bt"
 # ══════════════════════════════════════════════════════════════
