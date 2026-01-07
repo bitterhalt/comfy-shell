@@ -1,5 +1,5 @@
 import asyncio
-from ignis import widgets
+from ignis import utils, widgets
 from ignis.services.network import NetworkService
 from modules.bar.widgets.network_items import (
     EthernetItem,
@@ -64,6 +64,7 @@ class NetworkSection(widgets.Box):
 
     def __init__(self):
         super().__init__(vertical=True, spacing=10)
+        self._list_visible = False
 
         self._icon = widgets.Icon(image=_primary_net_icon(), pixel_size=22)
         self._label = widgets.Label(
@@ -77,9 +78,15 @@ class NetworkSection(widgets.Box):
             hexpand=True,
         )
 
+        self._arrow = widgets.Icon(
+            image="pan-down-symbolic",
+            pixel_size=16,
+            css_classes=["expand-arrow"],
+        )
+
         pill_content = widgets.Box(
             spacing=6,
-            child=[self._icon, self._label, self._percent],
+            child=[self._icon, self._label, self._percent, self._arrow],
         )
 
         pill_button = widgets.Button(
@@ -121,12 +128,37 @@ class NetworkSection(widgets.Box):
             ),
         )
 
+        settings_button = widgets.Button(
+            css_classes=["network-settings-btn", "unset"],
+            on_click=lambda *_: self._open_network_settings(),
+            child=widgets.Box(
+                spacing=8,
+                halign="center",
+                child=[
+                    widgets.Icon(
+                        image="emblem-system-symbolic",
+                        pixel_size=16,
+                    ),
+                    widgets.Label(
+                        label="Network Settings",
+                        css_classes=["network-settings-label"],
+                    ),
+                ],
+            ),
+        )
+
         self._device_list = widgets.Box(
             vertical=True,
             spacing=6,
             visible=False,
             css_classes=["sys-net-details"],
-            child=[wifi_section, ethernet_section, vpn_section],
+            child=[
+                wifi_section,
+                ethernet_section,
+                vpn_section,
+                widgets.Separator(),
+                settings_button,
+            ],
         )
 
         self.child = [pill_button, self._device_list]
@@ -150,12 +182,17 @@ class NetworkSection(widgets.Box):
 
     def _toggle_list(self):
         """Toggle network list visibility"""
-        new_state = not self._device_list.visible
-        self._device_list.visible = new_state
+        self._list_visible = not self._list_visible
+        self._device_list.visible = self._list_visible
+        self._arrow.set_css_classes(["expand-arrow", "rotated"] if self._list_visible else ["expand-arrow"])
 
-        if new_state and wifi.devices:
+        if self._list_visible and wifi.devices:
             asyncio.create_task(wifi.devices[0].scan())
 
     def _toggle_airplane(self):
         """Toggle airplane mode (WiFi enable/disable)"""
         wifi.enabled = not wifi.enabled
+
+    def _open_network_settings(self):
+        """Open network settings (nm-connection-editor)"""
+        asyncio.create_task(utils.exec_sh_async("nm-connection-editor"))

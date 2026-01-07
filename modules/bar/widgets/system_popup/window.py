@@ -2,9 +2,9 @@ import asyncio
 from ignis import utils, widgets
 from ignis.services.audio import AudioService
 from ignis.window_manager import WindowManager
-from modules.bar.widgets.bluetooth import BluetoothButton
 from settings import config
 from .audio_section import AudioSection
+from .bluetooth_section import BluetoothSection
 from .network_section import NetworkSection
 from .system_info_section import SystemInfoWidget
 
@@ -29,8 +29,6 @@ class SystemPopup(widgets.Window):
             child=widgets.Icon(image="camera-photo-symbolic", pixel_size=22),
         )
 
-        bluetooth_btn = BluetoothButton()
-
         lock_btn = widgets.Button(
             css_classes=["sys-top-btn", "unset"],
             on_click=lambda x: (exec_async("hyprlock"), self.set_visible(False)),
@@ -53,7 +51,7 @@ class SystemPopup(widgets.Window):
             child=[
                 widgets.Box(
                     spacing=8,
-                    child=[record_btn, bluetooth_btn],
+                    child=[record_btn],
                 ),
                 widgets.Box(
                     spacing=8,
@@ -83,6 +81,8 @@ class SystemPopup(widgets.Window):
             child=[network_section],
         )
 
+        bluetooth_section = BluetoothSection()
+
         system_info = SystemInfoWidget()
 
         panel = widgets.Box(
@@ -93,6 +93,7 @@ class SystemPopup(widgets.Window):
                 top_row,
                 audio_content,
                 network_content,
+                bluetooth_section,
                 system_info,
             ],
         )

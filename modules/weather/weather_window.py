@@ -202,7 +202,7 @@ class WeatherPopup(widgets.Window):
         label = "Hide weekly forecast" if new_state else "Show weekly forecast"
         self._weekly_toggle.child.child[0].label = label
 
-        self._weekly_arrow.set_css_classes(["weekly-arrow", "rotated"] if new_state else ["weekly-arrow"])
+        self._weekly_arrow.set_css_classes(["expand-arrow", "rotated"] if new_state else ["expand-arrow"])
 
     def _update_weather(self):
         self._update_task = asyncio.create_task(self._update_weather_async())

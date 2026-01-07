@@ -69,3 +69,12 @@ tooltip label,
     opacity: 0;
   }
 }
+
+.expand-arrow {
+  color: $tx-1;
+  transition: transform 200ms ease;
+
+  &.rotated {
+    transform: rotate(180deg);
+  }
+}

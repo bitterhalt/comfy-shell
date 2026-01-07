@@ -60,7 +60,7 @@ class IntegratedCenter(widgets.Window):
             child=widgets.Icon(
                 image="pan-down-symbolic",
                 pixel_size=16,
-                css_classes=["tasks-expander-icon"],
+                css_classes=["expand-arrow"],
             ),
         )
 
