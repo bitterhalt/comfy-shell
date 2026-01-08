@@ -19,10 +19,9 @@ from modules.osd import (
     toggle_barless_clock_overlay,
 )
 from modules.osd.workspace_osd import _osd_window
-from modules.overlays import PowerOverlay, RecordingOverlay
+from modules.overlays import PowerOverlay, RecordingOverlay, WindowSwitcherOverlay
 from modules.recorder import register_recorder_commands
 from modules.weather import WeatherPopup
-from modules.windowlist import WindowSwitcher
 from settings import config
 
 options.notifications.popup_timeout = config.ui.notification_popup_timeout
@@ -93,7 +92,7 @@ PowerOverlay()
 RecordingOverlay()
 SystemPopup()
 IntegratedCenter()
-WindowSwitcher()
+WindowSwitcherOverlay()
 
 # Register custom commands
 command_manager.add_command("toggle-bar", toggle_bars)

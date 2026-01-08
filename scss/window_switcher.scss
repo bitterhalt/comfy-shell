@@ -1,56 +1,106 @@
+// Replace the entire window_switcher.scss content with this:
+
 // ═══════════════════════════════════════════════════════════════
-// WINDOW SWITCHER
+// WINDOW SWITCHER OVERLAY
 // ═══════════════════════════════════════════════════════════════
 
-.winlist-window {
+.window-switcher-window {
   background: transparent;
+  border: none;
 }
 
-.winlist-overlay {
+.window-switcher-background {
+  background: rgba(0, 0, 0, 0.7);
 }
 
-.winlist-panel {
-  background: $osd-bg;
-  padding: 16px;
+.window-switcher-overlay {
+  background: $bg-1;
   border-radius: 8px;
-  margin-top: 10px;
-  min-width: 500px;
+  padding: 32px;
   box-shadow: $box-shadow;
 }
 
-.winlist-list {
-  padding: 8px 0;
+.window-grid-container {
+  padding: 8px;
+}
+
+.window-grid-row {
+  padding: 4px;
 }
 
 // ───────────────────────────────────────────────────────────────
-// Row items
+// Window Card
 // ───────────────────────────────────────────────────────────────
 
-.winlist-row {
-  background: transparent;
-  border: none;
+.window-card {
+  background: $bg-2;
+  border: 1px solid $ui-1;
   border-radius: 8px;
-  padding: 8px 12px;
-  margin: 2px 0;
-  transition: background 0.15s;
+  padding: 16px;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.1s;
 
   &:hover {
-    background: $ui-1;
+    background: $ui-2;
+    border-color: $ui-3;
+    transform: translateY(-4px);
   }
 
   &:focus {
     background: $ui-2;
+    border: 1px solid $cyan;
+    transform: translateY(-4px);
+  }
+
+  &:active {
+    transform: translateY(-2px) scale(0.98);
   }
 }
 
-.winlist-badge {
-  min-width: 64px;
-  padding: 4px;
-  color: $tx-3;
-  font-size: 14px;
+.window-card-content {
+  min-width: 100px;
 }
 
-.winlist-title {
-  color: $tx-1;
+// ───────────────────────────────────────────────────────────────
+// Card Elements
+// ───────────────────────────────────────────────────────────────
+
+.window-card-workspace {
+  color: $tx-3;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.window-card-keybind {
+  background: $cyan;
+  color: $bg-1;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.window-card-keybind-hidden {
+  min-width: 20px;
+}
+
+.window-card-icon {
+  margin: 8px 0;
+  opacity: 0.9;
+}
+
+.window-card-app {
   font-size: 14px;
+  font-weight: 600;
+  color: $tx-1;
+}
+
+.window-card-title {
+  font-size: 12px;
+  color: $tx-3;
+  margin-top: 2px;
 }
