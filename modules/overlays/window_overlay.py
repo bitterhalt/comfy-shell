@@ -25,7 +25,6 @@ class WindowEntry:
     address: str
     workspace: str
     app_class: str
-    title: str
     icon: str
 
 
@@ -71,7 +70,6 @@ def _fetch_windows() -> List[WindowEntry]:
 
         address = client.get("address", "")
         app_class = client.get("class") or "unknown"
-        title = client.get("title") or "untitled"
 
         ws = client.get("workspace") or {}
         ws_id = ws.get("id", -1)
@@ -92,7 +90,6 @@ def _fetch_windows() -> List[WindowEntry]:
                 address=address,
                 workspace=workspace,
                 app_class=app_class,
-                title=title,
                 icon=icon_name,
             )
         )
@@ -144,13 +141,6 @@ class WindowCard(widgets.Button):
             css_classes=["window-card-app"],
         )
 
-        title_label = widgets.Label(
-            label=window.title,
-            ellipsize="end",
-            max_width_chars=12,
-            css_classes=["window-card-title"],
-        )
-
         content = widgets.Box(
             vertical=True,
             spacing=6,
@@ -164,7 +154,6 @@ class WindowCard(widgets.Button):
                 ),
                 app_icon,
                 app_label,
-                title_label,
             ],
         )
 
