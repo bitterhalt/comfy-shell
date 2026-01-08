@@ -17,7 +17,6 @@ class BluetoothDeviceItem(widgets.Button):
     def __init__(self, device):
         self._device = device
 
-        # Battery label (optional, shown only when available)
         self._battery_label = widgets.Label(
             label="",
             css_classes=["bluetooth-battery"],
@@ -51,7 +50,6 @@ class BluetoothDeviceItem(widgets.Button):
             ),
         )
 
-        # Update battery on init and when it changes
         self._update_battery()
         device.connect("notify::battery-percentage", lambda *_: self._update_battery())
 
@@ -70,9 +68,9 @@ class BluetoothDeviceItem(widgets.Button):
     def _toggle_connection(self):
         """Toggle device connection using native Ignis API"""
         if self._device.connected:
-            self._device.disconnect_from()
+            asyncio.create_task(self._device.disconnect_from())
         else:
-            self._device.connect_to()
+            asyncio.create_task(self._device.connect_to())
 
 
 class BluetoothSection(widgets.Box):
@@ -102,7 +100,6 @@ class BluetoothSection(widgets.Box):
             hexpand=True,
         )
 
-        # Arrow indicator for expandable list
         self._arrow = widgets.Icon(
             image="pan-down-symbolic",
             pixel_size=16,
@@ -122,7 +119,6 @@ class BluetoothSection(widgets.Box):
             on_right_click=lambda *_: self._toggle_bluetooth(),
         )
 
-        # Device list container with empty state
         self._device_list_content = widgets.Box(
             vertical=True,
             spacing=4,
@@ -141,7 +137,6 @@ class BluetoothSection(widgets.Box):
             ),
         )
 
-        # Settings button at the bottom of device list
         settings_button = widgets.Button(
             css_classes=["bluetooth-settings-btn", "unset"],
             on_click=lambda *_: self._open_bluetooth_manager(),
@@ -182,7 +177,6 @@ class BluetoothSection(widgets.Box):
         self._signals.disconnect_all()
         self._device_signals.disconnect_all()
 
-        # Stop scanning if active
         if self._scan_timeout:
             try:
                 self._scan_timeout.cancel()
@@ -191,7 +185,7 @@ class BluetoothSection(widgets.Box):
             self._scan_timeout = None
 
         try:
-            bluetooth.stop_scan()
+            asyncio.create_task(bluetooth.stop_scan())
         except:
             pass
 
@@ -283,7 +277,7 @@ class BluetoothSection(widgets.Box):
     def _start_scan(self):
         """Start Bluetooth scan with auto-stop after 30 seconds"""
         try:
-            bluetooth.start_scan()
+            asyncio.create_task(bluetooth.start_scan())
 
             if self._scan_timeout:
                 self._scan_timeout.cancel()
@@ -295,7 +289,7 @@ class BluetoothSection(widgets.Box):
     def _stop_scan(self):
         """Stop Bluetooth scan"""
         try:
-            bluetooth.stop_scan()
+            asyncio.create_task(bluetooth.stop_scan())
         except Exception as e:
             print(f"Failed to stop Bluetooth scan: {e}")
 
