@@ -1,12 +1,12 @@
 # My Ignis Shell (WIP)
 
-_A modular Wayland shell powered by Ignis_
+_A modular Hyprland shell powered by Ignis_
 
 > ⚠️ **Status VERY Work in Progress**
 >
 > My first ever python project so don't kill me...
 >
-> I repeat **VERY WIP** at the moment!
+> This shell main functions should work with **Niri** too, but some modules may need some work
 >
 > If **you** have more experience from Python and wan't to improve my build don't hesitate to make PR ☺️
 
@@ -73,7 +73,8 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 > _30.12.25_
 
 - [ ] Styles are at mess! Make some tidying for values + maybe add few more themes
-- [ ] Support to use dynamic theming with matugen. This is way out my skills so help is needed!
+- [ ] Support to use dynamic theming with matugen. This is way out my skills so (help is needed)
+- [ ] Full Niri support (help needed)
 - [x] In settings: add option to remember bar state after restart
 - [x] add bluetooth in panel
 - [x] add small time stamps to notifications
