@@ -7,6 +7,8 @@ _A modular Wayland shell powered by Ignis_
 > My first ever python project so don't kill me...
 >
 > I repeat **VERY WIP** at the moment!
+>
+> If **you** have more experience from Python and wan't to improve my build don't hesitate to make PR ☺️
 
 ## Overview
 
@@ -71,8 +73,17 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 > _30.12.25_
 
 - [ ] Styles are at mess! Make some tidying for values + maybe add few more themes
-- [ ] Theme option for config.toml
+- [ ] Support to use dynamic theming with matugen. This is way out my skills so help is needed!
 - [x] In settings: add option to remember bar state after restart
 - [x] add bluetooth in panel
 - [x] add small time stamps to notifications
 - [x] Parts of of notications are super ugly -> fix when rainy day
+
+#### Special thanks ⭐
+
+> This build would not exist without these! I beraly understand Python but I can put pieces together once I stole others ideas.
+
+- [Linkfrg](https://github.com/ignis-sh/ignis) and his [dotfiles](https://github.com/linkfrg/dotfiles)
+- [debuggyo](https://github.com/debuggyo) and [Exo](https://github.com/debuggyo/Exo)
+- [tr1x_em](https://github.com/tr1xem) and [flux](https://github.com/tr1xem/flux)
+- [lost-melody](https://github.com/lost-melody/) and his [build](https://github.com/lost-melody/IgnisNiriShell)

@@ -11,7 +11,7 @@ stop)
 *)
   if pgrep -x "ignis" >/dev/null; then
     pkill ignis
-    sleep 1
+    sleep 0.5
     ignis init &
   else
     ignis init &
