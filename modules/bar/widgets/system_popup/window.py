@@ -65,6 +65,8 @@ class SystemPopup(widgets.Window):
         speaker = AudioSection(stream=audio.speaker, device_type="speaker")
         mic = AudioSection(stream=audio.microphone, device_type="microphone")
 
+        self._audio_sections = [speaker, mic]
+
         audio_content = widgets.Box(
             vertical=True,
             spacing=10,
@@ -73,6 +75,7 @@ class SystemPopup(widgets.Window):
         )
 
         network_section = NetworkSection()
+        self._network_section = network_section
 
         network_content = widgets.Box(
             vertical=True,
@@ -82,6 +85,7 @@ class SystemPopup(widgets.Window):
         )
 
         bluetooth_section = BluetoothSection()
+        self._bluetooth_section = bluetooth_section
 
         system_info = SystemInfoWidget()
 
@@ -139,12 +143,31 @@ class SystemPopup(widgets.Window):
 
         self.connect("notify::visible", self._on_visible_change)
 
+    def _reset_expandables(self):
+        """Reset all expandable sections to collapsed state"""
+        for section in self._audio_sections:
+            if section._device_list.visible:
+                section._device_list.visible = False
+                section._arrow.rotated = False
+
+        if self._network_section._list_visible:
+            self._network_section._list_visible = False
+            self._network_section._device_list.visible = False
+            self._network_section._arrow.set_css_classes(["expand-arrow"])
+
+        if self._bluetooth_section._list_visible:
+            self._bluetooth_section._list_visible = False
+            self._bluetooth_section._device_list.visible = False
+            self._bluetooth_section._arrow.set_css_classes(["expand-arrow"])
+            self._bluetooth_section._stop_scan()
+
     def _on_visible_change(self, *_):
         """Handle reveal animation when window opens/closes"""
         if self.visible:
             self._revealer.reveal_child = True
         else:
             self._revealer.reveal_child = False
+            self._reset_expandables()
 
     def toggle(self):
         """Toggle system popup visibility"""
