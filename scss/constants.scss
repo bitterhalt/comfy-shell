@@ -3,7 +3,7 @@
   all: unset;
 }
 
-// Buttons
+// Close/expand uttons
 .close-btn {
   all: unset;
   color: $tx-1;
@@ -33,6 +33,15 @@
 
 .notif-close-btn:hover {
   background: $ui-2;
+}
+
+.expand-arrow {
+  color: $tx-1;
+  transition: transform 200ms ease;
+
+  &.rotated {
+    transform: rotate(180deg);
+  }
 }
 
 // all tooltips
@@ -67,14 +76,5 @@ tooltip label,
   }
   100% {
     opacity: 0;
-  }
-}
-
-.expand-arrow {
-  color: $tx-1;
-  transition: transform 200ms ease;
-
-  &.rotated {
-    transform: rotate(180deg);
   }
 }

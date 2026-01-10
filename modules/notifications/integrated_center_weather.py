@@ -29,7 +29,7 @@ class WeatherPill:
         )
 
         self.button = widgets.Button(
-            css_classes=["weather-compact"],
+            css_classes=["weather-compact", "unset"],
             on_click=lambda *_: self._open_weather_popup(),
             child=widgets.Box(
                 spacing=10,

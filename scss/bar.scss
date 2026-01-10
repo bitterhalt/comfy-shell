@@ -1,18 +1,13 @@
 .bar {
   background-color: $bg-1;
   color: $tx-1;
-  margin: 0px 4px;
-}
-
-.workspaces {
+  margin: 2px 4px;
 }
 
 .ws-btn {
-  all: unset;
   min-width: 16px;
-  padding: 0px 6px;
-  margin: 2px 0;
   border-radius: 6px;
+  padding: 6px;
   background: transparent;
   color: $tx-1;
 }
@@ -25,31 +20,23 @@
 
 .window-title {
   all: unset;
-  padding: 0px 6px;
-  margin: 2px 0;
 }
 
 .clock,
 .clock-button {
-  all: unset;
-  margin: 2px 0;
-  padding: 2px 6px;
+  padding: 0px 6px;
   border-radius: 6px;
 }
 
 .recording-icon {
-  margin: 2px 0;
-  padding: 2px 12px;
   border-radius: 6px;
   color: $red;
   animation: blink 1s infinite;
 }
 
 .system-indicator-button {
-  margin: 2px 2px;
-  padding: 2px 6px;
   color: $tx-1;
-  background-color: unset;
+  padding: 0px 6px;
   border-radius: 8px;
 }
 

@@ -17,7 +17,7 @@ def hypr_btn(ws: HyprlandWorkspace):
     else:
         label_text = label_text[0].upper()
     btn = widgets.Button(
-        css_classes=["ws-btn"],
+        css_classes=["ws-btn", "unset"],
         on_click=lambda *_: ws.switch_to(),
         child=widgets.Label(label=label_text),
     )
@@ -28,7 +28,7 @@ def hypr_btn(ws: HyprlandWorkspace):
 
 def niri_btn(ws: NiriWorkspace):
     btn = widgets.Button(
-        css_classes=["ws-btn"],
+        css_classes=["ws-btn", "unset"],
         on_click=lambda *_: ws.switch_to(),
         child=widgets.Label(label=str(ws.idx)),
     )
@@ -42,7 +42,7 @@ def workspace_button(ws):
         return hypr_btn(ws)
     elif niri.is_available:
         return niri_btn(ws)
-    return widgets.Button(css_classes=["ws-btn"])
+    return widgets.Button(css_classes=["ws-btn", "unset"])
 
 
 def _scroll_niri(output: str, delta: int):

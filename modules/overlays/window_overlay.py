@@ -14,11 +14,6 @@ MAX_WINDOWS = 18
 COLUMNS = 9
 
 
-# ───────────────────────────────────────────────────────────────
-# Data model
-# ───────────────────────────────────────────────────────────────
-
-
 @dataclass
 class WindowEntry:
     index: int
@@ -26,11 +21,6 @@ class WindowEntry:
     workspace: str
     app_class: str
     icon: str
-
-
-# ───────────────────────────────────────────────────────────────
-# Helpers
-# ───────────────────────────────────────────────────────────────
 
 
 def _workspace_sort_key(client) -> tuple:
@@ -112,11 +102,6 @@ def shortcut_css(index: int) -> List[str]:
 
 def _is_ctrl(state) -> bool:
     return bool(state & Gdk.ModifierType.CONTROL_MASK)
-
-
-# ───────────────────────────────────────────────────────────────
-# UI
-# ───────────────────────────────────────────────────────────────
 
 
 class WindowCard(widgets.Button):

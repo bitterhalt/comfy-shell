@@ -32,7 +32,7 @@ class IntegratedCenter(widgets.Window):
 
         clear_btn = widgets.Button(
             child=widgets.Label(label="Clear All"),
-            css_classes=["header-action-btn"],
+            css_classes=["header-action-btn", "unset"],
             on_click=lambda *_: self._notification_list.clear_all(),
         )
 

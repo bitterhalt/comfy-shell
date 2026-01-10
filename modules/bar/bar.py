@@ -32,6 +32,7 @@ def center_section():
 
 def right_section():
     return widgets.Box(
+        spacing=12,
         child=[
             recording_indicator(),
             system_indicator(),

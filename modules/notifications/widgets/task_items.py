@@ -39,19 +39,19 @@ class TaskItem(widgets.Box):
             child=[
                 widgets.Button(
                     child=widgets.Icon(image="document-edit-symbolic", pixel_size=16),
-                    css_classes=["task-action-btn", "task-edit"],
+                    css_classes=["task-action-btn", "task-edit", "unset"],
                     tooltip_text="Edit Task",
                     on_click=lambda *_: on_edit(task),
                 ),
                 widgets.Button(
                     child=widgets.Icon(image="emblem-ok-symbolic", pixel_size=16),
-                    css_classes=["task-action-btn", "task-complete"],
+                    css_classes=["task-action-btn", "task-complete", "unset"],
                     tooltip_text="Complete",
                     on_click=lambda *_: on_complete(task),
                 ),
                 widgets.Button(
                     child=widgets.Icon(image="user-trash-symbolic", pixel_size=16),
-                    css_classes=["task-action-btn", "task-delete"],
+                    css_classes=["task-action-btn", "task-delete", "unset"],
                     tooltip_text="Delete",
                     on_click=lambda *_: on_delete(task),
                 ),

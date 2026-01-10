@@ -90,7 +90,7 @@ def system_indicator():
     )
 
     button = widgets.Button(
-        css_classes=["system-indicator-button"],
+        css_classes=["system-indicator-button", "unset"],
         child=inner,
         on_click=lambda *_: wm.open_window("ignis_SYSTEM_MENU"),
     )

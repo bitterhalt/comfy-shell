@@ -30,7 +30,7 @@ def clock():
 
     clock_button = widgets.Button(
         child=clock_content,
-        css_classes=["clock-button"],
+        css_classes=["clock-button", "unset"],
         on_click=lambda x: wm.open_window("ignis_INTEGRATED_CENTER"),
     )
 

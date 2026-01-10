@@ -13,19 +13,19 @@ class AddTaskDialog(widgets.Box):
 
         self._time = widgets.Entry(
             placeholder_text="HH:MM",
-            css_classes=["task-input", "task-time-input"],
+            css_classes=["task-input", "task-time-input", "unset"],
         )
         self._time.text = ""
 
         self._date = widgets.Entry(
             placeholder_text="DD-MM-YYYY",
-            css_classes=["task-input", "task-date-input"],
+            css_classes=["task-input", "task-date-input", "unset"],
         )
         self._date.text = now.strftime("%d-%m-%Y")
 
         tomorrow_btn = widgets.Button(
             child=widgets.Label(label="Tomorrow"),
-            css_classes=["date-quick-btn"],
+            css_classes=["date-quick-btn", "unset"],
             on_click=lambda *_: self._set_date_offset(1),
         )
 
@@ -42,7 +42,7 @@ class AddTaskDialog(widgets.Box):
 
         self._message = widgets.Entry(
             placeholder_text="What do you need to do?",
-            css_classes=["task-input", "task-message-input"],
+            css_classes=["task-input", "task-message-input", "unset"],
             hexpand=True,
             on_accept=lambda *_: self._add(),
         )
@@ -50,13 +50,13 @@ class AddTaskDialog(widgets.Box):
 
         cancel_btn = widgets.Button(
             child=widgets.Label(label="Cancel"),
-            css_classes=["task-dialog-btn", "cancel-btn"],
+            css_classes=["task-dialog-btn", "cancel-btn", "unset"],
             on_click=lambda *_: on_cancel(),
         )
 
         save_btn = widgets.Button(
             child=widgets.Label(label="Add Task"),
-            css_classes=["task-dialog-btn", "add-btn"],
+            css_classes=["task-dialog-btn", "add-btn", "unset"],
             on_click=lambda *_: self._add(),
         )
 
@@ -120,13 +120,13 @@ class EditTaskDialog(widgets.Box):
 
         self._time = widgets.Entry(
             placeholder_text="HH:MM",
-            css_classes=["task-input", "task-time-input"],
+            css_classes=["task-input", "task-time-input", "unset"],
         )
         self._time.text = fire_dt.strftime("%H:%M")
 
         self._date = widgets.Entry(
             placeholder_text="DD-MM-YYYY",
-            css_classes=["task-input", "task-date-input"],
+            css_classes=["task-input", "task-date-input", "unset"],
         )
         self._date.text = fire_dt.strftime("%d-%m-%Y")
 
@@ -142,7 +142,7 @@ class EditTaskDialog(widgets.Box):
 
         self._message = widgets.Entry(
             placeholder_text="What do you need to do?",
-            css_classes=["task-input", "task-message-input"],
+            css_classes=["task-input", "task-message-input", "unset"],
             hexpand=True,
             on_accept=lambda *_: self._save(),
         )
@@ -150,20 +150,20 @@ class EditTaskDialog(widgets.Box):
 
         cancel_btn = widgets.Button(
             child=widgets.Label(label="Cancel"),
-            css_classes=["task-dialog-btn", "cancel-btn"],
+            css_classes=["task-dialog-btn", "cancel-btn", "unset"],
             on_click=lambda *_: on_cancel(),
         )
 
         save_btn = widgets.Button(
             child=widgets.Label(label="Save"),
-            css_classes=["task-dialog-btn", "add-btn"],
+            css_classes=["task-dialog-btn", "add-btn", "unset"],
             on_click=lambda *_: self._save(),
         )
 
         button_row = widgets.Box(
             spacing=8,
             halign="end",
-            css_classes=["task-dialog-buttons"],
+            css_classes=["task-dialog-buttons", "unset"],
             child=[cancel_btn, save_btn],
         )
 

@@ -64,7 +64,7 @@ class TaskList:
                 ),
                 widgets.Button(
                     child=widgets.Label(label="Add Task"),
-                    css_classes=["add-task-btn"],
+                    css_classes=["add-task-btn", "unset"],
                     on_click=lambda *_: self._open_add_dialog(),
                 ),
             ],

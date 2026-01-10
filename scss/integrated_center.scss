@@ -44,14 +44,10 @@
    ─────────────────────────────────────────────────────────────── */
 
 .header-action-btn {
-  all: unset;
   color: $tx-3;
   margin-right: 22px;
   border-radius: 8px;
   font-size: 13px;
-  transition:
-    background-color 0.15s,
-    color 0.15s;
 }
 
 .header-action-btn:hover {
@@ -63,7 +59,6 @@
    ─────────────────────────────────────────────────────────────── */
 
 .dnd-box {
-  all: unset;
   padding: 8px 0 0 16px;
 }
 
@@ -104,7 +99,6 @@
    ─────────────────────────────────────────────────────────────── */
 
 .weather-compact {
-  all: unset;
   padding: 8px 16px;
   margin: 0 12px;
   background-color: $bg-2;
@@ -168,17 +162,6 @@
   margin-top: 2px;
 }
 
-.media-pill-button {
-  all: unset;
-  color: $tx-1;
-  padding: 6px;
-  border-radius: 8px;
-  transition: background-color 0.15s;
-
-  &:hover {
-    background-color: $ui-2;
-  }
-}
 /* ───────────────────────────────────────────────────────────────
    TASK LIST EXPANDER
    ─────────────────────────────────────────────────────────────── */
@@ -205,7 +188,6 @@
 
 .next-task-box {
   background-color: $bg-2;
-  // border: 1px solid $ui-1;
   border-radius: 8px;
   padding: 10px 12px;
   margin: 12px 12px 0px 12px;
@@ -236,8 +218,6 @@
 }
 
 .add-task-btn {
-  all: unset;
-  background-color: unset;
   color: $cyan;
   padding: 2px 8px;
   margin-left: 4px;
@@ -327,7 +307,6 @@
 }
 
 .task-action-btn {
-  all: unset;
   padding: 6px;
   border-radius: 8px;
   opacity: 0.6;
@@ -403,7 +382,6 @@
 }
 
 .date-quick-btn {
-  all: unset;
   background-color: $ui-2;
   color: $tx-3;
   border-radius: 6px;
@@ -434,7 +412,6 @@
    ─────────────────────────────────────────────────────────────── */
 
 .task-input {
-  all: unset;
   background-color: $bg-2;
   border-radius: 8px;
   padding: 8px 12px;
@@ -457,16 +434,10 @@
 }
 
 .task-dialog-btn {
-  all: unset;
   padding: 8px 16px;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
-  transition:
-    background-color 0.15s,
-    color 0.15s,
-    transform 0.1s;
-
   &:hover {
     transform: translatey(-1px);
   }

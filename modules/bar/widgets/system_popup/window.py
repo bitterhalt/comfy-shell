@@ -92,7 +92,7 @@ class SystemPopup(widgets.Window):
         panel = widgets.Box(
             vertical=True,
             spacing=6,
-            css_classes=["system-menu"],
+            css_classes=["system-menu", "unset"],
             child=[
                 top_row,
                 audio_content,
