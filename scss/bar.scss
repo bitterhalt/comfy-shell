@@ -67,28 +67,6 @@
   color: $red;
 }
 
-// Caffeine widget
-.caffeine-button {
-  all: unset;
-  color: $tx-1;
-  margin: 2px 0;
-  padding: 2px 6px;
-  border-radius: 8px;
-
-  &:hover {
-    background: $ui-1;
-    color: $tx-2;
-  }
-}
-
-.caffeine-button.caffeine-active {
-  color: $yellow;
-
-  &:hover {
-    background: $ui-1;
-  }
-}
-
 .audio-widget:hover,
 .clock-button:hover,
 .clock:hover,
