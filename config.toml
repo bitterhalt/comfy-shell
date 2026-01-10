@@ -35,7 +35,7 @@ bluetooth_manager = "fuzzel_bt"
 osd = 2000
 volume_osd = 2000
 media_osd = 5000
-time_osd = 8000
+time_osd = 5000
 workspace_osd = 1500
 
 # ══════════════════════════════════════════════════════════════
@@ -58,7 +58,7 @@ window_title_exceptions = [
 max_history = 10
 popup_timeout = 5000 # Milliseconds
 
-#  Hide useless stuff from history
+#  Hide useless stuff from history (My personal preference, you probably wan't to remove these)
 filter_keywords = [
   "Hyprland config",
   "Color-picker",
@@ -69,6 +69,7 @@ filter_keywords = [
   "BT: Failed to Connect",
   "BT: Disconnected",
   "Bluez Menu",
+  "TMUX",
 ]
 
 # ══════════════════════════════════════════════════════════════
