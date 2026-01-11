@@ -41,7 +41,6 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 - Weather
 - Power
 - Screenshots
-- Window Switcher
 
 ### 🔸 Extra Integrations
 
@@ -63,17 +62,13 @@ Dependencies: check my [dotfiles](https://github.com/bitterhalt/dotfiles)
 <summary><b>Weather</b></summary><br>
 <img src="assets/screenshots/weather.png" width="80%" />
 </details>
-<details>
-<summary><b>Window-list</b></summary><br>
-<img src="assets/screenshots/winmenu.png" width="80%" />
-</details>
 
 ## TODO
 
 > _30.12.25_
 
 - [ ] Styles are at mess! Make some tidying for values + maybe add few more themes
-- [ ] Support to use dynamic theming with matugen. This is way out my skills so (help is needed)
+- [ ] Support to use dynamic theming. This is way out my skills so (help is needed)
 - [ ] Full Niri support (help needed)
 - [x] In settings: add option to remember bar state after restart
 - [x] add bluetooth in panel

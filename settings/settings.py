@@ -124,7 +124,6 @@ class MonitorConfig:
     osd: int = 0
     notifications: int = 0
     recording_overlay: int = 0
-    window_switcher: int = 0
     weather: int = 0
     power_overlay: int = 0
     system_menu: int = 0
@@ -253,10 +252,6 @@ class UIConfig:
     @property
     def recording_overlay_monitor(self):
         return self.monitors.recording_overlay
-
-    @property
-    def window_switcher_monitor(self):
-        return self.monitors.window_switcher
 
     @property
     def weather_monitor(self):

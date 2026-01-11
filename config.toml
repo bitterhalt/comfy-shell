@@ -17,7 +17,6 @@ bar = 0
 osd = 0
 notifications = 0
 recording_overlay = 0
-window_switcher = 0
 weather = 0
 power_overlay = 0
 system_menu = 0
